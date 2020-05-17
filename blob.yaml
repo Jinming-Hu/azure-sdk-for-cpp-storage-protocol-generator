@@ -1,0 +1,376 @@
+service_name: Blobs
+output: generated/blob_rest_client.hpp
+
+request_version_date_id_package: &REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+  - [add_header_code, "x-ms-version", Version]
+  - [add_header_code, "x-ms-date", Date]
+  - [add_header_code, "x-ms-client-request-id", ClientRequestID, optional]
+
+response_version_date_id_package: &RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+  - [get_header_code, "x-ms-version", Version]
+  - [get_header_code, "Date", Date]
+  - [get_header_code, "x-ms-request-id", RequestId]
+  - [get_header_code, "x-ms-client-request-id", ClientRequestId, optional]
+
+request_encryption_package: &REQUEST_ENCRYPTION_HEADER_PACKAGE
+  - [add_header_code, "x-ms-encryption-key", EncryptionKey, optional]
+  - [add_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256, optional]
+  - [add_header_code, "x-ms-encryption-algorithm", EncryptionAlgorithm, optional]
+
+response_encryption_package: &RESPONSE_ENCRYPTION_HEADER_PACKAGE
+  - [get_header_code, "x-ms-request-server-encrypted", ServerEncrypted]
+  - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256, optional]
+
+response_etag_last_modified_package: &RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+  - [get_header_code, "ETag", ETag]
+  - [get_header_code, "LastModified", LastModified]
+
+request_checksum_package: &REQUEST_CHECKSUM_HEADER_PACKAGE
+  - [add_header_code, "Content-MD5", ContentMD5, optional]
+  - [add_header_code, "x-ms-content-crc64", ContentCRC64, optional]
+
+response_checksum_package: &RESPONSE_CHECKSUM_HEADER_PACKAGE
+  - [get_header_code, "Content-MD5", ContentMD5, optional]
+  - [get_header_code, "x-ms-content-crc64", ContentCRC64, optional]
+
+request_mime_package: &REQUEST_MIME_HEADER_PACKAGE
+  - [add_header_code, "x-ms-blob-content-type", Properties.ContentType, optional]
+  - [add_header_code, "x-ms-blob-content-encoding", Properties.ContentEncoding, optional]
+  - [add_header_code, "x-ms-blob-content-language", Properties.ContentLanguage, optional]
+  - [add_header_code, "x-ms-blob-cache-control", Properties.CacheControl, optional]
+  - [add_header_code, "x-ms-blob-content-md5", Properties.ContentMD5, optional]
+  - [add_header_code, "x-ms-blob-content-disposition", Properties.ContentDisposition, optional]
+
+response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
+  - [get_header_code, "x-ms-blob-content-type", Properties.ContentType, optional]
+  - [get_header_code, "x-ms-blob-content-encoding", Properties.ContentEncoding, optional]
+  - [get_header_code, "x-ms-blob-content-language", Properties.ContentLanguage, optional]
+  - [get_header_code, "x-ms-blob-cache-control", Properties.CacheControl, optional]
+  - [get_header_code, "x-ms-blob-content-md5", Properties.ContentMD5, optional]
+  - [get_header_code, "x-ms-blob-content-disposition", Properties.ContentDisposition, optional]
+
+response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE
+  - [get_header_code, "x-ms-lease-status", LeaseStatus]
+  - [get_header_code, "x-ms-lease-state", LeaseState]
+  - [get_header_code, "x-ms-lease-duration", LeaseDuration, optional]
+ 
+Services:
+  - Container:
+    - Create:
+        http_method: Put
+        http_status_code: 201
+        return_type:
+          BlobContainerInfo:
+            - BasicResponse: inline
+            - ETag: std::string
+            - LastModified: std::string
+        options:
+          - BasicRequestOptions: inline
+          - AccessType: PublicAccessType
+          - Metadata: std::map<std::string, std::string>
+        request_action:
+          - [add_query_code, "restype", "container"]
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_header_code, "x-ms-blob-public-access", AccessType, optional]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+
+    - Delete:
+        http_method: Delete
+        http_status_code: 202
+        return_type: BasicResponse
+        options:
+          - BasicRequestOptions: inline
+        request_action:
+          - [add_query_code, "restype", "container"]
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+
+    - ListBlobs:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+          ListBlobsSegment:
+            - BasicResponse: inline
+            - ServiceEndpoint: std::string
+            - Container: std::string
+            - Prefix: std::string
+            - Marker: std::string
+            - NextMarker: std::string
+            - MaxResults: int = 0
+            - Delimiter: std::string
+            - BlobItems: std::vector<BlobItem>
+        options:
+          - BasicRequestOptions: inline
+          - Prefix: std::string
+          - Delimiter: std::string
+          - Marker: std::string
+          - MaxResults: int = 0
+          - Include: std::vector<ListBlobsIncludeItem>
+        request_action:
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_query_code, "restype", "container"]
+          - [add_query_code, "comp", "list"]
+          - [add_query_code, "prefix", Prefix, optional]
+          - [add_query_code, "delimiter", Delimiter, optional]
+          - [add_query_code, "marker", Marker, optional]
+          - [add_query_code, "maxresults", MaxResults, optional(0)]
+          - [add_query_code, "include", Include, optional]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - [get_xml_body_code]
+
+  - Blob:
+    - Download:
+        http_method: Get
+        http_status_code: [200, 206]
+        return_type: BlobDownloadProperties
+        options:
+          - BasicRequestOptions: inline
+          - Snapshot: std::string
+          - Range: std::pair<uint64_t, uint64_t>
+        request_action:
+          - [add_query_code, "snapshot", Snapshot, optional]
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_range_header_code, "x-ms-range", Range, optional]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - *RESPONSE_CHECKSUM_HEADER_PACKAGE
+          - *RESPONSE_MIME_HEADER_PACKAGE
+          - [get_metadata_code, "x-ms-meta-", Metadata, optional]
+          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_LEASE_HEADER_PACKAGE
+          - [get_header_code, "Content-Range", ContentRange, optional]
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
+          - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount, optional]
+          - [get_header_code, "x-ms-blob-type", BlobType]
+          - [get_body_code, BodyBuffer]
+          # BodyStream not implemented yet
+          # - [get_body_code, BodyStream]
+
+  - BlockBlob:
+    - Upload:
+        http_method: Put
+        http_status_code: 201
+        return_type: BlobContentInfo
+        options:
+          - BodiedRequestOptions: inline
+          - ContentMD5: std::string
+          - ContentCRC64: std::string
+          - BlobType: BlobType
+          - Properties: BlobProperties
+          - Metadata: std::map<std::string, std::string>
+          - LeaseId: std::string
+          - Tier: AccessTier = AccessTier::Unknown
+          - EncryptionKey: std::string
+          - EncryptionKeySHA256: std::string
+          - EncryptionAlgorithm: std::string
+        request_action:
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
+          - *REQUEST_CHECKSUM_HEADER_PACKAGE
+          - *REQUEST_MIME_HEADER_PACKAGE
+          - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-blob-type", BlobType]
+          - [add_header_code, "x-ms-access-tier", Tier, optional]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - *RESPONSE_CHECKSUM_HEADER_PACKAGE
+          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+
+    - StageBlock:
+        http_method: Put
+        http_status_code: 201
+        return_type:
+          BlockInfo:
+            - BasicResponse: inline
+            - ContentMD5: std::string
+            - ContentCRC64: std::string
+            - ServerEncrypted: bool
+            - EncryptionKeySHA256: std::string
+        options:
+          - BodiedRequestOptions: inline
+          - BlockId: std::string
+          - ContentMD5: std::string
+          - ContentCRC64: std::string
+          - LeaseId: std::string
+          - EncryptionKey: std::string
+          - EncryptionKeySHA256: std::string
+          - EncryptionAlgorithm: std::string
+        request_action:
+          - [add_query_code, "comp", "block"]
+          - [add_query_code, "blockid", BlockId]
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_CHECKSUM_HEADER_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
+          - [add_body_code, BodyBuffer]
+          # Stream not implemented yet
+          #- [add_body_code, BodyStream]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - *RESPONSE_CHECKSUM_HEADER_PACKAGE
+          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+
+    - CommitBlockList:
+        http_method: Put
+        http_status_code: 201
+        return_type: BlobContentInfo
+        options:
+          - BasicRequestOptions: inline
+          - BlockList: std::vector<std::pair<BlockType, std::string>>
+          - Properties: BlobProperties
+          - Metadata: std::map<std::string, std::string>
+          - LeaseId: std::string
+          - EncryptionKey: std::string
+          - EncryptionKeySHA256: std::string
+          - EncryptionAlgorithm: std::string
+          - Tier: AccessTier = AccessTier::Unknown
+        request_action:
+          - [add_query_code, "comp", "blocklist"] 
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_MIME_HEADER_PACKAGE
+          - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
+          - [add_header_code, "x-ms-access-tier", Tier, optional]
+          - [add_xml_body_code]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+
+Models:
+  BasicRequestOptions:
+    - type: struct
+    - Version: std::string
+    - ClientRequestID: std::string
+    - Date: std::string
+  BodiedRequestOptions:
+    - type: struct
+    - BasicRequestOptions: inline
+    - BodyBuffer: azure::core::http::BodyBuffer* = nullptr
+    - BodyStream: azure::core::http::BodyStream* = nullptr
+  BasicResponse:
+    - type: struct
+    - RequestId: std::string
+    - Date: std::string
+    - Version: std::string
+    - ClientRequestId: std::string
+  BodiedResponse:
+    - type: struct
+    - BasicResponse: inline
+    - BodyBuffer: azure::core::http::BodyBuffer* = nullptr
+    - BodyStream: azure::core::http::BodyStream* = nullptr
+  PublicAccessType:
+    - type: enum class
+    - Container: "container"
+    - Blob: "blob"
+    - Private: ""
+  BlockType:
+    - type: enum class
+    - Committed
+    - Uncommitted
+    - Latest
+  BlobType:
+    - type: enum class
+    - BlockBlob
+    - PageBlob
+    - AppendBlob
+  BlobProperties:
+    - type: struct
+    - ContentType: std::string
+    - ContentEncoding: std::string
+    - ContentLanguage: std::string
+    - ContentMD5: std::string
+    - CacheControl: std::string
+    - ContentDisposition: std::string
+  BlobLeaseState:
+    - type: enum class
+    - Available: "available"
+    - Leased: "leased"
+    - Expired: "expired"
+    - Breaking: "breaking"
+    - Broken: "broken"
+  BlobLeaseStatus:
+    - type: enum class
+    - Locked: "locked"
+    - Unlocked: "unlocked"
+  BlobDownloadProperties:
+    - type: struct
+    - BodiedResponse: inline
+    - ETag: std::string
+    - LastModified: std::string
+    - ContentRange: std::string
+    - Properties: BlobProperties
+    - Metadata: std::map<std::string, std::string>
+    - SequenceNumber: uint64_t = 0  # only for page blob
+    - CommittedBlockCount: uint64_t = 0  # only for append blob
+    - BlobType: BlobType
+    - ContentMD5: std::string
+    - ContentCRC64: std::string
+    - LeaseDuration: std::string
+    - LeaseState: BlobLeaseState
+    - LeaseStatus: BlobLeaseStatus
+    - ServerEncrypted: bool
+    - EncryptionKeySHA256: std::string
+  AccessTier:
+    - type: enum class
+    - Unknown: ""
+    - P1
+    - P2
+    - P3
+    - P4
+    - P6
+    - P10
+    - P15
+    - P20
+    - P30
+    - P40
+    - P50
+    - P60
+    - P70
+    - P80
+    - Hot
+    - Cool
+    - Archive
+  BlobContentInfo:
+    - type: struct
+    - BasicResponse: inline
+    - ETag: std::string
+    - LastModified: std::string
+    - ContentMD5: std::string
+    - ContentCRC64: std::string
+    - ServerEncrypted: bool
+    - EncryptionKeySHA256: std::string
+    - SequenceNumber: uint64_t = 0
+  BlobItem:
+    - Name: std::string
+    - Deleted: bool = false
+    - Snapshot: std::string
+    - Properties: BlobProperties
+    - Metadata: std::map<std::string, std::string>
+    - CreationTime: std::string
+    - LastModified: std::string
+    - ETag: std::string
+    - ContentLength: uint64_t
+    - ContentType: std::string
+    - BlobType: BlobType
+    - Tier: AccessTier
+    - AccessTierInferred: bool
+    - LeaseStatus: BlobLeaseStatus
+    - LeaseState: BlobLeaseState
+    - ServerEncrypted: bool
+  ListBlobsIncludeItem:
+    - type: enum class
+    - Copy: copy
+    - Deleted: deleted
+    - Metadata: metadata
+    - Snapshots: snapshots
+    - UncomittedBlobs: uncommittedblobs
