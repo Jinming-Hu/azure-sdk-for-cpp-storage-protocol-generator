@@ -230,7 +230,7 @@ def gen_add_query_code(*args, **kwargs):
     optional = kwargs["optional"]
 
     content = ""
-    if value_type.startswith("std::vector<") and value_type.endswith(">"):
+    if type(value_type) is str and value_type.startswith("std::vector<") and value_type.endswith(">"):
         template_type = models_cache[value_type[len("std::vector<"): -len(">")]]
         if template_type.type == "enum class":
             str_name = value.replace(".", "_").lower() + "_str"
@@ -260,8 +260,19 @@ def gen_add_query_code(*args, **kwargs):
             elif value_type == "int" or value_type == "uint64_t":
                 optional_value = kwargs["optional_value"]
                 content += "if ({} != {}) {{".format(value, optional_value)
+            elif hasattr(value_type, "type") and value_type.type == "enum class":
+                snake_case_name = "".join([s for s in map(lambda c: "_" + c.lower() if c.isupper() else c, value_type.name)])
+                if snake_case_name.startswith("_"):
+                    snake_case_name = snake_case_name[1:]
+                content += inspect.cleandoc(
+                    """
+                    std::string {var_name} = {typename}ToString({var});
+                    if (!{var_name}.empty())
+                    {{
+                    """.format(key=key, var=value, var_name=snake_case_name, typename=value_type.name))
+                value = snake_case_name
             else:
-                raise RuntimeError("unknown type " + value_type.type if hasattr(value_type, "type") else value_type)
+                raise RuntimeError("unknown type " + value_type.type + " " + value_type.name if hasattr(value_type, "type") else value_type)
 
         if value_type == "int" or value_type == "uint64_t":
             content += "request.addQueryParameter({}, std::to_string({}));".format(key, value)
@@ -448,7 +459,9 @@ def gen_get_header_code(*args, **kwargs):
             {{
             """.format(key, ite_name))
 
-        if target_type == "uint64_t":
+        if target_type == "int":
+            content += "{} = std::stoi({}->second);".format(target, ite_name)
+        elif target_type == "uint64_t":
             content += "{} = std::stoull({}->second);".format(target, ite_name)
         elif target_type == "std::string":
             content += "{} = {}->second;".format(target, ite_name)
@@ -461,7 +474,9 @@ def gen_get_header_code(*args, **kwargs):
 
         content += "}"
     else:
-        if target_type == "uint64_t":
+        if target_type == "int":
+            content = "{1} = std::stoi(http_respone.getHeaders().at({0}));".format(key, target)
+        elif target_type == "uint64_t":
             content = "{1} = std::stoull(http_response.getHeaders().at({0}));".format(key, target)
         elif target_type == "std::string":
             content = "{1} = http_response.getHeaders().at({0});".format(key, target)

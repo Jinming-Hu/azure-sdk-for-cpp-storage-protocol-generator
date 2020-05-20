@@ -14,6 +14,7 @@ class class_definition:
     def __init__(self, class_name, class_type):
         self.name = class_name
         self.type = class_type
+        self.noexport = False
         self.member = []
         # only for struct
         self.member_type = []
@@ -34,6 +35,8 @@ class class_definition:
                      "int8_t", "uint8_t", "int16_t", "uint16_t", "int32_t", "uint32_t", "int64_t", "uint64_t", "float", "double", "long double"]:
                 continue
             if t.startswith("std::"):
+                continue
+            if t.startswith("azure::core::"):
                 continue
             self.dependency.add(t)
 
@@ -56,6 +59,7 @@ class class_definition:
         self.member_default_value.extend(other.member_default_value)
         self.member_literal.extend(other.member_literal)
         self.member_comment.extend(other.member_comment)
+        self.dependency |= other.dependency
 
 
 try:
@@ -89,7 +93,20 @@ def get_class_definition(class_name, config_class_def=None):
     else:
         raise RuntimeError("multiple types of class " + class_name)
 
+    # Find noexport
+    noexport_index = [i for i, v in enumerate(config_class_def) if next(iter(v)) == "noexport"]
+    if len(noexport_index) == 0:
+        noexport = False
+    elif len(noexport_index) == 1:
+        index = noexport_index[0]
+        noexport = True
+        del config_class_def[index]
+    else:
+        raise RuntimeError("multiple noexport")
+
     class_def = class_definition(class_name, class_type)
+    if noexport:
+        class_def.noexport = True
     for i, m in enumerate(config_class_def):
         if type(m) is ruamel.yaml.comments.CommentedMap:
             member_name, member_type = next(iter(m.items()))
@@ -128,6 +145,7 @@ for config_resource in config["Services"]:
 
     for config_function in config_resource[resource_name]:
         function_name = next(iter(config_function))
+        print("Processing:", resource_name, function_name)
         config_function_def = config_function[function_name]
         http_method = config_function_def["http_method"]
         http_status_code = config_function_def["http_status_code"]
@@ -184,14 +202,20 @@ for config_resource in config["Services"]:
                     kwargs["optional"] = True
                     kwargs["optional_value"] = match_res.group(1)
                 elif type(action[i]) is str:
-                    arg = "options." + action[i]
-                    args.append(arg)
+                    arg = "options"
                     arg_types = action[i].split(".")
                     arg_def = option_def
-                    for t in arg_types:
+                    for j, t in enumerate(arg_types):
+                        if t not in arg_def.member:
+                            if j < len(arg_types) - 1:  # Not the last one
+                                continue
+                            else:
+                                raise RuntimeError("cannot find " + action[i] + " in " + return_type)
+                        arg += "." + t
                         arg_type = arg_def.member_type[arg_def.member.index(t)]
                         if arg_type in models_cache:
                             arg_def = models_cache[arg_type]
+                    args.append(arg)
                     arg_def = models_cache[arg_type] if arg_type in models_cache else arg_type
                     kwargs[arg + ".type"] = arg_def
                 elif type(action[i]) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
@@ -217,14 +241,20 @@ for config_resource in config["Services"]:
                 if action[i] == "optional":
                     kwargs["optional"] = True
                 elif type(action[i]) is str:
-                    arg = "response." + action[i]
-                    args.append(arg)
+                    arg = "response"
                     arg_types = action[i].split(".")
                     arg_def = return_type_def
-                    for t in arg_types:
+                    for j, t in enumerate(arg_types):
+                        if t not in arg_def.member:
+                            if j < len(arg_types) - 1:  # Not the last one
+                                continue
+                            else:
+                                raise RuntimeError("cannot find " + action[i] + " in " + return_type)
+                        arg += "." + t
                         arg_type = arg_def.member_type[arg_def.member.index(t)]
                         if arg_type in models_cache:
                             arg_def = models_cache[arg_type]
+                    args.append(arg)
                     arg_def = models_cache[arg_type] if arg_type in models_cache else arg_type
                     kwargs[arg + ".type"] = arg_def
                 elif type(action[i]) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
