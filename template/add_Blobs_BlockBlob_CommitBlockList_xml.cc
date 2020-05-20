@@ -2,7 +2,7 @@
 // TODO: Think about how to initialize
 // xmlInitParser();
 // TODO: Think about how to free doc on exception
-
+using namespace libXML2;
 xmlDocPtr doc = xmlNewDoc(BAD_CAST("1.0"));
 xmlNodePtr block_list_node = xmlNewNode(nullptr, BAD_CAST("BlockList"));
 xmlDocSetRootElement(doc, block_list_node);

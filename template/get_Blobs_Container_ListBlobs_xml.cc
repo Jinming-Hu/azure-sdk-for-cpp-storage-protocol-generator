@@ -4,6 +4,7 @@
 // TODO: Think about how to free doc on exception
 
 // TODO: Think about how to hanlde xml > 2GB
+using namespace libXML2;
 xmlDoc* doc = xmlReadMemory(reinterpret_cast<const char*>(http_response.getBodyBuffer()->_bodyBuffer), int(http_response.getBodyBuffer()->_bodyBufferSize), nullptr, nullptr, 0);
 if (doc == nullptr)
     throw std::runtime_error("failed to parse response xml");
@@ -58,8 +59,6 @@ auto parse_xml_callback = [&response, blob_item = BlobItem(), in_metadata = fals
         blob_item.ETag = value;
     else if (type == content && name == "Content-Length")
         blob_item.ContentLength = std::stoull(value);
-    else if (type == content && name == "Content-Type")
-        blob_item.ContentType = value;
     else if (type == content && name == "BlobType")
         blob_item.BlobType = BlobTypeFromString(value);
     else if (type == content && name == "AccessTier")
@@ -76,6 +75,8 @@ auto parse_xml_callback = [&response, blob_item = BlobItem(), in_metadata = fals
         blob_item.ServerEncrypted = value == "true";
     else if (type == content && name == "CustomerProvidedKeySha256")
         blob_item.EncryptionKeySHA256 = value;
+    else if (type == content && name == "Content-Type")
+        blob_item.Properties.ContentType = value;
     else if (type == content && name == "Content-Encoding")
         blob_item.Properties.ContentEncoding = value;
     else if (type == content && name == "Content-Language")

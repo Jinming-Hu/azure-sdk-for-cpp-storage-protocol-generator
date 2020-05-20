@@ -557,7 +557,6 @@ Models:
     - LastModified: std::string
     - ETag: std::string
     - ContentLength: uint64_t
-    - ContentType: std::string
     - BlobType: BlobType
     - Tier: AccessTier
     - AccessTierInferred: bool

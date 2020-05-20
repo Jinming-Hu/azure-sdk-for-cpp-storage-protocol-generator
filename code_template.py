@@ -7,10 +7,6 @@ global_header = """
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
-/***************************************************************
- * ALL THE CODE IN THIS FILE IS HANDWRITTEN, NOT AUTO-GENERATED.
- **************************************************************/
-
 #pragma once
 """
 
@@ -21,7 +17,9 @@ include_headers = """
 #include <functional>
 #include <stdexcept>
 
+namespace libXML2 {
 #include "libxml/tree.h"
+}
 
 #include "http/http.hpp"
 """
@@ -96,7 +94,7 @@ def gen_model_definition(class_name, class_def):
         # To string converter
         content += inspect.cleandoc(
             """
-            static std::string {0}ToString(const {0}& {1})
+            inline std::string {0}ToString(const {0}& {1})
             {{
                 switch ({1})
                 {{
@@ -113,7 +111,7 @@ def gen_model_definition(class_name, class_def):
         # From string converter
         content += inspect.cleandoc(
             """
-            static {0} {0}FromString(const std::string& {1})
+            inline {0} {0}FromString(const std::string& {1})
             {{
             """.format(class_def.name, snake_case_name))
 
