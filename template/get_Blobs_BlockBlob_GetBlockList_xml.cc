@@ -5,7 +5,7 @@
 
 // TODO: Think about how to hanlde xml > 2GB
 using namespace libXML2;
-xmlDoc* doc = xmlReadMemory(reinterpret_cast<const char*>(http_response.getBodyBuffer()->_bodyBuffer), int(http_response.getBodyBuffer()->_bodyBufferSize), nullptr, nullptr, 0);
+xmlDoc* doc = xmlReadMemory(reinterpret_cast<const char*>(http_response.GetBodyBuffer().data()), int(http_response.GetBodyBuffer().size()), nullptr, nullptr, 0);
 if (doc == nullptr)
     throw std::runtime_error("failed to parse response xml");
 

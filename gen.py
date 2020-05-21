@@ -28,7 +28,7 @@ class class_definition:
         if type_name is None:
             return
 
-        types = list(filter(None, re.split("<|>|,| ", type_name)))
+        types = list(filter(None, re.split("<|>|,| |\*", type_name)))
 
         for t in types:
             if t in [None, "bool", "char", "int", "unsigned int", "long", "unsigned long", "long long", "unsigned long long",
@@ -36,7 +36,7 @@ class class_definition:
                 continue
             if t.startswith("std::"):
                 continue
-            if t.startswith("azure::core::"):
+            if t.startswith("Azure::Core::"):
                 continue
             self.dependency.add(t)
 

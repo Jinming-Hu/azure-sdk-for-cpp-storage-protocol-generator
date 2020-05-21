@@ -34,7 +34,7 @@ response_checksum_package: &RESPONSE_CHECKSUM_HEADER_PACKAGE
   - [get_header_code, "x-ms-content-crc64", ContentCRC64, optional]
 
 request_mime_package: &REQUEST_MIME_HEADER_PACKAGE
-  - [add_header_code, "x-ms-blob-content-type", Properties.ContentType, optional]  # TODO
+  - [add_header_code, "x-ms-blob-content-type", Properties.ContentType, optional]
   - [add_header_code, "x-ms-blob-content-encoding", Properties.ContentEncoding, optional]
   - [add_header_code, "x-ms-blob-content-language", Properties.ContentLanguage, optional]
   - [add_header_code, "x-ms-blob-cache-control", Properties.CacheControl, optional]
@@ -418,7 +418,7 @@ Services:
             - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
             - [get_header_code, "Content-Type", ContentType]
             - [get_header_code, "x-ms-blob-content-length", ContentLength]
-            - [get_xml_body_code]  # TODO
+            - [get_xml_body_code]
 
 Models:
   BasicRequestOptions:
@@ -429,8 +429,8 @@ Models:
   BodiedRequestOptions:
     - type: struct
     - BasicRequestOptions: inline
-    - BodyBuffer: azure::core::http::BodyBuffer* = nullptr
-    - BodyStream: azure::core::http::BodyStream* = nullptr
+    - BodyBuffer: std::vector<uint8_t>* = nullptr
+    - BodyStream: Azure::Core::Http::BodyStream* = nullptr
   BasicResponse:
     - type: struct
     - RequestId: std::string
@@ -440,8 +440,8 @@ Models:
   BodiedResponse:
     - type: struct
     - BasicResponse: inline
-    - BodyBuffer: azure::core::http::BodyBuffer* = nullptr
-    - BodyStream: azure::core::http::BodyStream* = nullptr
+    - BodyBuffer: std::vector<uint8_t>
+    - BodyStream: Azure::Core::Http::BodyStream* = nullptr
   PublicAccessType:
     - type: enum class
     - Container: "container"

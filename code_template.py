@@ -159,9 +159,9 @@ def gen_function_option_definition(function_name, class_def):
 def gen_construct_request_function_begin(function_name, http_method):
     content = inspect.cleandoc(
         """
-        static azure::core::http::Request {0}ConstructRequest(const std::string& url, const {0}Options& options)
+        static Azure::Core::Http::Request {0}ConstructRequest(const std::string& url, const {0}Options& options)
         {{
-        auto request = azure::core::http::Request(azure::core::http::HttpMethod::{1}, url);
+        auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{1}, url);
         """.format(function_name, http_method))
 
     global main_body
@@ -178,21 +178,22 @@ def gen_construct_request_function_end():
 def gen_parse_response_function_begin(function_name, http_status_code, return_type):
     content = inspect.cleandoc(
         """
-        static {1} {0}ParseResponse(/* TODO: const */ azure::core::http::Response& http_response)
+        static {1} {0}ParseResponse(/* TODO: const */ Azure::Core::Http::Response& http_response)
         {{
             {1} response;
+            int http_status_code = static_cast<int>(http_response.GetStatusCode());
             if (!(
         """.format(function_name, return_type))
     for i, code in enumerate(http_status_code):
         if i != 0:
             content += "||"
-        content += "http_response.getStatusCode() == {}".format(code)
+        content += "http_status_code == {}".format(code)
 
     content += inspect.cleandoc(
         """
         ))
         {
-            throw std::runtime_error("HTTP status code " + std::to_string(http_response.getStatusCode()));
+            throw std::runtime_error("HTTP status code " + std::to_string(http_status_code));
         }
         """)
 
@@ -212,7 +213,7 @@ def gen_resource_function(function_name, return_type):
         """
         static {1} {0}(const std::string& url, const {0}Options& options)
         {{
-            return {0}ParseResponse(azure::core::http::Client::send({0}ConstructRequest(url, options)));
+            return {0}ParseResponse(*Azure::Core::Http::Client::Send({0}ConstructRequest(url, options)));
         }}
         """.format(function_name, return_type))
     content += "\n\n"
@@ -248,7 +249,7 @@ def gen_add_query_code(*args, **kwargs):
 
             if optional:
                 content += "if (!{}.empty()){{".format(str_name)
-            content += "request.addQueryParameter({}, {});".format(key, str_name)
+            content += "request.AddQueryParameter({}, {});".format(key, str_name)
             if optional:
                 content += "}"
     else:
@@ -273,9 +274,9 @@ def gen_add_query_code(*args, **kwargs):
                 raise RuntimeError("unknown type " + value_type.type + " " + value_type.name if hasattr(value_type, "type") else value_type)
 
         if value_type == "int" or value_type == "uint64_t":
-            content += "request.addQueryParameter({}, std::to_string({}));".format(key, value)
+            content += "request.AddQueryParameter({}, std::to_string({}));".format(key, value)
         else:
-            content += "request.addQueryParameter({}, {});".format(key, value)
+            content += "request.AddQueryParameter({}, {});".format(key, value)
 
         if optional:
             content += "}"
@@ -291,18 +292,18 @@ def gen_add_header_code(*args, **kwargs):
     value_type = kwargs[value + ".type"]
     if value_type == "std::string":
         if not optional:
-            content = "request.addHeader({}, {});".format(key, value)
+            content = "request.AddHeader({}, {});".format(key, value)
         else:
             content = inspect.cleandoc(
                 """
                 if (!{1}.empty())
                 {{
-                    request.addHeader({0}, {1});
+                    request.AddHeader({0}, {1});
                 }}
                 """.format(key, value))
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
-            content = "request.addHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
+            content = "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
         else:
             str_name = value.replace(".", "_").lower() + "_str"
             content = inspect.cleandoc(
@@ -310,7 +311,7 @@ def gen_add_header_code(*args, **kwargs):
                 auto {var_str} = {typename}ToString({value});
                 if (!{var_str}.empty())
                 {{
-                    request.addHeader({key}, {var_str});
+                    request.AddHeader({key}, {var_str});
                 }}
                 """.format(key=key, value=value, var_str=str_name, typename=value_type.name))
     else:
@@ -330,7 +331,7 @@ def gen_add_range_header_code(*args, **kwargs):
         """
         if ({1}.first <= {1}.second)
         {{
-            request.addHeader({0}, \"bytes=\" + std::to_string({1}.first) + \"-\" + std::to_string({1}.second));
+            request.AddHeader({0}, \"bytes=\" + std::to_string({1}.first) + \"-\" + std::to_string({1}.second));
         }}
         """.format(key, value))
 
@@ -345,7 +346,7 @@ def gen_add_metadata_code(*args, **kwargs):
         """
         for (const auto& pair : {1})
         {{
-            request.addHeader({0} + pair.first, pair.second);
+            request.AddHeader({0} + pair.first, pair.second);
         }}
         """.format(prefix, value))
 
@@ -359,7 +360,7 @@ def gen_get_metadata_code(*args, **kwargs):
 
     content = inspect.cleandoc(
         """
-        for (auto i = http_response.getHeaders().lower_bound({0}); i != http_response.getHeaders().end() && i->first.substr(0, {1}) == {0}; ++i)
+        for (auto i = http_response.GetHeaders().lower_bound({0}); i != http_response.GetHeaders().end() && i->first.substr(0, {1}) == {0}; ++i)
         {{
             {2}.emplace(i->first.substr({1}), i->second);
         }}
@@ -373,16 +374,16 @@ def gen_add_body_code(*args, **kwargs):
     body = args[0]
     value_type = kwargs[body + ".type"]
 
-    if value_type == "azure::core::http::BodyBuffer*":
-        func_name = "setBodyBuffer"
-    elif value_type == "azure::core::http::BodyStream*":
-        func_name = "setBodyStream"
+    if value_type == "std::vector<uint8_t>*":
+        func_name = "SetBodyBuffer"
+    elif value_type == "Azure::Core::Http::BodyStream*":
+        func_name = "SetBodyStream"
     content = inspect.cleandoc(
         """
         if ({0})
         {{
-            request.{1}({0});
-            request.addHeader("Content-Length", std::to_string({0}->_bodyBufferSize));
+            request.{1}(*{0});
+            request.AddHeader("Content-Length", std::to_string({0}->size()));
         }}
         """.format(body, func_name))
 
@@ -394,10 +395,10 @@ def gen_get_body_code(*args, **kwargs):
     body = args[0]
     value_type = kwargs[body + ".type"]
 
-    if value_type == "azure::core::http::BodyBuffer*":
-        func_name = "getBodyBuffer"
-    elif value_type == "azure::core::http::BodyStream*":
-        func_name = "getBodyStream"
+    if value_type == "std::vector<uint8_t>":
+        func_name = "GetBodyBuffer"
+    elif value_type == "Azure::Core::Http::BodyStream*":
+        func_name = "GetBodyStream"
 
     content = "{0} = http_response.{1}();".format(body, func_name)
 
@@ -452,8 +453,8 @@ def gen_get_header_code(*args, **kwargs):
         ite_name = target.replace(".", "_").lower() + "_iterator"
         content = inspect.cleandoc(
             """
-            auto {1} = http_response.getHeaders().find({0});
-            if ({1} != http_response.getHeaders().end())
+            auto {1} = http_response.GetHeaders().find({0});
+            if ({1} != http_response.GetHeaders().end())
             {{
             """.format(key, ite_name))
 
@@ -473,15 +474,15 @@ def gen_get_header_code(*args, **kwargs):
         content += "}"
     else:
         if target_type == "int":
-            content = "{1} = std::stoi(http_respone.getHeaders().at({0}));".format(key, target)
+            content = "{1} = std::stoi(http_respone.GetHeaders().at({0}));".format(key, target)
         elif target_type == "uint64_t":
-            content = "{1} = std::stoull(http_response.getHeaders().at({0}));".format(key, target)
+            content = "{1} = std::stoull(http_response.GetHeaders().at({0}));".format(key, target)
         elif target_type == "std::string":
-            content = "{1} = http_response.getHeaders().at({0});".format(key, target)
+            content = "{1} = http_response.GetHeaders().at({0});".format(key, target)
         elif target_type == "bool":
-            content = "{1} = http_response.getHeaders().at({0}) == \"true\";".format(key, target)
+            content = "{1} = http_response.GetHeaders().at({0}) == \"true\";".format(key, target)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
-            content = "{target} = {typename}FromString(http_response.getHeaders().at({key}));".format(key=key, target=target, typename=target_type.name)
+            content = "{target} = {typename}FromString(http_response.GetHeaders().at({key}));".format(key=key, target=target, typename=target_type.name)
         else:
             raise RuntimeError("unknown type " + target_type.type if hasattr(target_type, "type") else target_type)
 
