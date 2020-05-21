@@ -18,12 +18,12 @@ request_encryption_package: &REQUEST_ENCRYPTION_HEADER_PACKAGE
   - [add_header_code, "x-ms-encryption-algorithm", EncryptionAlgorithm, optional]
 
 response_encryption_package: &RESPONSE_ENCRYPTION_HEADER_PACKAGE
-  - [get_header_code, "x-ms-request-server-encrypted", ServerEncrypted]
+  - [get_header_code, "x-ms-server-encrypted", ServerEncrypted]
   - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256, optional]
 
 response_etag_last_modified_package: &RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
   - [get_header_code, "ETag", ETag]
-  - [get_header_code, "LastModified", LastModified]
+  - [get_header_code, "Last-Modified", LastModified]
 
 request_checksum_package: &REQUEST_CHECKSUM_HEADER_PACKAGE
   - [add_header_code, "Content-MD5", ContentMD5, optional]
@@ -66,7 +66,7 @@ Services:
             - Prefix: std::string
             - Marker: std::string
             - NextMarker: std::string
-            - MaxResults: int
+            - MaxResults: int = 0
             - BlobContainerItems: std::vector<BlobContainerItem>
         options:
           - BasicRequestOptions: inline
@@ -92,7 +92,7 @@ Services:
         return_type: BlobContainerInfo
         options:
           - BasicRequestOptions: inline
-          - AccessType: PublicAccessType
+          - AccessType: PublicAccessType = PublicAccessType::Private
           - Metadata: std::map<std::string, std::string>
         request_action:
           - [add_query_code, "restype", "container"]
@@ -226,7 +226,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - Snapshot: std::string
-          - DeleteSnapshots: DeleteSnapshotsOption
+          - DeleteSnapshots: DeleteSnapshotsOption = DeleteSnapshotsOption::None
         request_action:
           - [add_query_code, "snapshot", Snapshot, optional]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
@@ -255,10 +255,10 @@ Services:
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount, optional]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
-          - [get_header_code, "x-ms-access-tier", Tier]
-          - [get_header_code, "x-ms-access-tier-inferred", AccessTierInferred]
-          - [get_header_code, "x-ms-archive-status", ArchiveStatus]
-          - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangeTime]
+          - [get_header_code, "x-ms-access-tier", Tier, optional]
+          - [get_header_code, "x-ms-access-tier-inferred", AccessTierInferred, optional]
+          - [get_header_code, "x-ms-archive-status", ArchiveStatus, optional]
+          - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangeTime, optional]
 
     - SetHttpHeaders:
         http_method: Put
@@ -268,10 +268,10 @@ Services:
             - BasicResponse: inline
             - ETag: std::string
             - LastModified: std::string
-            - SequenceNumber: uint64_t
+            - SequenceNumber: uint64_t = 0
         options:
           - BasicRequestOptions: inline
-          - BlobMIMEProperties: inline
+          - BlobHTTPHeaders: inline
           - BlobRequestEncryptionOptions: inline
         request_action:
           - [add_query_code, "comp", "properties"]
@@ -315,8 +315,8 @@ Services:
           - BodiedRequestOptions: inline
           - ContentMD5: std::string
           - ContentCRC64: std::string
-          - BlobType: BlobType
-          - Properties: BlobMIMEProperties
+          - BlobType: BlobType = BlobType::Unknown
+          - Properties: BlobHTTPHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string
           - Tier: AccessTier = AccessTier::Unknown
@@ -374,7 +374,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - BlockList: std::vector<std::pair<BlockType, std::string>>
-          - Properties: BlobMIMEProperties
+          - Properties: BlobHTTPHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string
           - BlobRequestEncryptionOptions: inline
@@ -406,7 +406,7 @@ Services:
             - ETag: std::string
             - LastModified: std::string
             - ContentType: std::string
-            - ContentLength: uint64_t
+            - ContentLength: uint64_t = 0
             - CommittedBlocks: std::vector<BlobBlock>
             - UncommittedBlocks: std::vector<BlobBlock>
         request_action:
@@ -454,6 +454,7 @@ Models:
     - Latest
   BlobType:
     - type: enum class
+    - Unknown: ""
     - BlockBlob
     - PageBlob
     - AppendBlob
@@ -490,8 +491,8 @@ Models:
     - Archive
   BlobBlock:
     - Name: std::string
-    - Size: uint64_t
-  BlobMIMEProperties:
+    - Size: uint64_t = 0
+  BlobHTTPHeaders:
     - ContentType: std::string
     - ContentEncoding: std::string
     - ContentLanguage: std::string
@@ -505,7 +506,7 @@ Models:
     - EncryptionAlgorithm: std::string
   BlobResponseEncryptionOptions:
     - noexport: true
-    - ServerEncrypted: bool
+    - ServerEncrypted: bool = false
     - EncryptionKeySHA256: std::string
   FlattenedDownloadProperties:
     - type: struct
@@ -513,16 +514,16 @@ Models:
     - ETag: std::string
     - LastModified: std::string
     - ContentRange: std::string
-    - Properties: BlobMIMEProperties
+    - Properties: BlobHTTPHeaders
     - Metadata: std::map<std::string, std::string>
     - SequenceNumber: uint64_t = 0  # only for page blob
     - CommittedBlockCount: uint64_t = 0  # only for append blob
-    - BlobType: BlobType
+    - BlobType: BlobType = BlobType::Unknown
     - ContentMD5: std::string  # MD5 for the downloaded range
     - ContentCRC64: std::string
     - LeaseDuration: std::string
-    - LeaseState: BlobLeaseState
-    - LeaseStatus: BlobLeaseStatus
+    - LeaseState: BlobLeaseState = BlobLeaseState::Available
+    - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
     - BlobResponseEncryptionOptions: inline
   BlobContentInfo:
     - type: struct
@@ -538,12 +539,12 @@ Models:
     - ETag: std::string
     - LastModified: std::string
     - Metadata: std::map<std::string, std::string>
-    - AccessType: PublicAccessType
-    - HasImmutabilityPolicy: bool
-    - HasLegalHold: bool
+    - AccessType: PublicAccessType = PublicAccessType::Private
+    - HasImmutabilityPolicy: bool = false
+    - HasLegalHold: bool = false
     - LeaseDuration: std::string
-    - LeaseState: BlobLeaseState
-    - LeaseStatus: BlobLeaseStatus
+    - LeaseState: BlobLeaseState = BlobLeaseState::Available
+    - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
   BlobContainerItem:
     - Name: std::string
     - BlobContainerItemWithoutName: inline
@@ -551,17 +552,17 @@ Models:
     - Name: std::string
     - Deleted: bool = false
     - Snapshot: std::string
-    - Properties: BlobMIMEProperties
+    - Properties: BlobHTTPHeaders
     - Metadata: std::map<std::string, std::string>
     - CreationTime: std::string
     - LastModified: std::string
     - ETag: std::string
-    - ContentLength: uint64_t
-    - BlobType: BlobType
-    - Tier: AccessTier
-    - AccessTierInferred: bool
-    - LeaseStatus: BlobLeaseStatus
-    - LeaseState: BlobLeaseState
+    - ContentLength: uint64_t = 0
+    - BlobType: BlobType = BlobType::Unknown
+    - Tier: AccessTier = AccessTier::Unknown
+    - AccessTierInferred: bool = true
+    - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
+    - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseDuration: std::string
     - BlobResponseEncryptionOptions: inline
   ListBlobsIncludeItem:
@@ -591,6 +592,7 @@ Models:
     - Only: "only"
   BlobArchiveStatus:
     - type: enum class
+    - Unknown: ""
     - RehydratePendingToHot: "rehydrate-pending-to-hot"
     - RehydratePendingToCool: "rehydrate-pending-to-cool"
   BlobProperties:
@@ -599,16 +601,16 @@ Models:
     - LastModified: std::string
     - CreationTime: std::string
     - Metadata: std::map<std::string, std::string>
-    - BlobType: BlobType
+    - BlobType: BlobType = BlobType::Unknown
     - LeaseDuration: std::string
-    - LeaseState: BlobLeaseState
-    - LeaseStatus: BlobLeaseStatus
-    - ContentLength: uint64_t
-    - BlobMIMEProperties: inline
-    - SequenceNumber: uint64_t  # only for page blob
-    - CommittedBlockCount: int  # only for append blob
+    - LeaseState: BlobLeaseState = BlobLeaseState::Available
+    - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
+    - ContentLength: uint64_t = 0
+    - BlobHTTPHeaders: inline
+    - SequenceNumber: uint64_t = 0  # only for page blob
+    - CommittedBlockCount: int = 0  # only for append blob
     - BlobResponseEncryptionOptions: inline
-    - Tier: AccessTier
-    - AccessTierInferred: bool
-    - ArchiveStatus: BlobArchiveStatus
+    - Tier: AccessTier = AccessTier::Unknown
+    - AccessTierInferred: bool = true
+    - ArchiveStatus: BlobArchiveStatus = BlobArchiveStatus::Unknown
     - AccessTierChangeTime: std::string

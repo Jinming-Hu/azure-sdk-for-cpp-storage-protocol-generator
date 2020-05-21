@@ -473,7 +473,7 @@ def gen_get_header_code(*args, **kwargs):
         elif target_type == "std::string":
             content += "{} = {}->second;".format(target, ite_name)
         elif target_type == "bool":
-            content += "{} = {}->second == \"true\"".format(target, ite_name)
+            content += "{} = {}->second == \"true\";".format(target, ite_name)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
             content += "{target} = {typename}FromString({ite}->second);".format(target=target, ite=ite_name, typename=target_type.name)
         else:
