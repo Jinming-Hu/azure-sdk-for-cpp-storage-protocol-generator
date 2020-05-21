@@ -39,6 +39,4 @@ if (xml_dump == nullptr)
 
 // TODO: Think about how to avoid copy
 std::vector<uint8_t> body_buffer(static_cast<const uint8_t*>(xml_dump), static_cast<const uint8_t*>(xml_dump) + xml_dump_size);
-request.setBodyBuffer(body_buffer);
 // TODO: Set Content-MD5 or x-ms-content-crc64 header
-request.AddHeader("Content-Length", std::to_string(body_buffer.size()));

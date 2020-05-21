@@ -189,7 +189,8 @@ for config_resource in config["Services"]:
             return res
 
         config_request_action = flatten_actions(config_function_def["request_action"])
-        code_template.gen_construct_request_function_begin(function_name, http_method)
+        code_template.gen_construct_request_function_begin(function_name)
+        request_declared = False
         for action in config_request_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
@@ -227,7 +228,21 @@ for config_resource in config["Services"]:
                     arg = "\"{}\"".format(action[i])
                     args.append(arg)
                     kwargs[arg + ".type"] = "std::string"
-            method_to_call(*args, **kwargs)
+            if not request_declared:
+                request_declared = True
+                if action[0] == "add_body_code":
+                    code_template.gen_request_definition(http_method, *args, **kwargs)
+                elif action[0] == "add_xml_body_code":
+                    method_to_call(*args, **kwargs)
+                    arg = "body_buffer"
+                    args.append(arg)
+                    kwargs[arg + ".type"] = "std::string"
+                    code_template.gen_request_definition(http_method, *args, **kwargs)
+                else:
+                    code_template.gen_request_definition(http_method)
+                    method_to_call(*args, **kwargs)
+            else:
+                method_to_call(*args, **kwargs)
         code_template.gen_construct_request_function_end()
 
         config_response_action = flatten_actions(config_function_def["response_action"])

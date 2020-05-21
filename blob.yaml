@@ -353,15 +353,15 @@ Services:
           - LeaseId: std::string
           - BlobRequestEncryptionOptions: inline
         request_action:
+          - [add_body_code, BodyBuffer]  # must be the first one
+          # Stream not implemented yet
+          #- [add_body_code, BodyStream]
           - [add_query_code, "comp", "block"]
           - [add_query_code, "blockid", BlockId]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId, optional]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
-          - [add_body_code, BodyBuffer]
-          # Stream not implemented yet
-          #- [add_body_code, BodyStream]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
@@ -380,6 +380,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - Tier: AccessTier = AccessTier::Unknown
         request_action:
+          - [add_xml_body_code]  # must be the first one
           - [add_query_code, "comp", "blocklist"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
@@ -387,7 +388,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId, optional]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [add_header_code, "x-ms-access-tier", Tier, optional]
-          - [add_xml_body_code]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE

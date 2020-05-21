@@ -156,13 +156,36 @@ def gen_function_option_definition(function_name, class_def):
     main_body += content
 
 
-def gen_construct_request_function_begin(function_name, http_method):
+def gen_construct_request_function_begin(function_name):
     content = inspect.cleandoc(
         """
         static Azure::Core::Http::Request {0}ConstructRequest(const std::string& url, const {0}Options& options)
         {{
-        auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{1}, url);
-        """.format(function_name, http_method))
+        """.format(function_name))
+
+    global main_body
+    main_body += content
+
+
+def gen_request_definition(http_method, *args, **kwargs):
+    if args:
+        body = args[0]
+        body_type = kwargs[body + ".type"]
+    else:
+        body = None
+
+    if not body:
+        content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url);".format(http_method)
+        content += "request.AddHeader(\"Content-Length\", \"0\");"
+    else:
+        if body_type == "std::vector<uint8_t>*":
+            content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, *{});".format(http_method, body)
+            content += "request.AddHeader(\"Content-Length\", std::to_string({0}->size()));".format(body)
+        elif body_type == "std::string":
+            content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, {});".format(http_method, body)
+            content += "request.AddHeader(\"Content-Length\", std::to_string({0}.size()));".format(body)
+        else:
+            raise RuntimeError("unknown body type " + body_type)
 
     global main_body
     main_body += content
@@ -213,7 +236,8 @@ def gen_resource_function(function_name, return_type):
         """
         static {1} {0}(const std::string& url, const {0}Options& options)
         {{
-            return {0}ParseResponse(*Azure::Core::Http::Client::Send({0}ConstructRequest(url, options)));
+            auto request = {0}ConstructRequest(url, options);
+            return {0}ParseResponse(*Azure::Core::Http::Client::Send(request));
         }}
         """.format(function_name, return_type))
     content += "\n\n"
@@ -371,24 +395,8 @@ def gen_get_metadata_code(*args, **kwargs):
 
 
 def gen_add_body_code(*args, **kwargs):
-    body = args[0]
-    value_type = kwargs[body + ".type"]
-
-    if value_type == "std::vector<uint8_t>*":
-        func_name = "SetBodyBuffer"
-    elif value_type == "Azure::Core::Http::BodyStream*":
-        func_name = "SetBodyStream"
-    content = inspect.cleandoc(
-        """
-        if ({0})
-        {{
-            request.{1}(*{0});
-            request.AddHeader("Content-Length", std::to_string({0}->size()));
-        }}
-        """.format(body, func_name))
-
-    global main_body
-    main_body += content
+    raise RuntimeError("this function should never be called")
+    pass
 
 
 def gen_get_body_code(*args, **kwargs):
