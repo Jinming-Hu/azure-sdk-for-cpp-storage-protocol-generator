@@ -195,11 +195,9 @@ Services:
         return_type: FlattenedDownloadProperties
         options:
           - BasicRequestOptions: inline
-          - Snapshot: std::string
           - Range: std::pair<uint64_t, uint64_t>
           - BlobRequestEncryptionOptions: inline
         request_action:
-          - [add_query_code, "snapshot", Snapshot, optional]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_range_header_code, "x-ms-range", Range, optional]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
@@ -225,10 +223,8 @@ Services:
         return_type: BasicResponse
         options:
           - BasicRequestOptions: inline
-          - Snapshot: std::string
           - DeleteSnapshots: DeleteSnapshotsOption = DeleteSnapshotsOption::None
         request_action:
-          - [add_query_code, "snapshot", Snapshot, optional]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -239,9 +235,7 @@ Services:
         return_type: BlobProperties
         options:
           - BasicRequestOptions: inline
-          - Snapshot: std::string
         request_action:
-          - [add_query_code, "snapshot", Snapshot, optional]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -263,12 +257,7 @@ Services:
     - SetHttpHeaders:
         http_method: Put
         http_status_code: 200
-        return_type:
-          SetHTTPHeadersOperation:
-            - BasicResponse: inline
-            - ETag: std::string
-            - LastModified: std::string
-            - SequenceNumber: uint64_t = 0
+        return_type: BlobInfo
         options:
           - BasicRequestOptions: inline
           - BlobHTTPHeaders: inline
@@ -286,25 +275,19 @@ Services:
     - SetMetadata:
         http_method: Put
         http_status_code: 200
-        return_type:
-          SetMetadataOperation:
-            - BasicResponse: inline
-            - ETag: std::string
-            - LastModified: std::string
-            - BlobResponseEncryptionOptions: inline
+        return_type: BlobInfo
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
           - BlobRequestEncryptionOptions: inline
         request_action:
-          - [add_query_code, "comp", "properties"]
+          - [add_query_code, "comp", "metadata"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
   - BlockBlob:
     - Upload:
@@ -398,7 +381,6 @@ Services:
         http_status_code: 200
         options:
             - BasicRequestOptions: inline
-            - Snapshot: std::string
             - ListType: BlockListTypeOption
         return_type:
           BlobBlockListInfo:
@@ -614,3 +596,8 @@ Models:
     - AccessTierInferred: bool = true
     - ArchiveStatus: BlobArchiveStatus = BlobArchiveStatus::Unknown
     - AccessTierChangeTime: std::string
+  BlobInfo:
+    - BasicResponse: inline
+    - ETag: std::string
+    - LastModified: std::string
+    - SequenceNumber: uint64_t = 0
