@@ -119,9 +119,9 @@ Services:
         http_method: Head
         http_status_code: 200
         return_type:
-          FlattenedContainerItem:
+          BlobContainerProperties:
             - BasicResponse: inline
-            - BlobContainerItem: inline
+            - BlobContainerItemWithoutName: inline
         options:
           - BasicRequestOptions: inline
           - BlobRequestEncryptionOptions: inline
@@ -133,7 +133,7 @@ Services:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
-          - [get_header_code, "x-ms-blob-public-access", AccessType]
+          - [get_header_code, "x-ms-blob-public-access", AccessType, optional]
           - [get_header_code, "x-ms-has-immutability-policy", HasImmutabilityPolicy]
           - [get_header_code, "x-ms-has-legal-hold", HasLegalHold]
           - *RESPONSE_LEASE_HEADER_PACKAGE
