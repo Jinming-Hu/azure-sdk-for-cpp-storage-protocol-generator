@@ -298,7 +298,7 @@ Services:
           - BodiedRequestOptions: inline
           - ContentMD5: std::string
           - ContentCRC64: std::string
-          - BlobType: BlobType = BlobType::Unknown
+          - BlobType: BlobType = Blobs::BlobType::Unknown
           - Properties: BlobHTTPHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string
@@ -500,7 +500,7 @@ Models:
     - Metadata: std::map<std::string, std::string>
     - SequenceNumber: uint64_t = 0  # only for page blob
     - CommittedBlockCount: uint64_t = 0  # only for append blob
-    - BlobType: BlobType = BlobType::Unknown
+    - BlobType: BlobType = Blobs::BlobType::Unknown
     - ContentMD5: std::string  # MD5 for the downloaded range
     - ContentCRC64: std::string
     - LeaseDuration: std::string
@@ -540,7 +540,7 @@ Models:
     - LastModified: std::string
     - ETag: std::string
     - ContentLength: uint64_t = 0
-    - BlobType: BlobType = BlobType::Unknown
+    - BlobType: BlobType = Blobs::BlobType::Unknown
     - Tier: AccessTier = AccessTier::Unknown
     - AccessTierInferred: bool = true
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
@@ -583,7 +583,7 @@ Models:
     - LastModified: std::string
     - CreationTime: std::string
     - Metadata: std::map<std::string, std::string>
-    - BlobType: BlobType = BlobType::Unknown
+    - BlobType: BlobType = Blobs::BlobType::Unknown
     - LeaseDuration: std::string
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
