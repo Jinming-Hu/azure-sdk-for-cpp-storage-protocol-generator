@@ -71,13 +71,20 @@ def gen_rest_client(service_name):
     rest_client_end = "}};  // class {}\n".format(class_name)
 
 
-def gen_model_definition(class_name, class_def):
+def gen_model_definition(service_name, class_name, class_def):
     content = "{} {} {{".format(class_def.type, class_name)
     for i in range(len(class_def.member)):
         if class_def.member_type[i]:
-            content += class_def.member_type[i] + " " + class_def.member[i]
+            if class_def.member_type[i] == class_def.member[i]:
+                ns_prefix = service_name + "::"
+            else:
+                ns_prefix = ""
+            content += ns_prefix + class_def.member_type[i] + " " + class_def.member[i]
             if class_def.member_default_value[i]:
-                content += "=" + class_def.member_default_value[i]
+                if class_def.member_default_value[i].startswith(class_def.member[i] + "::"):
+                    content += "=" + ns_prefix + class_def.member_default_value[i]
+                else:
+                    content += "=" + class_def.member_default_value[i]
             content += ";"
             if class_def.member_comment[i]:
                 content += "// " + class_def.member_comment[i] + "\n"
@@ -141,13 +148,20 @@ def gen_resource_end(resource_name):
     main_body += content
 
 
-def gen_function_option_definition(function_name, class_def):
+def gen_function_option_definition(service_name, function_name, class_def):
     class_name = function_name + "Options"
     content = "struct {} {{".format(class_name)
     for i in range(len(class_def.member)):
-        content += class_def.member_type[i] + " " + class_def.member[i]
+        if class_def.member_type[i] == class_def.member[i]:
+            ns_prefix = service_name + "::"
+        else:
+            ns_prefix = ""
+        content += ns_prefix + class_def.member_type[i] + " " + class_def.member[i]
         if class_def.member_default_value[i]:
-            content += "=" + class_def.member_default_value[i]
+            if class_def.member_default_value[i].startswith(class_def.member[i] + "::"):
+                content += "=" + ns_prefix + class_def.member_default_value[i]
+            else:
+                content += "=" + class_def.member_default_value[i]
         content += ";"
 
     content += "}};  // struct {}\n\n".format(class_name)

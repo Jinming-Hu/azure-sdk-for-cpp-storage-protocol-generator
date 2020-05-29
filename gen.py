@@ -175,7 +175,7 @@ for config_resource in config["Services"]:
             else:
                 option_def.add_member(member_name, member_type=member_type, member_default_value=member_default_value)
 
-        code_template.gen_function_option_definition(function_name, option_def)
+        code_template.gen_function_option_definition(service_name, function_name, option_def)
         for d in option_def.dependency:
             add_export_model(d)
 
@@ -290,7 +290,9 @@ for config_resource in config["Services"]:
 
 
 for class_name in toposort.toposort_flatten(export_models):
-    code_template.gen_model_definition(class_name, models_cache[class_name])
+    if models_cache[class_name].noexport:
+        raise RuntimeError("Trying to export a non-export class " + class_name)
+    code_template.gen_model_definition(service_name, class_name, models_cache[class_name])
 
 output_path = pathlib.Path(config["output"])
 output_path.parents[0].mkdir(parents=True, exist_ok=True)
