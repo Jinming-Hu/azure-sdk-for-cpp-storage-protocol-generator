@@ -18,7 +18,7 @@ request_encryption_package: &REQUEST_ENCRYPTION_HEADER_PACKAGE
   - [add_header_code, "x-ms-encryption-algorithm", EncryptionAlgorithm, optional]
 
 response_encryption_package: &RESPONSE_ENCRYPTION_HEADER_PACKAGE
-  - [get_header_code, "x-ms-server-encrypted", ServerEncrypted]
+  - [get_header_code, "x-ms-server-encrypted", ServerEncrypted, optional]
   - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256, optional]
 
 response_etag_last_modified_package: &RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
@@ -42,12 +42,12 @@ request_mime_package: &REQUEST_MIME_HEADER_PACKAGE
   - [add_header_code, "x-ms-blob-content-disposition", Properties.ContentDisposition, optional]
 
 response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
-  - [get_header_code, "x-ms-blob-content-type", Properties.ContentType, optional]
-  - [get_header_code, "x-ms-blob-content-encoding", Properties.ContentEncoding, optional]
-  - [get_header_code, "x-ms-blob-content-language", Properties.ContentLanguage, optional]
-  - [get_header_code, "x-ms-blob-cache-control", Properties.CacheControl, optional]
-  - [get_header_code, "x-ms-blob-content-md5", Properties.ContentMD5, optional]
-  - [get_header_code, "x-ms-blob-content-disposition", Properties.ContentDisposition, optional]
+  - [get_header_code, "Content-Type", Properties.ContentType, optional]
+  - [get_header_code, "Content-Encoding", Properties.ContentEncoding, optional]
+  - [get_header_code, "Content-Language", Properties.ContentLanguage, optional]
+  - [get_header_code, "Cache-Control", Properties.CacheControl, optional]
+  - [get_header_code, "Content-MD5", Properties.ContentMD5, optional]
+  - [get_header_code, "Content-Disposition", Properties.ContentDisposition, optional]
 
 response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE
   - [get_header_code, "x-ms-lease-status", LeaseStatus]
@@ -305,6 +305,7 @@ Services:
           - Tier: AccessTier = AccessTier::Unknown
           - BlobRequestEncryptionOptions: inline
         request_action:
+          - [add_body_code, BodyBuffer]  # must be the first one
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
