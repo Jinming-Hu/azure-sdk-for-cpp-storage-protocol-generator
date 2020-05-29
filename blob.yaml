@@ -489,7 +489,7 @@ Models:
     - EncryptionAlgorithm: std::string
   BlobResponseEncryptionOptions:
     - noexport: true
-    - ServerEncrypted: bool = false
+    - ServerEncrypted: bool = true
     - EncryptionKeySHA256: std::string
   FlattenedDownloadProperties:
     - type: struct
