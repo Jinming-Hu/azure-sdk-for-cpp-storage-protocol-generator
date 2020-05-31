@@ -382,7 +382,7 @@ Services:
         http_status_code: 200
         options:
             - BasicRequestOptions: inline
-            - ListType: BlockListTypeOption
+            - ListType: BlockListTypeOption = BlockListTypeOption::All
         return_type:
           BlobBlockListInfo:
             - BasicResponse: inline
