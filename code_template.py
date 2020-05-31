@@ -11,6 +11,7 @@ global_header = """
 """
 
 include_headers = """
+#include <type_traits>
 #include <string>
 #include <map>
 #include <vector>
@@ -215,10 +216,10 @@ def gen_construct_request_function_end():
 def gen_parse_response_function_begin(function_name, http_status_code, return_type):
     content = inspect.cleandoc(
         """
-        static {1} {0}ParseResponse(/* TODO: const */ Azure::Core::Http::Response& http_response)
+        static {1} {0}ParseResponse(Azure::Core::Http::Response& http_response)
         {{
             {1} response;
-            int http_status_code = static_cast<int>(http_response.GetStatusCode());
+            auto http_status_code = static_cast<std::underlying_type<Azure::Core::Http::HttpStatusCode>::type>(http_response.GetStatusCode());
             if (!(
         """.format(function_name, return_type))
     for i, code in enumerate(http_status_code):
