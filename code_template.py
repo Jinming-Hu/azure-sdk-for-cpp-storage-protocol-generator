@@ -22,7 +22,9 @@ namespace libXML2 {
 #include "libxml/tree.h"
 }
 
+#include "context.hpp"
 #include "http/http.hpp"
+#include "http/pipeline.hpp"
 """
 
 namespace_begin = """
@@ -249,10 +251,11 @@ def gen_parse_response_function_end():
 def gen_resource_function(function_name, return_type):
     content = inspect.cleandoc(
         """
-        static {1} {0}(const std::string& url, const {0}Options& options)
+        static {1} {0}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url, const {0}Options& options)
         {{
             auto request = {0}ConstructRequest(url, options);
-            return {0}ParseResponse(*Azure::Core::Http::Client::Send(request));
+            auto response = pipeline.Send(context, request);
+            return {0}ParseResponse(*response);
         }}
         """.format(function_name, return_type))
     content += "\n\n"
