@@ -4,7 +4,6 @@ output: generated/blob_rest_client.hpp
 request_version_date_id_package: &REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
   - [add_header_code, "x-ms-version", Version]
   - [add_header_code, "x-ms-date", Date]
-  - [add_header_code, "x-ms-client-request-id", ClientRequestID, optional]
 
 response_version_date_id_package: &RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
   - [get_header_code, "x-ms-version", Version]
@@ -407,7 +406,6 @@ Models:
   BasicRequestOptions:
     - type: struct
     - Version: std::string
-    - ClientRequestID: std::string
     - Date: std::string
   BodiedRequestOptions:
     - type: struct
