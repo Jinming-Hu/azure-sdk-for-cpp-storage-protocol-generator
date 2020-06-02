@@ -259,7 +259,7 @@ Services:
         return_type: BlobInfo
         options:
           - BasicRequestOptions: inline
-          - BlobHTTPHeaders: inline
+          - BlobHttpHeaders: inline
           - BlobRequestEncryptionOptions: inline
         request_action:
           - [add_query_code, "comp", "properties"]
@@ -298,7 +298,7 @@ Services:
           - ContentMD5: std::string
           - ContentCRC64: std::string
           - BlobType: BlobType = BlobType::Unknown
-          - Properties: BlobHTTPHeaders
+          - Properties: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string
           - Tier: AccessTier = AccessTier::Unknown
@@ -357,7 +357,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - BlockList: std::vector<std::pair<BlockType, std::string>>
-          - Properties: BlobHTTPHeaders
+          - Properties: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string
           - BlobRequestEncryptionOptions: inline
@@ -473,7 +473,7 @@ Models:
   BlobBlock:
     - Name: std::string
     - Size: uint64_t = 0
-  BlobHTTPHeaders:
+  BlobHttpHeaders:
     - ContentType: std::string
     - ContentEncoding: std::string
     - ContentLanguage: std::string
@@ -495,7 +495,7 @@ Models:
     - ETag: std::string
     - LastModified: std::string
     - ContentRange: std::string
-    - Properties: BlobHTTPHeaders
+    - Properties: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
     - SequenceNumber: uint64_t = 0  # only for page blob
     - CommittedBlockCount: uint64_t = 0  # only for append blob
@@ -533,7 +533,7 @@ Models:
     - Name: std::string
     - Deleted: bool = false
     - Snapshot: std::string
-    - Properties: BlobHTTPHeaders
+    - Properties: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
     - CreationTime: std::string
     - LastModified: std::string
@@ -587,7 +587,7 @@ Models:
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
     - ContentLength: uint64_t = 0
-    - BlobHTTPHeaders: inline
+    - BlobHttpHeaders: inline
     - SequenceNumber: uint64_t = 0  # only for page blob
     - CommittedBlockCount: int = 0  # only for append blob
     - BlobResponseEncryptionOptions: inline
