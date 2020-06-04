@@ -332,7 +332,13 @@ def gen_add_header_code(*args, **kwargs):
     value = args[1]
     optional = kwargs["optional"]
     value_type = kwargs[value + ".type"]
+    default_value = kwargs.get("default_value", None)
+
+    if default_value and not optional:
+        raise RuntimeError("type with default value must be optional")
+
     if value_type == "std::string":
+            #content = "request.AddHeader({}, {});".format(key, default_value)
         if not optional:
             content = "request.AddHeader({}, {});".format(key, value)
         else:
@@ -343,6 +349,14 @@ def gen_add_header_code(*args, **kwargs):
                     request.AddHeader({0}, {1});
                 }}
                 """.format(key, value))
+            if default_value:
+                content += inspect.cleandoc(
+                """
+                else
+                {{
+                    request.AddHeader({0}, {1});
+                }}
+                """.format(key, default_value))
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
             content = "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)

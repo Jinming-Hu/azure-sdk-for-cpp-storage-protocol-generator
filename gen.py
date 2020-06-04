@@ -202,6 +202,8 @@ for config_resource in config["Services"]:
                 elif match_res := re.match("optional\\((.*)\\)", action[i]):
                     kwargs["optional"] = True
                     kwargs["optional_value"] = match_res.group(1)
+                elif match_res := re.match("default\\((.*)\\)", action[i]):
+                    kwargs["default_value"] = match_res.group(1)
                 elif type(action[i]) is str:
                     arg = "options"
                     arg_types = action[i].split(".")
