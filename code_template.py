@@ -46,6 +46,13 @@ main_body = ""
 rest_client_end = ""
 
 
+def get_snake_case_name(var):
+    snake_case_name = "".join([s for s in map(lambda c: "_" + c.lower() if c.isupper() else c, var)])
+    if snake_case_name.startswith("_"):
+        snake_case_name = snake_case_name[1:]
+    return snake_case_name
+
+
 def gen_service_namespace(service_name):
     global namespace_begin
     global namespace_end
@@ -98,9 +105,7 @@ def gen_model_definition(service_name, class_name, class_def):
     content += "}};  // {} {}\n\n".format(class_def.type, class_name)
 
     if class_def.type == "enum class":
-        snake_case_name = "".join([s for s in map(lambda c: "_" + c.lower() if c.isupper() else c, class_def.name)])
-        if snake_case_name.startswith("_"):
-            snake_case_name = snake_case_name[1:]
+        snake_case_name = get_snake_case_name(class_def.name)
         # To string converter
         content += inspect.cleandoc(
             """
@@ -302,9 +307,7 @@ def gen_add_query_code(*args, **kwargs):
                 optional_value = kwargs["optional_value"]
                 content += "if ({} != {}) {{".format(value, optional_value)
             elif hasattr(value_type, "type") and value_type.type == "enum class":
-                snake_case_name = "".join([s for s in map(lambda c: "_" + c.lower() if c.isupper() else c, value_type.name)])
-                if snake_case_name.startswith("_"):
-                    snake_case_name = snake_case_name[1:]
+                snake_case_name = get_snake_case_name(value_type.name)
                 content += inspect.cleandoc(
                     """
                     std::string {var_name} = {typename}ToString({var});
