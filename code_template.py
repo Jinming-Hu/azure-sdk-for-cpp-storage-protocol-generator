@@ -1,3 +1,4 @@
+import os
 import inspect
 
 
@@ -13,18 +14,17 @@ global_header = """
 include_headers = """
 #include <type_traits>
 #include <string>
+#include <cstring>
 #include <map>
 #include <vector>
 #include <functional>
 #include <stdexcept>
 
-namespace libXML2 {
-#include "libxml/tree.h"
-}
-
 #include "context.hpp"
 #include "http/http.hpp"
 #include "http/pipeline.hpp"
+#include "common/xml_wrapper.hpp"
+
 """
 
 namespace_begin = """
@@ -44,6 +44,10 @@ model_definitions = ""
 rest_client_begin = ""
 main_body = ""
 rest_client_end = ""
+
+fromxml_classes = set()
+toxml_classes = set()
+toxml_options_def_cache = {}
 
 
 def get_snake_case_name(var):
@@ -142,6 +146,232 @@ def gen_model_definition(service_name, class_name, class_def):
     model_definitions += content
 
 
+def gen_fromxml_function(class_name):
+    global main_body
+
+    if class_name == "_Metadata":
+        content = inspect.cleandoc(
+            """
+            static std::map<std::string, std::string> MetadataFromXml(XmlReader& reader) {
+                std::map<std::string, std::string> ret;
+                int depth = 0;
+                std::string key;
+                while (true) {
+                    auto node = reader.Read();
+                    if (node.Type == XmlNodeType::End) {
+                        break;
+                    } else if (node.Type == XmlNodeType::StartTag) {
+                        if (depth++ == 0) { key = node.Name; }
+                    } else if (node.Type == XmlNodeType::EndTag) {
+                        if (depth-- == 0) { break; }
+                    } else if (depth == 1 && node.Type == XmlNodeType::Text) {
+                        ret.emplace(std::move(key), std::string(node.Value));
+                    }
+                }
+                return ret;
+            };
+            """)
+
+        main_body += content + "\n\n"
+        return
+
+    class_def = models_cache[class_name]
+    if not class_def.fromxml_actions:
+        raise RuntimeError("couldn't find fromxml actions for class " + class_name)
+
+    def to_cpp_name(var_name):
+        return "".join(c for c in var_name if c.isalpha() or c.isdigit() or c == "_")
+
+    def get_member_type(member):
+        member_def = class_def
+        for i, m in enumerate(member.split(".")):
+            j = member_def.member.index(m)
+            if i == len(member.split(".")) - 1:
+                return member_def.member_type[j]
+            member_def = models_cache[member_def.member_type[j]]
+
+    all_xml_tag_seen = set()
+    all_xml_tag = []
+    for i in [x[1] for x in class_def.fromxml_actions if x[0] == "text" or x[0] == "start_tag" or x[0] == "end_tag"]:
+        all_xml_tag.extend([j for j in i.split(".") if not (j in all_xml_tag_seen or all_xml_tag_seen.add(j))])
+
+    content = inspect.cleandoc(
+        """
+        static {0} {0}FromXml(XmlReader& reader)
+        {{
+            {0} ret;
+            enum class XmlTagName {{
+        """.format(class_def.name))
+    for xml_tag in all_xml_tag:
+        content += "k_" + to_cpp_name(xml_tag) + ","
+    content += "k_Unknown,"
+    content += "};"
+    content += inspect.cleandoc(  # end tag
+        """
+        std::vector<XmlTagName> path;
+        while (true) {
+            auto node = reader.Read();
+            if (node.Type == XmlNodeType::End) { break; }
+            else if (node.Type == XmlNodeType::EndTag) {
+                if (path.size() > 0) { path.pop_back(); }
+                else { break; }
+            }
+            else if (node.Type == XmlNodeType::StartTag) {
+        """)
+    # start tag
+    for i, xml_tag in enumerate(all_xml_tag):
+        if i != 0:
+            content += "else "
+        content += "if (std::strcmp(node.Name, \"{0}\") == 0) {{ path.emplace_back(XmlTagName::k_{1}); }}".format(xml_tag, to_cpp_name(xml_tag))
+        if i == len(all_xml_tag) - 1:
+            content += "else { path.emplace_back(XmlTagName::k_Unknown); }"
+    # still in start tag, call another FromXml function
+    for i, (path, member) in enumerate([(a[1], a[2]) for a in class_def.fromxml_actions if a[0] == "start_tag"]):
+        if i != 0:
+            content += "else "
+        content += "if (path.size() == {} &&".format(len(path.split(".")))
+        for j, k in enumerate(path.split(".")):
+            content += "path[{}] == XmlTagName::k_".format(j) + to_cpp_name(k)
+            if j != len(path.split(".")) - 1:
+                content += "&&"
+        content += "){"
+
+        member_type = get_member_type(member)
+        if member_type.startswith("std::vector<") and member_type.endswith(">"):
+            inner_type = member_type[len("std::vector<"): -len(">")]
+            content += "ret.{member_name}.emplace_back({inner_type}FromXml(reader));".format(member_name=member, inner_type=inner_type)
+            fromxml_classes.add(inner_type)
+        elif member_type == "std::map<std::string, std::string>":
+            content += "ret.{member_name} = MetadataFromXml(reader);".format(member_name=member)
+            fromxml_classes.add("_Metadata")
+        else:
+            content += "ret.{member_name} = {member_type}FromXml(reader);".format(member_name=member, member_type=member_type)
+            fromxml_classes.add(member_type)
+        content += "path.pop_back();"
+
+        content += "}"
+    # text
+    content += "} else if (node.Type == XmlNodeType::Text) {"
+    for i, (path, member) in enumerate([(a[1], a[2]) for a in class_def.fromxml_actions if a[0] == "text"]):
+        if i != 0:
+            content += "else "
+        content += "if (path.size() == {} &&".format(len(path.split(".")))
+        for j, k in enumerate(path.split(".")):
+            content += "path[{}] == XmlTagName::k_".format(j) + to_cpp_name(k)
+            if j != len(path.split(".")) - 1:
+                content += "&&"
+        content += "){"
+        member_type = get_member_type(member)
+        if member_type == "uint64_t":
+            content += "ret.{} = std::stoull(node.Value);".format(member)
+        elif member_type == "int":
+            content += "ret.{} = std::stoi(node.Value);".format(member)
+        elif member_type == "bool":
+            content += "ret.{} = std::strcmp(node.Value,\"true\") == 0;".format(member)
+        elif member_type in models_cache and models_cache[member_type].type == "enum class":
+            content += "ret.{} = {}FromString(node.Value);".format(member, member_type)
+        else:
+            content += "ret.{} = node.Value;".format(member)
+        content += "}"
+    # attribute
+    for i, (path, attr_name, member) in enumerate([(a[1], a[2], a[3]) for a in class_def.fromxml_actions if a[0] == "attribute"]):
+        if i == 0:
+            content += "} else if (node.Type == XmlNodeType::Attribute) {"
+        if i != 0:
+            content += "else "
+        content += "if (path.size() == {} &&".format(len(path.split(".")))
+        for j, k in enumerate(path.split(".")):
+            content += "path[{}] == XmlTagName::k_".format(j) + to_cpp_name(k) + "&&"
+        content += "std::strcmp(node.Name,\"{}\") == 0)".format(attr_name)
+        content += "{{ ret.{} = node.Value; }}".format(member)
+
+    content += "}} return ret;}\n\n"
+
+    main_body += content
+
+
+def gen_toxml_function(class_name):
+    def toxml_content(member_name, member_type):
+        if member_type.startswith("std::vector<") and member_type.endswith(">"):
+            inner_type = member_type[len("std::vector<"): -len(">")]
+            content = "for (const auto& i : {}) {{".format(member_name)
+            content += toxml_content("i", inner_type)
+            content += "}"
+        elif member_type.startswith("std::pair<") and member_type.endswith(">"):
+            comma_pos = member_type.index(",")  # suppose only 1 comma
+            inner_type1 = member_type[len("std::pair<"): comma_pos].strip()
+            inner_type2 = member_type[comma_pos + 1: -len(">")].strip()
+
+            inner_type1_to_string = member_name + ".first"
+            inner_type2_to_string = member_name + ".second"
+
+            if inner_type1 == "std::string":
+                pass
+            elif inner_type1 == "int" or inner_type1 == "uint64_t":
+                inner_type1_to_string = "std::to_string(" + inner_type1_to_string + ")"
+            elif inner_type1 in models_cache:
+                inner_type1_to_string = inner_type1 + "ToString(" + inner_type1_to_string + ")"
+            else:
+                raise RuntimeError("unknown type " + inner_type1)
+
+            if inner_type2 == "std::string":
+                pass
+            elif inner_type2 == "int" or inner_type2 == "uint64_t":
+                inner_type2_to_string = "std::to_string(" + inner_type2_to_string + ")"
+            elif inner_type1 in models_cache:
+                inner_type2_to_string = inner_type2 + "ToString(" + inner_type2_to_string + ")"
+            else:
+                raise RuntimeError("unknown type " + inner_type2)
+
+            content = "writer.Write(XmlNode{{XmlNodeType::StartTag, {0}.data(), {1}.data() }});".format(inner_type1_to_string, inner_type2_to_string)
+        elif member_type == "std::string":
+            content = "writer.Write(XmlNode{{XmlNodeType::Text, nullptr, {}.data()}});".format(member_name)
+        else:
+            content = "{}ToXml(writer, {});".format(member_type, member_name)
+        return content
+
+    if class_name in toxml_options_def_cache:
+        class_def = toxml_options_def_cache[class_name]
+
+        content = inspect.cleandoc(
+            """
+            static void {0}ToXml(XmlWriter& writer, const {0}& options) {{
+            """.format(class_name))
+
+        xml_path = []
+        for a in class_def.toxml_actions:
+            xml_action_type = a[0]
+            cur_xml_path = a[1].split(".")
+            member = a[2]
+            member_type = class_def.member_type[class_def.member.index(member)]
+
+            if xml_action_type == "tag":
+                common_prefix = os.path.commonprefix([xml_path, cur_xml_path])
+                while len(xml_path) > len(common_prefix):
+                    content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+                    xml_path.pop()
+                while len(xml_path) < len(cur_xml_path):
+                    p = cur_xml_path[len(xml_path)]
+                    content += "writer.Write(XmlNode{{XmlNodeType::StartTag, \"{}\"}});".format(p)
+                    xml_path.append(p)
+                content += toxml_content("options." + member, member_type)
+            else:
+                raise RuntimeError("unsupported toxml action " + xml_action_type)
+        while len(xml_path):
+            content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+            xml_path.pop()
+        content += "writer.Write(XmlNode{XmlNodeType::End});"
+
+        content += "}\n\n"
+    elif class_name in models_cache:
+        raise RuntimeError("generate ToXml() for no-option classes not supported yet")
+    else:
+        raise RuntimeError("unknown type " + class_name)
+
+    global main_body
+    main_body += content
+
+
 def gen_resource_begin(resource_name):
     content = "class {} {{ public:".format(resource_name)
 
@@ -154,6 +384,29 @@ def gen_resource_end(resource_name):
 
     global main_body
     main_body += content
+
+
+def gen_resource_helper_functions():
+    content = "private:"
+
+    global main_body
+    main_body += content
+
+    fromxml_classes_generated = set()
+    while fromxml_classes_generated != fromxml_classes:
+        for class_name in fromxml_classes - fromxml_classes_generated:
+            gen_fromxml_function(class_name)
+            fromxml_classes_generated.add(class_name)
+
+    fromxml_classes.clear()
+
+    toxml_classes_generated = set()
+    while toxml_classes_generated != toxml_classes:
+        for class_name in toxml_classes - toxml_classes_generated:
+            gen_toxml_function(class_name)
+            toxml_classes_generated.add(class_name)
+
+    toxml_classes.clear()
 
 
 def gen_function_option_definition(service_name, function_name, class_def):
@@ -173,6 +426,10 @@ def gen_function_option_definition(service_name, function_name, class_def):
         content += ";"
 
     content += "}};  // struct {}\n\n".format(class_name)
+
+    if class_def.toxml_actions:
+        toxml_classes.add(class_name)
+        toxml_options_def_cache[class_name] = class_def
 
     global main_body
     main_body += content
@@ -204,8 +461,9 @@ def gen_request_definition(http_method, *args, **kwargs):
             content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, *{});".format(http_method, body)
             content += "request.AddHeader(\"Content-Length\", std::to_string({0}->size()));".format(body)
         elif body_type == "std::string":
-            content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, {});".format(http_method, body)
-            content += "request.AddHeader(\"Content-Length\", std::to_string({0}.size()));".format(body)
+            content = "uint64_t body_buffer_length = {}.size();".format(body)
+            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, std::move({}));".format(http_method, body)
+            content += "request.AddHeader(\"Content-Length\", std::to_string(body_buffer_length));"
         else:
             raise RuntimeError("unknown body type " + body_type)
 
@@ -341,7 +599,6 @@ def gen_add_header_code(*args, **kwargs):
         raise RuntimeError("type with default value must be optional")
 
     if value_type == "std::string":
-            #content = "request.AddHeader({}, {});".format(key, default_value)
         if not optional:
             content = "request.AddHeader({}, {});".format(key, value)
         else:
@@ -354,12 +611,12 @@ def gen_add_header_code(*args, **kwargs):
                 """.format(key, value))
             if default_value:
                 content += inspect.cleandoc(
-                """
-                else
-                {{
-                    request.AddHeader({0}, {1});
-                }}
-                """.format(key, default_value))
+                    """
+                    else
+                    {{
+                        request.AddHeader({0}, {1});
+                    }}
+                    """.format(key, default_value))
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
             content = "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
@@ -450,23 +707,32 @@ def gen_get_body_code(*args, **kwargs):
 
 
 def gen_add_xml_body_code(*args, **kwargs):
-    service_name = kwargs["service_name"]
-    resource_name = kwargs["resource_name"]
-    function_name = kwargs["function_name"]
-    template_file = "template/add_{}_{}_{}_xml.cc".format(service_name, resource_name, function_name)
+    option_type = kwargs["option_type"]
+
+    content = inspect.cleandoc(
+        """
+        XmlWriter writer;
+        {}ToXml(writer, options);
+        std::string xml_body = writer.GetDocument();
+        std::vector<uint8_t> body_buffer(xml_body.begin(), xml_body.end());
+        """.format(option_type))
 
     global main_body
-    main_body += open(template_file).read()
+    main_body += content
 
 
 def gen_get_xml_body_code(*args, **kwargs):
-    service_name = kwargs["service_name"]
-    resource_name = kwargs["resource_name"]
-    function_name = kwargs["function_name"]
-    template_file = "template/get_{}_{}_{}_xml.cc".format(service_name, resource_name, function_name)
+    return_type = kwargs["return_type"]
+
+    content = inspect.cleandoc(
+        """
+        XmlReader reader(reinterpret_cast<const char*>(http_response.GetBodyBuffer().data()), http_response.GetBodyBuffer().size());
+        response = {}FromXml(reader);
+        """.format(return_type))
+    fromxml_classes.add(return_type)
 
     global main_body
-    main_body += open(template_file).read()
+    main_body += content
 
 
 def gen_get_header_code(*args, **kwargs):

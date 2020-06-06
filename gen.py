@@ -23,12 +23,15 @@ class class_definition:
         self.member_literal = []
         self.member_comment = []
         self.dependency = set()
+        # for xml
+        self.fromxml_actions = None
+        self.toxml_actions = None
 
     def add_dependency(self, type_name):
         if type_name is None:
             return
 
-        types = list(filter(None, re.split("<|>|,| |\*", type_name)))
+        types = list(filter(None, re.split("<|>|,| |\\*", type_name)))
 
         for t in types:
             if t in [None, "bool", "char", "int", "unsigned int", "long", "unsigned long", "long long", "unsigned long long",
@@ -104,7 +107,19 @@ def get_class_definition(class_name, config_class_def=None):
     else:
         raise RuntimeError("multiple noexport")
 
+    # from xml
+    fromxml_index = [i for i, v in enumerate(config_class_def) if next(iter(v)) == "from_xml"]
+    if len(fromxml_index) == 1:
+        index = fromxml_index[0]
+        fromxml_actions = next(iter(config_class_def[index].values()))
+        del config_class_def[index]
+    elif len(fromxml_index) > 1:
+        raise RuntimeError("multiple from_xml")
+    else:
+        fromxml_actions = None
+
     class_def = class_definition(class_name, class_type)
+    class_def.fromxml_actions = fromxml_actions
     if noexport:
         class_def.noexport = True
     for i, m in enumerate(config_class_def):
@@ -166,6 +181,10 @@ for config_resource in config["Services"]:
         option_def = class_definition(function_name + "Options", "struct")
         for m in config_option_def:
             member_name, member_type = next(iter(m.items()))
+            if member_name == "to_xml":
+                toxml_actions = member_type
+                option_def.toxml_actions = toxml_actions
+                continue
             if "=" in member_type:
                 (member_type, member_default_value) = [i.strip() for i in member_type.split("=")]
             else:
@@ -194,7 +213,7 @@ for config_resource in config["Services"]:
         for action in config_request_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
-            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name}
+            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "option_type": function_name + "Options"}
 
             for i in range(1, len(action)):
                 if action[i] == "optional":
@@ -252,7 +271,7 @@ for config_resource in config["Services"]:
         for action in config_response_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
-            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name}
+            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "return_type": return_type}
 
             for i in range(1, len(action)):
                 if action[i] == "optional":
@@ -288,6 +307,7 @@ for config_resource in config["Services"]:
 
         code_template.gen_resource_function(function_name, return_type)
 
+    code_template.gen_resource_helper_functions()
     code_template.gen_resource_end(resource_name)
 
 
