@@ -91,6 +91,27 @@ Services:
           - [get_xml_body_code]  # must be the first
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
 
+    - GetUserDelegationKey:
+        http_method: Post
+        http_status_code: 200
+        return_type: UserDelegationKey
+        options:
+          - BasicRequestOptions: inline
+          - StartsOn: std::string
+          - ExpiresOn: std::string
+          - to_xml: [
+            [tag, KeyInfo.Start, StartsOn],
+            [tag, KeyInfo.Expiry, ExpiresOn],
+          ]
+        request_action:
+          - [add_xml_body_code]  # must be the first one
+          - [add_query_code, "restype", "service"]
+          - [add_query_code, "comp", "userdelegationkey"]
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+        response_action:
+          - [get_xml_body_code]  # must be the first
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+
   - Container:
     - Create:
         http_method: Put
@@ -245,6 +266,18 @@ Services:
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
 
+    - Undelete:
+        http_method: Put
+        http_status_code: 200
+        return_type: BasicResponse
+        options:
+          - BasicRequestOptions: inline
+        request_action:
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_query_code, "comp", "undelete"]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+
     - GetProperties:
         http_method: Head
         http_status_code: 200
@@ -305,6 +338,86 @@ Services:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
+    - SetAccessTier:
+        http_method: Put
+        http_status_code: [200, 202]
+        return_type: BasicResponse
+        options:
+          - BasicRequestOptions: inline
+          - Tier: AccessTier
+          - RehydratePriority: RehydratePriority = RehydratePriority::Unknown
+        request_action:
+          - [add_query_code, "comp", "tier"]
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_header_code, "x-ms-access-tier", Tier]
+          - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority, optional]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+
+    - StartCopyFromUri:
+        http_method: Put
+        http_status_code: 202
+        return_type: BlobCopyInfo
+        options:
+          - BasicRequestOptions: inline
+          - Metadata: std::map<std::string, std::string>
+          - SourceUri: std::string
+          - LeaseId: std::string
+          - SourceLeaseId: std::string
+          - Tier: AccessTier = AccessTier::Unknown
+          - RehydratePriority: RehydratePriority = RehydratePriority::Unknown
+        request_action:
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_header_code, "x-ms-copy-source", SourceUri]
+          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-source-lease-id", SourceLeaseId, optional]
+          - [add_header_code, "x-ms-access-tier", Tier, optional]
+          - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority, optional]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-copy-id", CopyId]
+          - [get_header_code, "x-ms-copy-status", CopyStatus]
+
+    - AbortCopyFromUri:
+        http_method: Put
+        http_status_code: 204
+        return_type: BasicResponse
+        options:
+          - BasicRequestOptions: inline
+          - CopyId: std::string
+          - LeaseId: std::string
+        request_action:
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_query_code, "comp", "copy"]
+          - [add_query_code, "copyid", CopyId]
+          - [add_header_code, "x-ms-copy-action", "abort"]
+          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+
+    - CreateSnapshot:
+        http_method: Put
+        http_status_code: 201
+        return_type: BlobSnapshotInfo
+        options:
+          - BasicRequestOptions: inline
+          - Metadata: std::map<std::string, std::string>
+          - LeaseId: std::string
+          - BlobRequestEncryptionOptions: inline
+        request_action:
+          - [add_query_code, "comp", "snapshot"]
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
+          - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - [get_header_code, "x-ms-snapshot", Snapshot]
+
   - BlockBlob:
     - Upload:
         http_method: Put
@@ -339,12 +452,7 @@ Services:
     - StageBlock:
         http_method: Put
         http_status_code: 201
-        return_type:
-          BlockInfo:
-            - BasicResponse: inline
-            - ContentMD5: std::string
-            - ContentCRC64: std::string
-            - BlobResponseEncryptionOptions: inline
+        return_type: BlockInfo
         options:
           - BodiedRequestOptions: inline
           - BlockId: std::string
@@ -360,6 +468,34 @@ Services:
           - [add_query_code, "blockid", BlockId]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - *RESPONSE_CHECKSUM_HEADER_PACKAGE
+          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+
+    - StageBlockFromUri:
+        http_method: Put
+        http_status_code: 201
+        return_type: BlockInfo
+        options:
+          - BasicRequestOptions: inline
+          - BlockId: std::string
+          - SourceUri: std::string
+          - SourceRange: std::pair<uint64_t, uint64_t>
+          - ContentMD5: std::string
+          - ContentCRC64: std::string
+          - LeaseId: std::string
+          - BlobRequestEncryptionOptions: inline
+        request_action:
+          - [add_query_code, "comp", "block"]
+          - [add_query_code, "blockid", BlockId]
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_header_code, "x-ms-copy-source", SourceUri]
+          - [add_range_header_code, "x-ms-source_range", SourceRange, optional]
+          - [add_header_code, "x-ms-source-content-md5", ContentMD5, optional]
+          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64, optional]
           - [add_header_code, "x-ms-lease-id", LeaseId, optional]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
         response_action:
@@ -493,6 +629,16 @@ Models:
     - Hot
     - Cool
     - Archive
+  RehydratePriority:
+    - type: enum class
+    - Unknown: ""
+    - High: "High"
+    - Standard: "Standard"
+  CopyStatus:
+    - type: enum class
+    - Unknown: ""
+    - Success: "success"
+    - Pending: "pending"
   BlobBlock:
     - Name: std::string
     - Size: uint64_t = 0
@@ -500,6 +646,11 @@ Models:
       [text, Name, Name],
       [text, Size, Size],
     ]
+  BlockInfo:
+    - BasicResponse: inline
+    - ContentMD5: std::string
+    - ContentCRC64: std::string
+    - BlobResponseEncryptionOptions: inline
   BlobHttpHeaders:
     - ContentType: std::string
     - ContentEncoding: std::string
@@ -663,3 +814,33 @@ Models:
     - ETag: std::string
     - LastModified: std::string
     - SequenceNumber: uint64_t = 0
+  BlobCopyInfo:
+    - BasicResponse: inline
+    - ETag: std::string
+    - LastModified: std::string
+    - CopyId: std::string
+    - CopyStatus: CopyStatus = CopyStatus::Unknown
+  BlobSnapshotInfo:
+    - BasicResponse: inline
+    - Snapshot: std::string
+    - ETag: std::string
+    - LastModified: std::string
+    - BlobResponseEncryptionOptions: inline
+  UserDelegationKey:
+    - BasicResponse: inline
+    - SignedObjectId: std::string
+    - SignedTenantId: std::string
+    - SignedStartsOn: std::string
+    - SignedExpiresOn: std::string
+    - SignedService: std::string
+    - SignedVersion: std::string
+    - Value: std::string
+    - from_xml: [
+      [text, UserDelegationKey.SignedOid, SignedObjectId],
+      [text, UserDelegationKey.SignedTid, SignedTenantId],
+      [text, UserDelegationKey.SignedStart, SignedStartsOn],
+      [text, UserDelegationKey.SignedExpiry, SignedExpiresOn],
+      [text, UserDelegationKey.SignedService, SignedService],
+      [text, UserDelegationKey.SignedVersion, SignedVersion],
+      [text, UserDelegationKey.Value, Value],
+    ]
