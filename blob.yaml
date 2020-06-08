@@ -263,6 +263,7 @@ Services:
           - DeleteSnapshots: DeleteSnapshotsOption = DeleteSnapshotsOption::None
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_header_code, "x-ms-delete-snapshots", DeleteSnapshots, optional]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
 
