@@ -395,7 +395,7 @@ def gen_resource_helper_functions():
 
     fromxml_classes_generated = set()
     while fromxml_classes_generated != fromxml_classes:
-        for class_name in fromxml_classes - fromxml_classes_generated:
+        for class_name in sorted(list(fromxml_classes - fromxml_classes_generated)):
             gen_fromxml_function(class_name)
             fromxml_classes_generated.add(class_name)
 
@@ -403,7 +403,7 @@ def gen_resource_helper_functions():
 
     toxml_classes_generated = set()
     while toxml_classes_generated != toxml_classes:
-        for class_name in toxml_classes - toxml_classes_generated:
+        for class_name in sorted(list(toxml_classes - toxml_classes_generated)):
             gen_toxml_function(class_name)
             toxml_classes_generated.add(class_name)
 
