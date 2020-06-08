@@ -19,6 +19,7 @@ include_headers = """
 #include <vector>
 #include <functional>
 #include <stdexcept>
+#include <limits>
 
 #include "context.hpp"
 #include "http/http.hpp"
@@ -645,7 +646,15 @@ def gen_add_range_header_code(*args, **kwargs):
 
     content = inspect.cleandoc(
         """
-        if ({1}.first <= {1}.second)
+        if ({1}.first == std::numeric_limits<decltype({1}.first)>::max())
+        {{
+            // do nothing
+        }}
+        else if ({1}.second == std::numeric_limits<decltype({1}.second)>::max())
+        {{
+            request.AddHeader({0}, \"bytes=\" + std::to_string({1}.first) + \"-\");
+        }}
+        else
         {{
             request.AddHeader({0}, \"bytes=\" + std::to_string({1}.first) + \"-\" + std::to_string({1}.second));
         }}
