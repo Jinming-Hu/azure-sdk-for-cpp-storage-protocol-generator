@@ -150,29 +150,60 @@ def gen_model_definition(service_name, class_name, class_def):
 def gen_fromxml_function(class_name):
     global main_body
 
-    if class_name == "_Metadata":
-        content = inspect.cleandoc(
-            """
-            static std::map<std::string, std::string> MetadataFromXml(XmlReader& reader) {
-                std::map<std::string, std::string> ret;
-                int depth = 0;
-                std::string key;
-                while (true) {
-                    auto node = reader.Read();
-                    if (node.Type == XmlNodeType::End) {
-                        break;
-                    } else if (node.Type == XmlNodeType::StartTag) {
-                        if (depth++ == 0) { key = node.Name; }
-                    } else if (node.Type == XmlNodeType::EndTag) {
-                        if (depth-- == 0) { break; }
-                    } else if (depth == 1 && node.Type == XmlNodeType::Text) {
-                        ret.emplace(std::move(key), std::string(node.Value));
-                    }
-                }
-                return ret;
-            };
-            """)
-
+    if type(class_name) is tuple:
+        class_type = class_name[0]
+        member_name = class_name[1]
+        if class_type == "std::map<std::string, std::string>":
+            content = inspect.cleandoc(
+                """
+                static std::map<std::string, std::string> {}FromXml(XmlReader& reader) {{
+                    std::map<std::string, std::string> ret;
+                    int depth = 0;
+                    std::string key;
+                    while (true) {{
+                        auto node = reader.Read();
+                        if (node.Type == XmlNodeType::End) {{
+                            break;
+                        }} else if (node.Type == XmlNodeType::StartTag) {{
+                            if (depth++ == 0) {{ key = node.Name; }}
+                        }} else if (node.Type == XmlNodeType::EndTag) {{
+                            if (depth-- == 0) {{ break; }}
+                        }} else if (depth == 1 && node.Type == XmlNodeType::Text) {{
+                            ret.emplace(std::move(key), std::string(node.Value));
+                        }}
+                    }}
+                    return ret;
+                }}
+                """.format(member_name))
+        elif class_type == "std::pair<uint64_t, uint64_t>":
+            content = inspect.cleandoc(
+                """
+                static std::pair<uint64_t, uint64_t> {}FromXml(XmlReader& reader) {{
+                    int depth = 0;
+                    bool is_start = false;
+                    bool is_end = false;
+                    uint64_t start;
+                    uint64_t end;
+                    while (true) {{
+                        auto node = reader.Read();
+                        if (node.Type == XmlNodeType::End) {{
+                            break;
+                        }} else if (node.Type == XmlNodeType::StartTag && strcmp(node.Name, "Start") == 0) {{
+                            is_start = true;
+                        }} else if (node.Type == XmlNodeType::StartTag && strcmp(node.Name, "End") == 0) {{
+                            is_end = true;
+                        }} else if (node.Type == XmlNodeType::EndTag) {{
+                            is_start = false;
+                            is_end = false;
+                            if (depth-- == 0) {{ break; }}
+                        }} else if (depth == 1 && node.Type == XmlNodeType::Text) {{
+                            if (is_start) {{ start = std::stoull(node.Name); }}
+                            else if (is_end) {{ end = std::stoull(node.Name); }}
+                        }}
+                    }}
+                    return std::make_pair(start, end);
+                }}
+                """.format(member_name))
         main_body += content + "\n\n"
         return
 
@@ -240,11 +271,15 @@ def gen_fromxml_function(class_name):
         member_type = get_member_type(member)
         if member_type.startswith("std::vector<") and member_type.endswith(">"):
             inner_type = member_type[len("std::vector<"): -len(">")]
-            content += "ret.{member_name}.emplace_back({inner_type}FromXml(reader));".format(member_name=member, inner_type=inner_type)
-            fromxml_classes.add(inner_type)
-        elif member_type == "std::map<std::string, std::string>":
-            content += "ret.{member_name} = MetadataFromXml(reader);".format(member_name=member)
-            fromxml_classes.add("_Metadata")
+            if inner_type.startswith("std::"):
+                content += "ret.{member_name}.emplace_back({function_name}FromXml(reader));".format(member_name=member, function_name=member)
+                fromxml_classes.add((inner_type, member))
+            else:
+                content += "ret.{member_name}.emplace_back({inner_type}FromXml(reader));".format(member_name=member, inner_type=inner_type)
+                fromxml_classes.add(inner_type)
+        elif member_type.startswith("std::"):
+            content += "ret.{member_name} = {member_name}FromXml(reader);".format(member_name=member)
+            fromxml_classes.add((member_type, member))
         else:
             content += "ret.{member_name} = {member_type}FromXml(reader);".format(member_name=member, member_type=member_type)
             fromxml_classes.add(member_type)
@@ -593,6 +628,7 @@ def gen_add_header_code(*args, **kwargs):
     key = args[0]
     value = args[1]
     optional = kwargs["optional"]
+    optional_value = kwargs.get("optional_value", None)
     value_type = kwargs[value + ".type"]
     default_value = kwargs.get("default_value", None)
 
@@ -618,6 +654,15 @@ def gen_add_header_code(*args, **kwargs):
                         request.AddHeader({0}, {1});
                     }}
                     """.format(key, default_value))
+    elif value_type == "uint64_t":
+        if not optional:
+            content = "request.AddHeader({}, std::to_string({}));".format(key, value)
+        else:
+            content = inspect.cleandoc(
+                """if ({member_name} != {member_optional_value}) {{
+                    request.AddHeader({header_name}, std::to_string({member_name}));
+                }}""".format(member_name=value, member_optional_value=optional_value, header_name=key))
+            #raise RuntimeError("optional int header not supported yet")
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
             content = "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
