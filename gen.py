@@ -232,7 +232,7 @@ for config_resource in config["Services"]:
                             if j < len(arg_types) - 1:  # Not the last one
                                 continue
                             else:
-                                raise RuntimeError("cannot find " + action[i] + " in " + return_type)
+                                raise RuntimeError("cannot find " + action[i] + " in request options")
                         arg += "." + t
                         arg_type = arg_def.member_type[arg_def.member.index(t)]
                         if arg_type in models_cache:
