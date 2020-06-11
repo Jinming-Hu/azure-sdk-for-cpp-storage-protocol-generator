@@ -462,7 +462,6 @@ Services:
           - BodiedRequestOptions: inline
           - ContentMD5: std::string
           - ContentCRC64: std::string
-          - BlobType: BlobType = BlobType::Unknown
           - Properties: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string
@@ -477,7 +476,7 @@ Services:
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-lease-id", LeaseId, optional]
-          - [add_header_code, "x-ms-blob-type", BlobType]
+          - [add_header_code, "x-ms-blob-type", "BlockBlob"]
           - [add_header_code, "x-ms-access-tier", Tier, optional]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
