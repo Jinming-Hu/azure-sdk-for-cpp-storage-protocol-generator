@@ -210,6 +210,7 @@ for config_resource in config["Services"]:
         config_request_action = flatten_actions(config_function_def["request_action"])
         code_template.gen_construct_request_function_begin(function_name)
         request_declared = False
+        request_options_used = False
         for action in config_request_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
@@ -224,6 +225,7 @@ for config_resource in config["Services"]:
                 elif match_res := re.match("default\\((.*)\\)", action[i]):
                     kwargs["default_value"] = match_res.group(1)
                 elif type(action[i]) is str:
+                    request_options_used = True
                     arg = "options"
                     arg_types = action[i].split(".")
                     arg_def = option_def
@@ -264,10 +266,10 @@ for config_resource in config["Services"]:
                     method_to_call(*args, **kwargs)
             else:
                 method_to_call(*args, **kwargs)
-        code_template.gen_construct_request_function_end()
+        code_template.gen_construct_request_function_end(request_options_used)
 
         config_response_action = flatten_actions(config_function_def["response_action"])
-        code_template.gen_parse_response_function_begin(function_name, http_status_code, return_type)
+        code_template.gen_parse_response_function_begin(function_name, http_method, http_status_code, return_type)
         for action in config_response_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []

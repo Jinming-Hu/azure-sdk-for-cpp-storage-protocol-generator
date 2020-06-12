@@ -25,6 +25,7 @@ include_headers = """
 #include "http/http.hpp"
 #include "http/pipeline.hpp"
 #include "common/xml_wrapper.hpp"
+#include "common/storage_common.hpp"
 
 """
 
@@ -507,14 +508,17 @@ def gen_request_definition(http_method, *args, **kwargs):
     main_body += content
 
 
-def gen_construct_request_function_end():
-    content = "return request;}\n\n"
+def gen_construct_request_function_end(request_options_used):
+    content = ""
+    if not request_options_used:
+        content += "unused(options);"
+    content += "return request;}\n\n"
 
     global main_body
     main_body += content
 
 
-def gen_parse_response_function_begin(function_name, http_status_code, return_type):
+def gen_parse_response_function_begin(function_name, http_method, http_status_code, return_type):
     content = inspect.cleandoc(
         """
         static {1} {0}ParseResponse(Azure::Core::Http::Response& http_response)
