@@ -2,7 +2,7 @@ service_name: Blobs
 output: generated/blob_rest_client.hpp
 
 request_version_date_id_package: &REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
-  - [add_header_code, "x-ms-version", Version, optional, default("2019-07-07")]
+  - [add_header_code, "x-ms-version", "2019-07-07"]
 
 response_version_date_id_package: &RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
   - [get_header_code, "x-ms-version", Version]
@@ -850,7 +850,6 @@ Services:
 Models:
   BasicRequestOptions:
     - type: struct
-    - Version: std::string
   BodiedRequestOptions:
     - type: struct
     - BasicRequestOptions: inline
