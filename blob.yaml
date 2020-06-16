@@ -373,7 +373,7 @@ Services:
         return_type: BasicResponse
         options:
           - BasicRequestOptions: inline
-          - Tier: AccessTier
+          - Tier: AccessTier = AccessTier::Unknown
           - RehydratePriority: RehydratePriority = RehydratePriority::Unknown
         request_action:
           - [add_query_code, "comp", "tier"]
