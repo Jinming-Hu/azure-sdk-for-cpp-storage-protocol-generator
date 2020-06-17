@@ -48,8 +48,8 @@ response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
   - [get_header_code, "Content-Disposition", Properties.ContentDisposition, optional]
 
 response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE
-  - [get_header_code, "x-ms-lease-status", LeaseStatus]
-  - [get_header_code, "x-ms-lease-state", LeaseState]
+  - [get_header_code, "x-ms-lease-status", LeaseStatus, optional]
+  - [get_header_code, "x-ms-lease-state", LeaseState, optional]
   - [get_header_code, "x-ms-lease-duration", LeaseDuration, optional]
 
 request_conditional_headers_package: &REQUEST_CONDITIONAL_HEADER_PACKAGE
