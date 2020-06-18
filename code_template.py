@@ -16,6 +16,7 @@ include_headers = """
 #include <string>
 #include <cstring>
 #include <map>
+#include <set>
 #include <vector>
 #include <functional>
 #include <stdexcept>
@@ -718,10 +719,17 @@ def gen_add_metadata_code(*args, **kwargs):
     value = args[1]
     content = inspect.cleandoc(
         """
+        std::set<std::string> metadataKeys;
         for (const auto& pair : {1})
         {{
+            std::string key = pair.first;
+            std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c) {{ return static_cast<char>(std::tolower(c)); }});
+            if (metadataKeys.insert(key).second == false) {{
+                throw std::runtime_error("duplicate keys in metadata");
+            }}
             request.AddHeader({0} + pair.first, pair.second);
         }}
+        metadataKeys.clear();
         """.format(prefix, value))
 
     global main_body
