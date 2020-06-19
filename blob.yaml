@@ -845,6 +845,41 @@ Services:
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
+    - AppendBlockFromUri:
+        http_method: Put
+        http_status_code: 201
+        return_type: BlobAppendInfo
+        options:
+          - BasicRequestOptions: inline
+          - SourceUri: std::string
+          - SourceRange: std::pair<uint64_t, uint64_t>
+          - ContentMD5: std::string
+          - ContentCRC64: std::string
+          - LeaseId: std::string
+          - MaxSize: uint64_t = std::numeric_limits<uint64_t>::max()
+          - AppendPosition: uint64_t = std::numeric_limits<uint64_t>::max()
+          - BlobRequestEncryptionOptions: inline
+          - BlobRequestConditionalHeaders: inline
+        request_action:
+          - [add_query_code, "comp", "appendblock"]
+          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - [add_header_code, "x-ms-copy-source", SourceUri]
+          - [add_range_header_code, "x-ms-source-range", SourceRange]
+          - [add_header_code, "x-ms-source-content-md5", ContentMD5, optional]
+          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-blob-condition-maxsize", MaxSize, optional(std::numeric_limits<uint64_t>::max())]
+          - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition, optional(std::numeric_limits<uint64_t>::max())]
+          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - *RESPONSE_CHECKSUM_HEADER_PACKAGE
+          - [get_header_code, "x-ms-blob-append-offset", AppendOffset]
+          - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
+          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+
 Models:
   BasicRequestOptions:
     - type: struct
