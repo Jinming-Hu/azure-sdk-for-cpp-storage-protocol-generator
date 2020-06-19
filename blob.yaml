@@ -747,7 +747,7 @@ Services:
     - GetPageRanges:
         http_method: Get
         http_status_code: 200
-        return_type: PageRangesInfo
+        return_type: PageRangesInfoInternal
         options:
           - BasicRequestOptions: inline
           - PreviousSnapshot: std::string
@@ -1149,16 +1149,16 @@ Models:
     - ETag: std::string
     - LastModified: std::string
     - SequenceNumber: uint64_t = 0
-  PageRangesInfo:
+  PageRangesInfoInternal:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
     - BlobContentLength: uint64_t = 0
-    - PageRange: std::vector<std::pair<uint64_t, uint64_t>>
-    - ClearRange: std::vector<std::pair<uint64_t, uint64_t>>
+    - PageRanges: std::vector<std::pair<uint64_t, uint64_t>>
+    - ClearRanges: std::vector<std::pair<uint64_t, uint64_t>>
     - from_xml: [
-      [start_tag, PageList.PageRange, PageRange],
-      [start_tag, PageList.ClearRange, ClearRange],
+      [start_tag, PageList.PageRange, PageRanges],
+      [start_tag, PageList.ClearRange, ClearRanges],
     ]
   BlobAppendInfo:
     - BasicResponse: inline

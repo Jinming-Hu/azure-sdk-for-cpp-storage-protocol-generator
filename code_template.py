@@ -191,16 +191,19 @@ def gen_fromxml_function(class_name):
                         if (node.Type == XmlNodeType::End) {{
                             break;
                         }} else if (node.Type == XmlNodeType::StartTag && strcmp(node.Name, "Start") == 0) {{
+                            ++depth;
                             is_start = true;
                         }} else if (node.Type == XmlNodeType::StartTag && strcmp(node.Name, "End") == 0) {{
+                            ++depth;
                             is_end = true;
                         }} else if (node.Type == XmlNodeType::EndTag) {{
                             is_start = false;
                             is_end = false;
                             if (depth-- == 0) {{ break; }}
-                        }} else if (depth == 1 && node.Type == XmlNodeType::Text) {{
-                            if (is_start) {{ start = std::stoull(node.Name); }}
-                            else if (is_end) {{ end = std::stoull(node.Name); }}
+                        }}
+                        if (depth == 1 && node.Type == XmlNodeType::Text) {{
+                            if (is_start) {{ start = std::stoull(node.Value); }}
+                            else if (is_end) {{ end = std::stoull(node.Value); }}
                         }}
                     }}
                     return std::make_pair(start, end);
