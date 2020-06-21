@@ -908,7 +908,7 @@ Models:
   BodiedRequestOptions:
     - type: struct
     - BasicRequestOptions: inline
-    - BodyStream: Azure::Core::Http::BodyStream* = nullptr
+    - BodyStream: std::unique_ptr<Azure::Core::Http::BodyStream>
   BasicResponse:
     - type: struct
     - RequestId: std::string
@@ -918,7 +918,7 @@ Models:
   BodiedResponse:
     - type: struct
     - BasicResponse: inline
-    - BodyStream: Azure::Core::Http::BodyStream* = nullptr
+    - BodyStream: std::unique_ptr<Azure::Core::Http::BodyStream>
   PublicAccessType:
     - type: enum class
     - Container: "container"

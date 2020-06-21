@@ -511,7 +511,7 @@ def gen_function_option_definition(service_name, function_name, class_def):
 def gen_construct_request_function_begin(function_name):
     content = inspect.cleandoc(
         """
-        static Azure::Core::Http::Request {0}ConstructRequest(const std::string& url, const {0}Options& options)
+        static Azure::Core::Http::Request {0}ConstructRequest(const std::string& url, {0}Options& options)
         {{
         """.format(function_name))
 
@@ -530,16 +530,13 @@ def gen_request_definition(http_method, *args, **kwargs):
         content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url);".format(http_method)
         content += "request.AddHeader(\"Content-Length\", \"0\");"
     else:
-        if body_type == "std::vector<uint8_t>*":
-            content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, new Azure::Core::Http::MemoryBodyStream(*{}));".format(http_method, body)
-            content += "request.AddHeader(\"Content-Length\", std::to_string({0}->size()));".format(body)
-        elif body_type == "std::string":
-            content = "int64_t body_buffer_length = {}.size();".format(body)
-            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, new Azure::Core::Http::MemoryBodyStream(std::move({})));".format(http_method, body)
+        if body_type == "std::string":
+            content = "auto body_buffer_length = {}.size();".format(body)
+            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, std::make_unique<Azure::Core::Http::MemoryBodyStream>(std::move({})));".format(http_method, body)
             content += "request.AddHeader(\"Content-Length\", std::to_string(body_buffer_length));"
-        elif body_type == "Azure::Core::Http::BodyStream*":
-            content = "int64_t body_stream_length = {}->Length();".format(body)
-            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, {});".format(http_method, body)
+        elif body_type == "std::unique_ptr<Azure::Core::Http::BodyStream>":
+            content = "auto body_stream_length = {}->Length();".format(body)
+            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, std::move({}));".format(http_method, body)
             content += "request.AddHeader(\"Content-Length\", std::to_string(body_stream_length));"
         else:
             raise RuntimeError("unknown body type " + body_type)
@@ -595,7 +592,7 @@ def gen_parse_response_function_end():
 def gen_resource_function(function_name, return_type):
     content = inspect.cleandoc(
         """
-        static {1} {0}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url, const {0}Options& options)
+        static {1} {0}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url, {0}Options& options)
         {{
             auto request = {0}ConstructRequest(url, options);
             return {0}ParseResponse(pipeline.Send(context, request));
@@ -826,7 +823,7 @@ def gen_get_body_code(*args, **kwargs):
 
     if value_type == "std::vector<uint8_t>":
         func_name = "GetBodyBuffer"
-    elif value_type == "Azure::Core::Http::BodyStream*":
+    elif value_type == "std::unique_ptr<Azure::Core::Http::BodyStream>":
         func_name = "GetBodyStream"
 
     content = "{0} = httpResponse.{1}();".format(body, func_name)
