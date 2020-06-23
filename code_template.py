@@ -499,12 +499,16 @@ def gen_request_definition(http_method, *args, **kwargs):
         content += "request.AddHeader(\"Content-Length\", \"0\");"
     else:
         if body_type == "std::vector<uint8_t>*":
-            content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, *{});".format(http_method, body)
+            content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, new Azure::Core::Http::MemoryBodyStream(*{}));".format(http_method, body)
             content += "request.AddHeader(\"Content-Length\", std::to_string({0}->size()));".format(body)
         elif body_type == "std::string":
             content = "uint64_t body_buffer_length = {}.size();".format(body)
-            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, std::move({}));".format(http_method, body)
+            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, new Azure::Core::Http::MemoryBodyStream(std::move({})));".format(http_method, body)
             content += "request.AddHeader(\"Content-Length\", std::to_string(body_buffer_length));"
+        elif body_type == "Azure::Core::Http::BodyStream*":
+            content = "uint64_t body_stream_length = {}->Length();".format(body)
+            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, {});".format(http_method, body)
+            content += "request.AddHeader(\"Content-Length\", std::to_string(body_stream_length));"
         else:
             raise RuntimeError("unknown body type " + body_type)
 
@@ -795,7 +799,10 @@ def gen_get_xml_body_code(*args, **kwargs):
 
     content = inspect.cleandoc(
         """
-        XmlReader reader(reinterpret_cast<const char*>(http_response.GetBodyBuffer().data()), http_response.GetBodyBuffer().size());
+        auto bodyStream = http_response.GetBodyStream();
+        std::vector<uint8_t> bodyContent(static_cast<std::size_t>(bodyStream->Length()));
+        bodyStream->Read(&bodyContent[0], bodyContent.size());
+        XmlReader reader(reinterpret_cast<const char*>(bodyContent.data()), bodyContent.size());
         response = {}FromXml(reader);
         """.format(return_type))
     fromxml_classes.add(return_type)

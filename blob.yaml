@@ -270,9 +270,7 @@ Services:
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount, optional]
           - [get_header_code, "x-ms-blob-type", BlobType]
-          - [get_body_code, BodyBuffer]
-          # BodyStream not implemented yet
-          # - [get_body_code, BodyStream]
+          - [get_body_code, BodyStream]
 
     - Delete:
         http_method: Delete
@@ -469,7 +467,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - [add_body_code, BodyBuffer]  # must be the first one
+          - [add_body_code, BodyStream]  # must be the first one
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
@@ -497,7 +495,7 @@ Services:
           - LeaseId: std::string
           - BlobRequestEncryptionOptions: inline
         request_action:
-          - [add_body_code, BodyBuffer]  # must be the first one
+          - [add_body_code, BodyStream]  # must be the first one
           # Stream not implemented yet
           #- [add_body_code, BodyStream]
           - [add_query_code, "comp", "block"]
@@ -650,7 +648,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
         request_action:
-          - [add_body_code, BodyBuffer]  # must be the first one
+          - [add_body_code, BodyStream]  # must be the first one
           - [add_query_code, "comp", "page"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
@@ -828,7 +826,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - [add_body_code, BodyBuffer]  # must be the first one
+          - [add_body_code, BodyStream]  # must be the first one
           - [add_query_code, "comp", "appendblock"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
@@ -886,7 +884,6 @@ Models:
   BodiedRequestOptions:
     - type: struct
     - BasicRequestOptions: inline
-    - BodyBuffer: std::vector<uint8_t>* = nullptr
     - BodyStream: Azure::Core::Http::BodyStream* = nullptr
   BasicResponse:
     - type: struct
@@ -897,7 +894,6 @@ Models:
   BodiedResponse:
     - type: struct
     - BasicResponse: inline
-    - BodyBuffer: std::vector<uint8_t>
     - BodyStream: Azure::Core::Http::BodyStream* = nullptr
   PublicAccessType:
     - type: enum class
