@@ -76,7 +76,7 @@ Services:
             - Prefix: std::string
             - Marker: std::string
             - NextMarker: std::string
-            - MaxResults: int, nullable
+            - MaxResults: int32_t, nullable
             - BlobContainerItems: std::vector<BlobContainerItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
@@ -90,7 +90,7 @@ Services:
           - BasicRequestOptions: inline
           - Prefix: std::string, nullable
           - Marker: std::string, nullable
-          - MaxResults: int, nullable
+          - MaxResults: int32_t, nullable
           - IncludeMetadata: ListBlobContainersIncludeOption, nullable
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
@@ -210,7 +210,7 @@ Services:
             - Prefix: std::string
             - Marker: std::string
             - NextMarker: std::string
-            - MaxResults: int, nullable
+            - MaxResults: int32_t, nullable
             - Delimiter: std::string
             - BlobItems: std::vector<BlobItem>
             - from_xml: [
@@ -228,7 +228,7 @@ Services:
           - Prefix: std::string, nullable
           - Delimiter: std::string, nullable
           - Marker: std::string, nullable
-          - MaxResults: int, nullable
+          - MaxResults: int32_t, nullable
           - Include: std::vector<ListBlobsIncludeItem>
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
@@ -250,7 +250,7 @@ Services:
         return_type: BlobDownloadInfo
         options:
           - BasicRequestOptions: inline
-          - Range: std::pair<uint64_t, uint64_t>, nullable
+          - Range: std::pair<int64_t, int64_t>, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -517,7 +517,7 @@ Services:
           - BasicRequestOptions: inline
           - BlockId: std::string
           - SourceUri: std::string
-          - SourceRange: std::pair<uint64_t, uint64_t>, nullable
+          - SourceRange: std::pair<int64_t, int64_t>, nullable
           - ContentMD5: std::string, nullable
           - ContentCRC64: std::string, nullable
           - LeaseId: std::string, nullable
@@ -583,7 +583,7 @@ Services:
             - ETag: std::string
             - LastModified: std::string
             - ContentType: std::string
-            - ContentLength: uint64_t = 0
+            - ContentLength: int64_t = 0
             - CommittedBlocks: std::vector<BlobBlock>
             - UncommittedBlocks: std::vector<BlobBlock>
             - from_xml: [
@@ -609,8 +609,8 @@ Services:
         return_type: BlobContentInfo
         options:
           - BasicRequestOptions: inline
-          - BlobContentLength: uint64_t
-          - SequenceNumber: uint64_t, nullable
+          - BlobContentLength: int64_t
+          - SequenceNumber: int64_t, nullable
           - Properties: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
@@ -639,13 +639,13 @@ Services:
         http_status_code: 201
         options:
           - BodiedRequestOptions: inline
-          - Range: std::pair<uint64_t, uint64_t>
+          - Range: std::pair<int64_t, int64_t>
           - ContentMD5: std::string, nullable
           - ContentCRC64: std::string, nullable
           - LeaseId: std::string, nullable
-          - IfSequenceNumberLessThanOrEqualTo: uint64_t, nullable
-          - IfSequenceNumberLessThan: uint64_t, nullable
-          - IfSequenceNumberEqualTo: uint64_t, nullable
+          - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
+          - IfSequenceNumberLessThan: int64_t, nullable
+          - IfSequenceNumberEqualTo: int64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
@@ -675,14 +675,14 @@ Services:
         options:
           - BasicRequestOptions: inline
           - SourceUri: std::string
-          - SourceRange: std::pair<uint64_t, uint64_t>
-          - Range: std::pair<uint64_t, uint64_t>
+          - SourceRange: std::pair<int64_t, int64_t>
+          - Range: std::pair<int64_t, int64_t>
           - ContentMD5: std::string, nullable
           - ContentCRC64: std::string, nullable
           - LeaseId: std::string, nullable
-          - IfSequenceNumberLessThanOrEqualTo: uint64_t, nullable
-          - IfSequenceNumberLessThan: uint64_t, nullable
-          - IfSequenceNumberEqualTo: uint64_t, nullable
+          - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
+          - IfSequenceNumberLessThan: int64_t, nullable
+          - IfSequenceNumberEqualTo: int64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
@@ -713,11 +713,11 @@ Services:
         http_status_code: 201
         options:
           - BasicRequestOptions: inline
-          - Range: std::pair<uint64_t, uint64_t>
+          - Range: std::pair<int64_t, int64_t>
           - LeaseId: std::string, nullable
-          - IfSequenceNumberLessThanOrEqualTo: uint64_t, nullable
-          - IfSequenceNumberLessThan: uint64_t, nullable
-          - IfSequenceNumberEqualTo: uint64_t, nullable
+          - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
+          - IfSequenceNumberLessThan: int64_t, nullable
+          - IfSequenceNumberEqualTo: int64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
@@ -744,11 +744,11 @@ Services:
         return_type: PageBlobInfo
         options:
           - BasicRequestOptions: inline
-          - BlobContentLength: uint64_t
+          - BlobContentLength: int64_t
           - LeaseId: std::string, nullable
-          - IfSequenceNumberLessThanOrEqualTo: uint64_t, nullable
-          - IfSequenceNumberLessThan: uint64_t, nullable
-          - IfSequenceNumberEqualTo: uint64_t, nullable
+          - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
+          - IfSequenceNumberLessThan: int64_t, nullable
+          - IfSequenceNumberEqualTo: int64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -774,7 +774,7 @@ Services:
           - BasicRequestOptions: inline
           - PreviousSnapshot: std::string, nullable
           - PreviousSnapshotUrl: std::string, nullable
-          - Range: std::pair<uint64_t, uint64_t>, nullable
+          - Range: std::pair<int64_t, int64_t>, nullable
           - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -845,8 +845,8 @@ Services:
           - ContentMD5: std::string, nullable
           - ContentCRC64: std::string, nullable
           - LeaseId: std::string, nullable
-          - MaxSize: uint64_t, nullable
-          - AppendPosition: uint64_t, nullable
+          - MaxSize: int64_t, nullable
+          - AppendPosition: int64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -874,12 +874,12 @@ Services:
         options:
           - BasicRequestOptions: inline
           - SourceUri: std::string
-          - SourceRange: std::pair<uint64_t, uint64_t>, nullable
+          - SourceRange: std::pair<int64_t, int64_t>, nullable
           - ContentMD5: std::string, nullable
           - ContentCRC64: std::string, nullable
           - LeaseId: std::string, nullable
-          - MaxSize: uint64_t, nullable
-          - AppendPosition: uint64_t, nullable
+          - MaxSize: int64_t, nullable
+          - AppendPosition: int64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -978,7 +978,7 @@ Models:
     - Pending: "pending"
   BlobBlock:
     - Name: std::string
-    - Size: uint64_t = 0
+    - Size: int64_t = 0
     - from_xml: [
       [text, Name, Name],
       [text, Size, Size],
@@ -1023,8 +1023,8 @@ Models:
     - ContentRange: std::string, nullable
     - Properties: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
-    - SequenceNumber: uint64_t, nullable  # only for page blob
-    - CommittedBlockCount: uint64_t, nullable  # only for append blob
+    - SequenceNumber: int64_t, nullable  # only for page blob
+    - CommittedBlockCount: int64_t, nullable  # only for append blob
     - BlobType: BlobType = BlobType::Unknown
     - ContentMD5: std::string, nullable  # MD5 for the downloaded range
     - ContentCRC64: std::string, nullable
@@ -1041,7 +1041,7 @@ Models:
     - LastModified: std::string
     - ContentMD5: std::string, nullable
     - ContentCRC64: std::string, nullable
-    - SequenceNumber: uint64_t, nullable
+    - SequenceNumber: int64_t, nullable
     - BlobResponseEncryptionOptions: inline
   BlobContainerItemWithoutName:
     - noexport: true
@@ -1078,7 +1078,7 @@ Models:
     - CreationTime: std::string
     - LastModified: std::string
     - ETag: std::string
-    - ContentLength: uint64_t = 0
+    - ContentLength: int64_t = 0
     - BlobType: BlobType = BlobType::Unknown
     - Tier: AccessTier = AccessTier::Unknown
     - AccessTierInferred: bool = true
@@ -1150,10 +1150,10 @@ Models:
     - LeaseDuration: std::string, nullable
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
-    - ContentLength: uint64_t = 0
+    - ContentLength: int64_t = 0
     - BlobHttpHeaders: inline
-    - SequenceNumber: uint64_t, nullable  # only for page blob
-    - CommittedBlockCount: int, nullable  # only for append blob
+    - SequenceNumber: int64_t, nullable  # only for page blob
+    - CommittedBlockCount: int32_t, nullable  # only for append blob
     - BlobResponseEncryptionOptions: inline
     - Tier: AccessTier = AccessTier::Unknown
     - AccessTierInferred: bool = true
@@ -1163,7 +1163,7 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - SequenceNumber: uint64_t, nullable
+    - SequenceNumber: int64_t, nullable
   BlobCopyInfo:
     - BasicResponse: inline
     - ETag: std::string
@@ -1200,20 +1200,20 @@ Models:
     - LastModified: std::string
     - ContentMD5: std::string, nullable
     - ContentCRC64: std::string, nullable
-    - SequenceNumber: uint64_t = 0
+    - SequenceNumber: int64_t = 0
     - BlobResponseEncryptionOptions: inline
   PageBlobInfo:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - SequenceNumber: uint64_t = 0
+    - SequenceNumber: int64_t = 0
   PageRangesInfoInternal:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - BlobContentLength: uint64_t = 0
-    - PageRanges: std::vector<std::pair<uint64_t, uint64_t>>
-    - ClearRanges: std::vector<std::pair<uint64_t, uint64_t>>
+    - BlobContentLength: int64_t = 0
+    - PageRanges: std::vector<std::pair<int64_t, int64_t>>
+    - ClearRanges: std::vector<std::pair<int64_t, int64_t>>
     - from_xml: [
       [start_tag, PageList.PageRange, PageRanges],
       [start_tag, PageList.ClearRange, ClearRanges],
@@ -1224,6 +1224,6 @@ Models:
     - LastModified: std::string
     - ContentMD5: std::string, nullable
     - ContentCRC64: std::string, nullable
-    - AppendOffset: uint64_t = 0
-    - CommittedBlockCount: uint64_t = 0
+    - AppendOffset: int64_t = 0
+    - CommittedBlockCount: int64_t = 0
     - BlobResponseEncryptionOptions: inline

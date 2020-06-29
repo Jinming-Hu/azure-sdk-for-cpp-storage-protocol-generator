@@ -204,15 +204,15 @@ def gen_fromxml_function(class_name):
                     return ret;
                 }}
                 """.format(member_name))
-        elif class_type == "std::pair<uint64_t, uint64_t>":
+        elif class_type == "std::pair<int64_t, int64_t>":
             content = inspect.cleandoc(
                 """
-                static std::pair<uint64_t, uint64_t> {}FromXml(XmlReader& reader) {{
+                static std::pair<int64_t, int64_t> {}FromXml(XmlReader& reader) {{
                     int depth = 0;
                     bool is_start = false;
                     bool is_end = false;
-                    uint64_t start;
-                    uint64_t end;
+                    int64_t start;
+                    int64_t end;
                     while (true) {{
                         auto node = reader.Read();
                         if (node.Type == XmlNodeType::End) {{
@@ -229,8 +229,8 @@ def gen_fromxml_function(class_name):
                             if (depth-- == 0) {{ break; }}
                         }}
                         if (depth == 1 && node.Type == XmlNodeType::Text) {{
-                            if (is_start) {{ start = std::stoull(node.Value); }}
-                            else if (is_end) {{ end = std::stoull(node.Value); }}
+                            if (is_start) {{ start = std::stoll(node.Value); }}
+                            else if (is_end) {{ end = std::stoll(node.Value); }}
                         }}
                     }}
                     return std::make_pair(start, end);
@@ -330,9 +330,9 @@ def gen_fromxml_function(class_name):
                 content += "&&"
         content += "){"
         member_type = get_member_type(member)
-        if member_type == "uint64_t":
-            content += "ret.{} = std::stoull(node.Value);".format(member)
-        elif member_type == "int":
+        if member_type == "int64_t":
+            content += "ret.{} = std::stoll(node.Value);".format(member)
+        elif member_type == "int32_t":
             content += "ret.{} = std::stoi(node.Value);".format(member)
         elif member_type == "bool":
             content += "ret.{} = std::strcmp(node.Value,\"true\") == 0;".format(member)
@@ -375,7 +375,7 @@ def gen_toxml_function(class_name):
 
             if inner_type1 == "std::string":
                 pass
-            elif inner_type1 == "int" or inner_type1 == "uint64_t":
+            elif inner_type1 == "int32_t" or inner_type1 == "int64_t":
                 inner_type1_to_string = "std::to_string(" + inner_type1_to_string + ")"
             elif inner_type1 in models_cache:
                 inner_type1_to_string = inner_type1 + "ToString(" + inner_type1_to_string + ")"
@@ -384,7 +384,7 @@ def gen_toxml_function(class_name):
 
             if inner_type2 == "std::string":
                 pass
-            elif inner_type2 == "int" or inner_type2 == "uint64_t":
+            elif inner_type2 == "int32_t" or inner_type2 == "int64_t":
                 inner_type2_to_string = "std::to_string(" + inner_type2_to_string + ")"
             elif inner_type1 in models_cache:
                 inner_type2_to_string = inner_type2 + "ToString(" + inner_type2_to_string + ")"
@@ -533,11 +533,11 @@ def gen_request_definition(http_method, *args, **kwargs):
             content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, new Azure::Core::Http::MemoryBodyStream(*{}));".format(http_method, body)
             content += "request.AddHeader(\"Content-Length\", std::to_string({0}->size()));".format(body)
         elif body_type == "std::string":
-            content = "uint64_t body_buffer_length = {}.size();".format(body)
+            content = "int64_t body_buffer_length = {}.size();".format(body)
             content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, new Azure::Core::Http::MemoryBodyStream(std::move({})));".format(http_method, body)
             content += "request.AddHeader(\"Content-Length\", std::to_string(body_buffer_length));"
         elif body_type == "Azure::Core::Http::BodyStream*":
-            content = "uint64_t body_stream_length = {}->Length();".format(body)
+            content = "int64_t body_stream_length = {}->Length();".format(body)
             content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, {});".format(http_method, body)
             content += "request.AddHeader(\"Content-Length\", std::to_string(body_stream_length));"
         else:
@@ -645,7 +645,7 @@ def gen_add_query_code(*args, **kwargs):
         if optional:
             if value_type == "std::string":
                 content += "if (!{}.empty()) {{".format(value)
-            elif value_type == "int" or value_type == "uint64_t":
+            elif value_type == "int32_t" or value_type == "int64_t":
                 optional_value = kwargs["optional_value"]
                 content += "if ({} != {}) {{".format(value, optional_value)
             elif hasattr(value_type, "type") and value_type.type == "enum class":
@@ -665,7 +665,7 @@ def gen_add_query_code(*args, **kwargs):
                 content += "std::string {var_name} = {typename}ToString({var});".format(var=value, var_name=snake_case_name, typename=value_type.name)
                 value = snake_case_name
 
-        if value_type == "int" or value_type == "uint64_t":
+        if value_type == "int32_t" or value_type == "int64_t":
             content += "request.AddQueryParameter({}, std::to_string({}));".format(key, value)
         else:
             content += "request.AddQueryParameter({}, {});".format(key, value)
@@ -716,7 +716,7 @@ def gen_add_header_code(*args, **kwargs):
                         request.AddHeader({0}, {1});
                     }}
                     """.format(key, default_value))
-    elif value_type == "uint64_t":
+    elif value_type == "int64_t":
         if not optional:
             content += "request.AddHeader({}, std::to_string({}));".format(key, value)
         else:
@@ -753,7 +753,7 @@ def gen_add_range_header_code(*args, **kwargs):
     value = args[1]
     value_type = kwargs[value + ".type"]
     value_nullable = kwargs[value + ".nullable"]
-    assert value_type == "std::pair<uint64_t, uint64_t>"
+    assert value_type == "std::pair<int64_t, int64_t>"
 
     if (value_nullable):
         content = inspect.cleandoc(
@@ -899,10 +899,10 @@ def gen_get_header_code(*args, **kwargs):
             {{
             """.format(key, ite_name))
 
-        if target_type == "int":
+        if target_type == "int32_t":
             content += "{} = std::stoi({}->second);".format(target, ite_name)
-        elif target_type == "uint64_t":
-            content += "{} = std::stoull({}->second);".format(target, ite_name)
+        elif target_type == "int64_t":
+            content += "{} = std::stoll({}->second);".format(target, ite_name)
         elif target_type == "std::string":
             content += "{} = {}->second;".format(target, ite_name)
         elif target_type == "bool":
@@ -914,10 +914,10 @@ def gen_get_header_code(*args, **kwargs):
 
         content += "}"
     else:
-        if target_type == "int":
+        if target_type == "int32_t":
             content = "{1} = std::stoi(http_response.GetHeaders().at({0}));".format(key, target)
-        elif target_type == "uint64_t":
-            content = "{1} = std::stoull(http_response.GetHeaders().at({0}));".format(key, target)
+        elif target_type == "int64_t":
+            content = "{1} = std::stoll(http_response.GetHeaders().at({0}));".format(key, target)
         elif target_type == "std::string":
             content = "{1} = http_response.GetHeaders().at({0});".format(key, target)
         elif target_type == "bool":
