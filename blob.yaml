@@ -8,28 +8,28 @@ response_version_date_id_package: &RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
   - [get_header_code, "x-ms-version", Version]
   - [get_header_code, "Date", Date]
   - [get_header_code, "x-ms-request-id", RequestId]
-  - [get_header_code, "x-ms-client-request-id", ClientRequestId, optional]
+  - [get_header_code, "x-ms-client-request-id", ClientRequestId]
 
 request_encryption_package: &REQUEST_ENCRYPTION_HEADER_PACKAGE
-  - [add_header_code, "x-ms-encryption-key", EncryptionKey, optional]
-  - [add_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256, optional]
-  - [add_header_code, "x-ms-encryption-algorithm", EncryptionAlgorithm, optional]
+  - [add_header_code, "x-ms-encryption-key", EncryptionKey]
+  - [add_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256]
+  - [add_header_code, "x-ms-encryption-algorithm", EncryptionAlgorithm]
 
 response_encryption_package: &RESPONSE_ENCRYPTION_HEADER_PACKAGE
-  - [get_header_code, "x-ms-server-encrypted", ServerEncrypted, optional]
-  - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256, optional]
+  - [get_header_code, "x-ms-server-encrypted", ServerEncrypted]
+  - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256]
 
 response_etag_last_modified_package: &RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
   - [get_header_code, "ETag", ETag]
   - [get_header_code, "Last-Modified", LastModified]
 
 request_checksum_package: &REQUEST_CHECKSUM_HEADER_PACKAGE
-  - [add_header_code, "Content-MD5", ContentMD5, optional]
-  - [add_header_code, "x-ms-content-crc64", ContentCRC64, optional]
+  - [add_header_code, "Content-MD5", ContentMD5]
+  - [add_header_code, "x-ms-content-crc64", ContentCRC64]
 
 response_checksum_package: &RESPONSE_CHECKSUM_HEADER_PACKAGE
-  - [get_header_code, "Content-MD5", ContentMD5, optional]
-  - [get_header_code, "x-ms-content-crc64", ContentCRC64, optional]
+  - [get_header_code, "Content-MD5", ContentMD5]
+  - [get_header_code, "x-ms-content-crc64", ContentCRC64]
 
 request_mime_package: &REQUEST_MIME_HEADER_PACKAGE
   - [add_header_code, "x-ms-blob-content-type", Properties.ContentType, optional]
@@ -48,21 +48,21 @@ response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
   - [get_header_code, "Content-Disposition", Properties.ContentDisposition, optional]
 
 response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE
-  - [get_header_code, "x-ms-lease-status", LeaseStatus, optional]
-  - [get_header_code, "x-ms-lease-state", LeaseState, optional]
-  - [get_header_code, "x-ms-lease-duration", LeaseDuration, optional]
+  - [get_header_code, "x-ms-lease-status", LeaseStatus]
+  - [get_header_code, "x-ms-lease-state", LeaseState]
+  - [get_header_code, "x-ms-lease-duration", LeaseDuration]
 
 request_conditional_headers_package: &REQUEST_CONDITIONAL_HEADER_PACKAGE
-  - [add_header_code, "If-Modified-Since", IfModifiedSince, optional]
-  - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince, optional]
-  - [add_header_code, "If-Match", IfMatch, optional]
-  - [add_header_code, "If-None-Match", IfNoneMatch, optional]
+  - [add_header_code, "If-Modified-Since", IfModifiedSince]
+  - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+  - [add_header_code, "If-Match", IfMatch]
+  - [add_header_code, "If-None-Match", IfNoneMatch]
 
 request_source_conditional_headers_package: &REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
-  - [add_header_code, "x-ms-source-if-modified-since", SourceIfModifiedSince, optional]
-  - [add_header_code, "x-ms-source-if-unmodified-since", SourceIfUnmodifiedSince, optional]
-  - [add_header_code, "x-ms-source-if-match", SourceIfMatch, optional]
-  - [add_header_code, "x-ms-source-if-none-match", SourceIfNoneMatch, optional]
+  - [add_header_code, "x-ms-source-if-modified-since", SourceIfModifiedSince]
+  - [add_header_code, "x-ms-source-if-unmodified-since", SourceIfUnmodifiedSince]
+  - [add_header_code, "x-ms-source-if-match", SourceIfMatch]
+  - [add_header_code, "x-ms-source-if-none-match", SourceIfNoneMatch]
 
 Services:
   - Service:
@@ -76,7 +76,7 @@ Services:
             - Prefix: std::string
             - Marker: std::string
             - NextMarker: std::string
-            - MaxResults: int = 0
+            - MaxResults: int, nullable
             - BlobContainerItems: std::vector<BlobContainerItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
@@ -88,17 +88,17 @@ Services:
             ]
         options:
           - BasicRequestOptions: inline
-          - Prefix: std::string
-          - Marker: std::string
-          - MaxResults: int = 0
-          - IncludeMetadata: ListBlobContainersIncludeOption = ListBlobContainersIncludeOption::None
+          - Prefix: std::string, nullable
+          - Marker: std::string, nullable
+          - MaxResults: int, nullable
+          - IncludeMetadata: ListBlobContainersIncludeOption, nullable
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_query_code, "comp", "list"]
-          - [add_query_code, "prefix", Prefix, optional]
-          - [add_query_code, "marker", Marker, optional]
-          - [add_query_code, "maxresults", MaxResults, optional(0)]
-          - [add_query_code, "include", IncludeMetadata, optional]
+          - [add_query_code, "prefix", Prefix]
+          - [add_query_code, "marker", Marker]
+          - [add_query_code, "maxresults", MaxResults]
+          - [add_query_code, "include", IncludeMetadata]
         response_action:
           - [get_xml_body_code]  # must be the first
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -131,13 +131,13 @@ Services:
         return_type: BlobContainerInfo
         options:
           - BasicRequestOptions: inline
-          - AccessType: PublicAccessType = PublicAccessType::Private
+          - AccessType: PublicAccessType, nullable
           - Metadata: std::map<std::string, std::string>
         request_action:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
-          - [add_header_code, "x-ms-blob-public-access", AccessType, optional]
+          - [add_header_code, "x-ms-blob-public-access", AccessType]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
@@ -148,13 +148,13 @@ Services:
         return_type: BasicResponse
         options:
           - BasicRequestOptions: inline
-          - IfModifiedSince: std::string
-          - IfUnmodifiedSince: std::string
+          - IfModifiedSince: std::string, nullable
+          - IfUnmodifiedSince: std::string, nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
-          - [add_header_code, "If-Modified-Since", IfModifiedSince, optional]
-          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince, optional]
+          - [add_header_code, "If-Modified-Since", IfModifiedSince]
+          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
 
@@ -188,13 +188,13 @@ Services:
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
-          - IfModifiedSince: std::string
+          - IfModifiedSince: std::string, nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "metadata"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
-          - [add_header_code, "If-Modified-Since", IfModifiedSince, optional]
+          - [add_header_code, "If-Modified-Since", IfModifiedSince]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
@@ -210,7 +210,7 @@ Services:
             - Prefix: std::string
             - Marker: std::string
             - NextMarker: std::string
-            - MaxResults: int = 0
+            - MaxResults: int, nullable
             - Delimiter: std::string
             - BlobItems: std::vector<BlobItem>
             - from_xml: [
@@ -225,19 +225,19 @@ Services:
             ]
         options:
           - BasicRequestOptions: inline
-          - Prefix: std::string
-          - Delimiter: std::string
-          - Marker: std::string
-          - MaxResults: int = 0
+          - Prefix: std::string, nullable
+          - Delimiter: std::string, nullable
+          - Marker: std::string, nullable
+          - MaxResults: int, nullable
           - Include: std::vector<ListBlobsIncludeItem>
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "list"]
-          - [add_query_code, "prefix", Prefix, optional]
-          - [add_query_code, "delimiter", Delimiter, optional]
-          - [add_query_code, "marker", Marker, optional]
-          - [add_query_code, "maxresults", MaxResults, optional(0)]
+          - [add_query_code, "prefix", Prefix]
+          - [add_query_code, "delimiter", Delimiter]
+          - [add_query_code, "marker", Marker]
+          - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
           - [get_xml_body_code]  # must be the first
@@ -247,15 +247,15 @@ Services:
     - Download:
         http_method: Get
         http_status_code: [200, 206]
-        return_type: FlattenedDownloadProperties
+        return_type: BlobDownloadInfo
         options:
           - BasicRequestOptions: inline
-          - Range: std::pair<uint64_t, uint64_t>
+          - Range: std::pair<uint64_t, uint64_t>, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
-          - [add_range_header_code, "x-ms-range", Range, optional]
+          - [add_range_header_code, "x-ms-range", Range]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -266,9 +266,9 @@ Services:
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
           - *RESPONSE_LEASE_HEADER_PACKAGE
-          - [get_header_code, "Content-Range", ContentRange, optional]
-          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
-          - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount, optional]
+          - [get_header_code, "Content-Range", ContentRange]
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
+          - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
           - [get_header_code, "x-ms-blob-type", BlobType]
           - [get_body_code, BodyStream]
 
@@ -278,11 +278,11 @@ Services:
         return_type: BasicResponse
         options:
           - BasicRequestOptions: inline
-          - DeleteSnapshots: DeleteSnapshotsOption = DeleteSnapshotsOption::None
+          - DeleteSnapshots: DeleteSnapshotsOption, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
-          - [add_header_code, "x-ms-delete-snapshots", DeleteSnapshots, optional]
+          - [add_header_code, "x-ms-delete-snapshots", DeleteSnapshots]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -318,13 +318,13 @@ Services:
           - *RESPONSE_LEASE_HEADER_PACKAGE
           - [get_header_code, "Content-Length", ContentLength]
           - *RESPONSE_MIME_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
-          - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount, optional]
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
+          - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
-          - [get_header_code, "x-ms-access-tier", Tier, optional]
-          - [get_header_code, "x-ms-access-tier-inferred", AccessTierInferred, optional]
-          - [get_header_code, "x-ms-archive-status", ArchiveStatus, optional]
-          - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangeTime, optional]
+          - [get_header_code, "x-ms-access-tier", Tier]
+          - [get_header_code, "x-ms-access-tier-inferred", AccessTierInferred]
+          - [get_header_code, "x-ms-archive-status", ArchiveStatus]
+          - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangeTime]
 
     - SetHttpHeaders:
         http_method: Put
@@ -344,7 +344,7 @@ Services:
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
     - SetMetadata:
         http_method: Put
@@ -372,12 +372,12 @@ Services:
         options:
           - BasicRequestOptions: inline
           - Tier: AccessTier = AccessTier::Unknown
-          - RehydratePriority: RehydratePriority = RehydratePriority::Unknown
+          - RehydratePriority: RehydratePriority, nullable
         request_action:
           - [add_query_code, "comp", "tier"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_header_code, "x-ms-access-tier", Tier]
-          - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority, optional]
+          - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
 
@@ -389,20 +389,20 @@ Services:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
           - SourceUri: std::string
-          - LeaseId: std::string
-          - SourceLeaseId: std::string
-          - Tier: AccessTier = AccessTier::Unknown
-          - RehydratePriority: RehydratePriority = RehydratePriority::Unknown
+          - LeaseId: std::string, nullable
+          - SourceLeaseId: std::string, nullable
+          - Tier: AccessTier, nullable
+          - RehydratePriority: RehydratePriority, nullable
           - BlobRequestConditionalHeaders: inline
           - BlobRequestSourceConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-copy-source", SourceUri]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
-          - [add_header_code, "x-ms-source-lease-id", SourceLeaseId, optional]
-          - [add_header_code, "x-ms-access-tier", Tier, optional]
-          - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-source-lease-id", SourceLeaseId]
+          - [add_header_code, "x-ms-access-tier", Tier]
+          - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -418,13 +418,13 @@ Services:
         options:
           - BasicRequestOptions: inline
           - CopyId: std::string
-          - LeaseId: std::string
+          - LeaseId: std::string, nullable
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_query_code, "comp", "copy"]
           - [add_query_code, "copyid", CopyId]
           - [add_header_code, "x-ms-copy-action", "abort"]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
 
@@ -435,7 +435,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
-          - LeaseId: std::string
+          - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -443,7 +443,7 @@ Services:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -458,12 +458,12 @@ Services:
         return_type: BlobContentInfo
         options:
           - BodiedRequestOptions: inline
-          - ContentMD5: std::string
-          - ContentCRC64: std::string
+          - ContentMD5: std::string, nullable
+          - ContentCRC64: std::string, nullable
           - Properties: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
-          - LeaseId: std::string
-          - Tier: AccessTier = AccessTier::Unknown
+          - LeaseId: std::string, nullable
+          - Tier: AccessTier, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -473,9 +473,9 @@ Services:
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-type", "BlockBlob"]
-          - [add_header_code, "x-ms-access-tier", Tier, optional]
+          - [add_header_code, "x-ms-access-tier", Tier]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -490,9 +490,9 @@ Services:
         options:
           - BodiedRequestOptions: inline
           - BlockId: std::string
-          - ContentMD5: std::string
-          - ContentCRC64: std::string
-          - LeaseId: std::string
+          - ContentMD5: std::string, nullable
+          - ContentCRC64: std::string, nullable
+          - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
         request_action:
           - [add_body_code, BodyStream]  # must be the first one
@@ -502,7 +502,7 @@ Services:
           - [add_query_code, "blockid", BlockId]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -517,10 +517,10 @@ Services:
           - BasicRequestOptions: inline
           - BlockId: std::string
           - SourceUri: std::string
-          - SourceRange: std::pair<uint64_t, uint64_t>
-          - ContentMD5: std::string
-          - ContentCRC64: std::string
-          - LeaseId: std::string
+          - SourceRange: std::pair<uint64_t, uint64_t>, nullable
+          - ContentMD5: std::string, nullable
+          - ContentCRC64: std::string, nullable
+          - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestSourceConditionalHeaders: inline
         request_action:
@@ -528,10 +528,10 @@ Services:
           - [add_query_code, "blockid", BlockId]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_header_code, "x-ms-copy-source", SourceUri]
-          - [add_range_header_code, "x-ms-source_range", SourceRange, optional]
-          - [add_header_code, "x-ms-source-content-md5", ContentMD5, optional]
-          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64, optional]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_range_header_code, "x-ms-source_range", SourceRange]
+          - [add_header_code, "x-ms-source-content-md5", ContentMD5]
+          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -548,10 +548,10 @@ Services:
           - BlockList: std::vector<std::pair<BlockType, std::string>>
           - Properties: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
-          - LeaseId: std::string
+          - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
-          - Tier: AccessTier = AccessTier::Unknown
+          - Tier: AccessTier, nullable
           - to_xml: [
             [tag, BlockList, BlockList]
           ]
@@ -561,9 +561,9 @@ Services:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
-          - [add_header_code, "x-ms-access-tier", Tier, optional]
+          - [add_header_code, "x-ms-access-tier", Tier]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -575,7 +575,7 @@ Services:
         http_status_code: 200
         options:
             - BasicRequestOptions: inline
-            - ListType: BlockListTypeOption = BlockListTypeOption::All
+            - ListType: BlockListTypeOption, nullable
             - BlobRequestConditionalHeaders: inline
         return_type:
           BlobBlockListInfo:
@@ -592,7 +592,7 @@ Services:
             ]
         request_action:
             - [add_query_code, "comp", "blocklist"]
-            - [add_query_code, "blocklisttype", ListType, optional]
+            - [add_query_code, "blocklisttype", ListType]
             - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
             - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -610,22 +610,22 @@ Services:
         options:
           - BasicRequestOptions: inline
           - BlobContentLength: uint64_t
-          - SequenceNumber: uint64_t = 0
+          - SequenceNumber: uint64_t, nullable
           - Properties: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
-          - LeaseId: std::string
-          - Tier: AccessTier = AccessTier::Unknown
+          - LeaseId: std::string, nullable
+          - Tier: AccessTier, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-type", "PageBlob"]
           - [add_header_code, "x-ms-blob-content-length", BlobContentLength]
           - [add_header_code, "x-ms-blob-sequence-number", SequenceNumber]
-          - [add_header_code, "x-ms-access-tier", Tier, optional]
+          - [add_header_code, "x-ms-access-tier", Tier]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -640,10 +640,12 @@ Services:
         options:
           - BodiedRequestOptions: inline
           - Range: std::pair<uint64_t, uint64_t>
-          - ContentMD5: std::string
-          - ContentCRC64: std::string
-          - LeaseId: std::string
-          # - IfSequenceNumberLessThanOrEqualTo: Azure::Core::Optional<uint64_t>  # TODO
+          - ContentMD5: std::string, nullable
+          - ContentCRC64: std::string, nullable
+          - LeaseId: std::string, nullable
+          - IfSequenceNumberLessThanOrEqualTo: uint64_t, nullable
+          - IfSequenceNumberLessThan: uint64_t, nullable
+          - IfSequenceNumberEqualTo: uint64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
@@ -654,14 +656,17 @@ Services:
           - [add_range_header_code, "x-ms-range", Range]
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
           - [add_header_code, "x-ms-page-write", "update"]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
+          - [add_header_code, "x-ms-if-sequence-number-lt", IfSequenceNumberLessThan]
+          - [add_header_code, "x-ms-if-sequence-number-eq", IfSequenceNumberEqualTo]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
     - UploadPagesFromUri:
@@ -672,10 +677,12 @@ Services:
           - SourceUri: std::string
           - SourceRange: std::pair<uint64_t, uint64_t>
           - Range: std::pair<uint64_t, uint64_t>
-          - ContentMD5: std::string
-          - ContentCRC64: std::string
-          - LeaseId: std::string
-          # - IfSequenceNumberLessThanOrEqualTo: Azure::Core::Optional<uint64_t>  # TODO
+          - ContentMD5: std::string, nullable
+          - ContentCRC64: std::string, nullable
+          - LeaseId: std::string, nullable
+          - IfSequenceNumberLessThanOrEqualTo: uint64_t, nullable
+          - IfSequenceNumberLessThan: uint64_t, nullable
+          - IfSequenceNumberEqualTo: uint64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
@@ -685,17 +692,20 @@ Services:
           - [add_range_header_code, "x-ms-range", Range]
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source-range", SourceRange]
-          - [add_header_code, "x-ms-source-content-md5", ContentMD5, optional]
-          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64, optional]
+          - [add_header_code, "x-ms-source-content-md5", ContentMD5]
+          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64]
           - [add_header_code, "x-ms-page-write", "update"]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
+          - [add_header_code, "x-ms-if-sequence-number-lt", IfSequenceNumberLessThan]
+          - [add_header_code, "x-ms-if-sequence-number-eq", IfSequenceNumberEqualTo]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
     - ClearPages:
@@ -704,7 +714,10 @@ Services:
         options:
           - BasicRequestOptions: inline
           - Range: std::pair<uint64_t, uint64_t>
-          - LeaseId: std::string
+          - LeaseId: std::string, nullable
+          - IfSequenceNumberLessThanOrEqualTo: uint64_t, nullable
+          - IfSequenceNumberLessThan: uint64_t, nullable
+          - IfSequenceNumberEqualTo: uint64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
@@ -713,13 +726,16 @@ Services:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
           - [add_header_code, "x-ms-page-write", "clear"]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
+          - [add_header_code, "x-ms-if-sequence-number-lt", IfSequenceNumberLessThan]
+          - [add_header_code, "x-ms-if-sequence-number-eq", IfSequenceNumberEqualTo]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
     - Resize:
@@ -729,18 +745,26 @@ Services:
         options:
           - BasicRequestOptions: inline
           - BlobContentLength: uint64_t
+          - LeaseId: std::string, nullable
+          - IfSequenceNumberLessThanOrEqualTo: uint64_t, nullable
+          - IfSequenceNumberLessThan: uint64_t, nullable
+          - IfSequenceNumberEqualTo: uint64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_header_code, "x-ms-blob-content-length", BlobContentLength]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
+          - [add_header_code, "x-ms-if-sequence-number-lt", IfSequenceNumberLessThan]
+          - [add_header_code, "x-ms-if-sequence-number-eq", IfSequenceNumberEqualTo]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber, optional]
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
     - GetPageRanges:
         http_method: Get
@@ -748,18 +772,18 @@ Services:
         return_type: PageRangesInfoInternal
         options:
           - BasicRequestOptions: inline
-          - PreviousSnapshot: std::string
-          - PreviousSnapshotUrl: std::string
-          - Range: std::pair<uint64_t, uint64_t>
-          - LeaseId: std::string
+          - PreviousSnapshot: std::string, nullable
+          - PreviousSnapshotUrl: std::string, nullable
+          - Range: std::pair<uint64_t, uint64_t>, nullable
+          - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "pagelist"]
-          - [add_query_code, "prevsnapshot", PreviousSnapshot, optional]
+          - [add_query_code, "prevsnapshot", PreviousSnapshot]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
-          - [add_range_header_code, "x-ms-range", Range, optional]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
-          - [add_header_code, "x-ms-previous-snapshot-url", PreviousSnapshotUrl, optional]
+          - [add_range_header_code, "x-ms-range", Range]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-previous-snapshot-url", PreviousSnapshotUrl]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - [get_xml_body_code]  # must be the first
@@ -795,14 +819,14 @@ Services:
           - BasicRequestOptions: inline
           - Properties: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
-          - LeaseId: std::string
+          - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-type", "AppendBlob"]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
@@ -818,11 +842,11 @@ Services:
         return_type: BlobAppendInfo
         options:
           - BodiedRequestOptions: inline
-          - ContentMD5: std::string
-          - ContentCRC64: std::string
-          - LeaseId: std::string
-          - MaxSize: uint64_t = std::numeric_limits<uint64_t>::max()
-          - AppendPosition: uint64_t = std::numeric_limits<uint64_t>::max()
+          - ContentMD5: std::string, nullable
+          - ContentCRC64: std::string, nullable
+          - LeaseId: std::string, nullable
+          - MaxSize: uint64_t, nullable
+          - AppendPosition: uint64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -830,9 +854,9 @@ Services:
           - [add_query_code, "comp", "appendblock"]
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
-          - [add_header_code, "x-ms-blob-condition-maxsize", MaxSize, optional(std::numeric_limits<uint64_t>::max())]
-          - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition, optional(std::numeric_limits<uint64_t>::max())]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-blob-condition-maxsize", MaxSize]
+          - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -850,12 +874,12 @@ Services:
         options:
           - BasicRequestOptions: inline
           - SourceUri: std::string
-          - SourceRange: std::pair<uint64_t, uint64_t>
-          - ContentMD5: std::string
-          - ContentCRC64: std::string
-          - LeaseId: std::string
-          - MaxSize: uint64_t = std::numeric_limits<uint64_t>::max()
-          - AppendPosition: uint64_t = std::numeric_limits<uint64_t>::max()
+          - SourceRange: std::pair<uint64_t, uint64_t>, nullable
+          - ContentMD5: std::string, nullable
+          - ContentCRC64: std::string, nullable
+          - LeaseId: std::string, nullable
+          - MaxSize: uint64_t, nullable
+          - AppendPosition: uint64_t, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -863,11 +887,11 @@ Services:
           - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source-range", SourceRange]
-          - [add_header_code, "x-ms-source-content-md5", ContentMD5, optional]
-          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64, optional]
-          - [add_header_code, "x-ms-lease-id", LeaseId, optional]
-          - [add_header_code, "x-ms-blob-condition-maxsize", MaxSize, optional(std::numeric_limits<uint64_t>::max())]
-          - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition, optional(std::numeric_limits<uint64_t>::max())]
+          - [add_header_code, "x-ms-source-content-md5", ContentMD5]
+          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-blob-condition-maxsize", MaxSize]
+          - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -890,7 +914,7 @@ Models:
     - RequestId: std::string
     - Date: std::string
     - Version: std::string
-    - ClientRequestId: std::string
+    - ClientRequestId: std::string, nullable
   BodiedResponse:
     - type: struct
     - BasicResponse: inline
@@ -960,19 +984,19 @@ Models:
       [text, Size, Size],
     ]
   BlobRequestConditionalHeaders:
-    - IfModifiedSince: std::string
-    - IfUnmodifiedSince: std::string
-    - IfMatch: std::string
-    - IfNoneMatch: std::string
+    - IfModifiedSince: std::string, nullable
+    - IfUnmodifiedSince: std::string, nullable
+    - IfMatch: std::string, nullable
+    - IfNoneMatch: std::string, nullable
   BlobRequestSourceConditionalHeaders:
-    - SourceIfModifiedSince: std::string
-    - SourceIfUnmodifiedSince: std::string
-    - SourceIfMatch: std::string
-    - SourceIfNoneMatch: std::string
+    - SourceIfModifiedSince: std::string, nullable
+    - SourceIfUnmodifiedSince: std::string, nullable
+    - SourceIfMatch: std::string, nullable
+    - SourceIfNoneMatch: std::string, nullable
   BlockInfo:
     - BasicResponse: inline
-    - ContentMD5: std::string
-    - ContentCRC64: std::string
+    - ContentMD5: std::string, nullable
+    - ContentCRC64: std::string, nullable
     - BlobResponseEncryptionOptions: inline
   BlobHttpHeaders:
     - ContentType: std::string
@@ -983,38 +1007,41 @@ Models:
     - ContentDisposition: std::string
   BlobRequestEncryptionOptions:
     - noexport: true
-    - EncryptionKey: std::string
-    - EncryptionKeySHA256: std::string
-    - EncryptionAlgorithm: std::string
+    - EncryptionKey: std::string, nullable
+    - EncryptionKeySHA256: std::string, nullable
+    - EncryptionAlgorithm: std::string, nullable
   BlobResponseEncryptionOptions:
     - noexport: true
     - ServerEncrypted: bool = true
-    - EncryptionKeySHA256: std::string
+    - EncryptionKeySHA256: std::string, nullable
   FlattenedDownloadProperties:
+    - noexport: true
     - type: struct
     - BodiedResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - ContentRange: std::string
+    - ContentRange: std::string, nullable
     - Properties: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
-    - SequenceNumber: uint64_t = 0  # only for page blob
-    - CommittedBlockCount: uint64_t = 0  # only for append blob
+    - SequenceNumber: uint64_t, nullable  # only for page blob
+    - CommittedBlockCount: uint64_t, nullable  # only for append blob
     - BlobType: BlobType = BlobType::Unknown
-    - ContentMD5: std::string  # MD5 for the downloaded range
-    - ContentCRC64: std::string
-    - LeaseDuration: std::string
+    - ContentMD5: std::string, nullable  # MD5 for the downloaded range
+    - ContentCRC64: std::string, nullable
+    - LeaseDuration: std::string, nullable
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
     - BlobResponseEncryptionOptions: inline
+  BlobDownloadInfo:
+    - FlattenedDownloadProperties: inline
   BlobContentInfo:
     - type: struct
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - ContentMD5: std::string
-    - ContentCRC64: std::string
-    - SequenceNumber: uint64_t = 0
+    - ContentMD5: std::string, nullable
+    - ContentCRC64: std::string, nullable
+    - SequenceNumber: uint64_t, nullable
     - BlobResponseEncryptionOptions: inline
   BlobContainerItemWithoutName:
     - noexport: true
@@ -1024,7 +1051,7 @@ Models:
     - AccessType: PublicAccessType = PublicAccessType::Private
     - HasImmutabilityPolicy: bool = false
     - HasLegalHold: bool = false
-    - LeaseDuration: std::string
+    - LeaseDuration: std::string, nullable
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
   BlobContainerItem:
@@ -1057,7 +1084,7 @@ Models:
     - AccessTierInferred: bool = true
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
-    - LeaseDuration: std::string
+    - LeaseDuration: std::string, nullable
     - BlobResponseEncryptionOptions: inline
     - from_xml: [
       [text, Name, Name],
@@ -1120,23 +1147,23 @@ Models:
     - CreationTime: std::string
     - Metadata: std::map<std::string, std::string>
     - BlobType: BlobType = BlobType::Unknown
-    - LeaseDuration: std::string
+    - LeaseDuration: std::string, nullable
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
     - ContentLength: uint64_t = 0
     - BlobHttpHeaders: inline
-    - SequenceNumber: uint64_t = 0  # only for page blob
-    - CommittedBlockCount: int = 0  # only for append blob
+    - SequenceNumber: uint64_t, nullable  # only for page blob
+    - CommittedBlockCount: int, nullable  # only for append blob
     - BlobResponseEncryptionOptions: inline
     - Tier: AccessTier = AccessTier::Unknown
     - AccessTierInferred: bool = true
-    - ArchiveStatus: BlobArchiveStatus = BlobArchiveStatus::Unknown
-    - AccessTierChangeTime: std::string
+    - ArchiveStatus: BlobArchiveStatus, nullable
+    - AccessTierChangeTime: std::string, nullable
   BlobInfo:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - SequenceNumber: uint64_t = 0
+    - SequenceNumber: uint64_t, nullable
   BlobCopyInfo:
     - BasicResponse: inline
     - ETag: std::string
@@ -1171,8 +1198,8 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - ContentMD5: std::string
-    - ContentCRC64: std::string
+    - ContentMD5: std::string, nullable
+    - ContentCRC64: std::string, nullable
     - SequenceNumber: uint64_t = 0
     - BlobResponseEncryptionOptions: inline
   PageBlobInfo:
@@ -1195,8 +1222,8 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - ContentMD5: std::string
-    - ContentCRC64: std::string
-    - AppendOffset: uint64_t = std::numeric_limits<uint64_t>::max()
-    - CommittedBlockCount: uint64_t = std::numeric_limits<uint64_t>::max()
+    - ContentMD5: std::string, nullable
+    - ContentCRC64: std::string, nullable
+    - AppendOffset: uint64_t = 0
+    - CommittedBlockCount: uint64_t = 0
     - BlobResponseEncryptionOptions: inline

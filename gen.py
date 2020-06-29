@@ -19,6 +19,7 @@ class class_definition:
         # only for struct
         self.member_type = []
         self.member_default_value = []
+        self.member_nullable = []
         # only for enum
         self.member_literal = []
         self.member_comment = []
@@ -48,10 +49,12 @@ class class_definition:
         member_literal = kwargs.get("member_literal", None)
         member_comment = kwargs.get("member_comment", None)
         member_default_value = kwargs.get("member_default_value", None)
+        member_nullable = kwargs.get("member_nullable", False)
 
         self.member.append(name)
         self.member_type.append(member_type)
         self.member_default_value.append(member_default_value)
+        self.member_nullable.append(member_nullable)
         self.member_literal.append(member_literal)
         self.member_comment.append(member_comment)
         self.add_dependency(member_type)
@@ -60,6 +63,7 @@ class class_definition:
         self.member.extend(other.member)
         self.member_type.extend(other.member_type)
         self.member_default_value.extend(other.member_default_value)
+        self.member_nullable.extend(other.member_nullable)
         self.member_literal.extend(other.member_literal)
         self.member_comment.extend(other.member_comment)
         self.dependency |= other.dependency
@@ -76,6 +80,40 @@ code_template.gen_service_namespace(service_name)
 code_template.gen_rest_client(service_name)
 
 export_models = {}
+
+
+def splitq(s, sep):
+    res = []
+    stack = []
+    stage = str()
+    for c in s:
+        if c == sep:
+            if len(stack) == 0:
+                res.append(stage)
+                stage = str()
+            else:
+                stage += c
+        else:
+            stage += c
+            if len(stack) != 0 and c == stack[-1]:
+                stack.pop()
+            elif c == "(":
+                stack += ")"
+            elif c == "[":
+                stack += "]"
+            elif c == "{":
+                stack += "}"
+            elif c == "<":
+                stack += ">"
+            elif c == "\"":
+                stack += "\""
+            elif c == "'":
+                stack += "'"
+    if len(stack) != 0:
+        raise RuntimeError("unclosed pair in " + s)
+    if len(stage) != 0:
+        res.append(stage)
+    return res
 
 
 def get_class_definition(class_name, config_class_def=None):
@@ -124,16 +162,30 @@ def get_class_definition(class_name, config_class_def=None):
         class_def.noexport = True
     for i, m in enumerate(config_class_def):
         if type(m) is ruamel.yaml.comments.CommentedMap:
-            member_name, member_type = next(iter(m.items()))
+            member_name, member_desc = next(iter(m.items()))
+
+            if len(splitq(member_desc, ",")) > 1:
+                member_type = splitq(member_desc, ",")[0].strip()
+                for desc in [i.strip() for i in splitq(member_desc, ",")[1:]]:
+                    if desc == "nullable":
+                        member_nullable = True
+                    else:
+                        raise RuntimeError("unknown member descriptor " + desc)
+            else:
+                member_type = member_desc
+                member_nullable = False
+
             if "=" in member_type:
                 (member_type, member_default_value) = [i.strip() for i in member_type.split("=")]
             else:
                 member_default_value = None
+
             member_comment = m.ca.items[member_name][2].value.strip(" \t\r\n#") if member_name in m.ca.items else None
+
             if member_type == "inline":
                 class_def.add_inline_class(get_class_definition(member_name))
             elif class_type == "struct":
-                class_def.add_member(member_name, member_type=member_type, member_comment=member_comment, member_default_value=member_default_value)
+                class_def.add_member(member_name, member_type=member_type, member_comment=member_comment, member_default_value=member_default_value, member_nullable=member_nullable)
             elif class_type == "enum class":
                 member_literal = member_type
                 class_def.add_member(member_name, member_literal=member_literal, member_comment=member_comment, member_default_value=member_default_value)
@@ -180,11 +232,24 @@ for config_resource in config["Services"]:
         config_option_def = config_function_def["options"]
         option_def = class_definition(function_name + "Options", "struct")
         for m in config_option_def:
-            member_name, member_type = next(iter(m.items()))
+            member_name, member_desc = next(iter(m.items()))
+
             if member_name == "to_xml":
-                toxml_actions = member_type
+                toxml_actions = member_desc
                 option_def.toxml_actions = toxml_actions
                 continue
+
+            if len(splitq(member_desc, ",")) > 1:
+                member_type = splitq(member_desc, ",")[0].strip()
+                for desc in [i.strip() for i in splitq(member_desc, ",")[1:]]:
+                    if desc == "nullable":
+                        member_nullable = True
+                    else:
+                        raise RuntimeError("unknown member descriptor " + desc)
+            else:
+                member_type = member_desc
+                member_nullable = False
+
             if "=" in member_type:
                 (member_type, member_default_value) = [i.strip() for i in member_type.split("=")]
             else:
@@ -192,7 +257,7 @@ for config_resource in config["Services"]:
             if member_type == "inline":
                 option_def.add_inline_class(get_class_definition(member_name))
             else:
-                option_def.add_member(member_name, member_type=member_type, member_default_value=member_default_value)
+                option_def.add_member(member_name, member_type=member_type, member_default_value=member_default_value, member_nullable=member_nullable)
 
         code_template.gen_function_option_definition(service_name, function_name, option_def)
         for d in option_def.dependency:
@@ -237,11 +302,13 @@ for config_resource in config["Services"]:
                                 raise RuntimeError("cannot find " + action[i] + " in request options")
                         arg += "." + t
                         arg_type = arg_def.member_type[arg_def.member.index(t)]
+                        arg_nullable = arg_def.member_nullable[arg_def.member.index(t)]
                         if arg_type in models_cache:
                             arg_def = models_cache[arg_type]
                     args.append(arg)
                     arg_def = models_cache[arg_type] if arg_type in models_cache else arg_type
                     kwargs[arg + ".type"] = arg_def
+                    kwargs[arg + ".nullable"] = arg_nullable
                 elif type(action[i]) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
                     # maybe add const string definition
                     arg = "\"{}\"".format(action[i])
@@ -290,11 +357,13 @@ for config_resource in config["Services"]:
                                 raise RuntimeError("cannot find " + action[i] + " in " + return_type)
                         arg += "." + t
                         arg_type = arg_def.member_type[arg_def.member.index(t)]
+                        arg_nullable = arg_def.member_nullable[arg_def.member.index(t)]
                         if arg_type in models_cache:
                             arg_def = models_cache[arg_type]
                     args.append(arg)
                     arg_def = models_cache[arg_type] if arg_type in models_cache else arg_type
                     kwargs[arg + ".type"] = arg_def
+                    kwargs[arg + ".nullable"] = arg_nullable
                 elif type(action[i]) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
                     # maybe add const string definition
                     arg = "\"{}\"".format(action[i])

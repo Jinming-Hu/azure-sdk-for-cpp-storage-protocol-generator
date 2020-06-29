@@ -22,6 +22,7 @@ include_headers = """
 #include <stdexcept>
 #include <limits>
 
+#include "nullable.hpp"
 #include "context.hpp"
 #include "http/http.hpp"
 #include "http/pipeline.hpp"
@@ -54,10 +55,30 @@ toxml_options_def_cache = {}
 
 
 def get_snake_case_name(var):
-    snake_case_name = "".join([s for s in map(lambda c: "_" + c.lower() if c.isupper() else c, var)])
-    if snake_case_name.startswith("_"):
-        snake_case_name = snake_case_name[1:]
-    return snake_case_name
+    res = str()
+    last_is_upper = False
+    last_is_underscore = False
+    for c in var:
+        if c.isupper():
+            if last_is_upper:
+                res += c.lower()
+            elif last_is_underscore:
+                res += c.lower()
+            else:
+                res += "_" + c.lower()
+            last_is_upper = True
+            last_is_underscore = False
+        elif c.islower() or c.isdigit():
+            res += c
+            last_is_upper = False
+            last_is_underscore = False
+        else:
+            res += "_"
+            last_is_upper = False
+            last_is_underscore = True
+    while res.startswith("_"):
+        res = res[1:]
+    return res
 
 
 def gen_service_namespace(service_name):
@@ -92,11 +113,16 @@ def gen_model_definition(service_name, class_name, class_def):
     content = "{} {} {{".format(class_def.type, class_name)
     for i in range(len(class_def.member)):
         if class_def.member_type[i]:
+            # for struct
             if class_def.member_type[i] == class_def.member[i]:
                 ns_prefix = service_name + "::"
             else:
                 ns_prefix = ""
-            content += ns_prefix + class_def.member_type[i] + " " + class_def.member[i]
+            if class_def.member_nullable[i]:
+                real_member_type = "Azure::Core::Nullable<" + ns_prefix + class_def.member_type[i] + ">"
+            else:
+                real_member_type = ns_prefix + class_def.member_type[i]
+            content += real_member_type + " " + class_def.member[i]
             if class_def.member_default_value[i]:
                 if class_def.member_default_value[i].startswith(class_def.member[i] + "::"):
                     content += "=" + ns_prefix + class_def.member_default_value[i]
@@ -106,6 +132,7 @@ def gen_model_definition(service_name, class_name, class_def):
             if class_def.member_comment[i]:
                 content += "// " + class_def.member_comment[i] + "\n"
         else:
+            # for enum
             content += class_def.member[i] + ","
             if class_def.member_comment[i]:
                 content += "// " + class_def.member_comment[i] + "\n"
@@ -458,7 +485,11 @@ def gen_function_option_definition(service_name, function_name, class_def):
             ns_prefix = service_name + "::"
         else:
             ns_prefix = ""
-        content += ns_prefix + class_def.member_type[i] + " " + class_def.member[i]
+        if class_def.member_nullable[i]:
+            real_member_type = "Azure::Core::Nullable<" + ns_prefix + class_def.member_type[i] + ">"
+        else:
+            real_member_type = ns_prefix + class_def.member_type[i]
+        content += real_member_type + " " + class_def.member[i]
         if class_def.member_default_value[i]:
             if class_def.member_default_value[i].startswith(class_def.member[i] + "::"):
                 content += "=" + ns_prefix + class_def.member_default_value[i]
@@ -579,9 +610,14 @@ def gen_add_query_code(*args, **kwargs):
     key = args[0]
     value = args[1]
     value_type = kwargs[value + ".type"]
+    value_nullable = kwargs.get(value + ".nullable", False)
     optional = kwargs["optional"]
 
     content = ""
+    if value_nullable:
+        content += "if ({}.HasValue()) {{".format(value)
+        value += ".GetValue()"
+
     if type(value_type) is str and value_type.startswith("std::vector<") and value_type.endswith(">"):
         template_type = models_cache[value_type[len("std::vector<"): -len(">")]]
         if template_type.type == "enum class":
@@ -619,10 +655,15 @@ def gen_add_query_code(*args, **kwargs):
                     std::string {var_name} = {typename}ToString({var});
                     if (!{var_name}.empty())
                     {{
-                    """.format(key=key, var=value, var_name=snake_case_name, typename=value_type.name))
+                    """.format(var=value, var_name=snake_case_name, typename=value_type.name))
                 value = snake_case_name
             else:
                 raise RuntimeError("unknown type " + value_type.type + " " + value_type.name if hasattr(value_type, "type") else value_type)
+        else:
+            if hasattr(value_type, "type") and value_type.type == "enum class":
+                snake_case_name = get_snake_case_name(value_type.name)
+                content += "std::string {var_name} = {typename}ToString({var});".format(var=value, var_name=snake_case_name, typename=value_type.name)
+                value = snake_case_name
 
         if value_type == "int" or value_type == "uint64_t":
             content += "request.AddQueryParameter({}, std::to_string({}));".format(key, value)
@@ -631,6 +672,9 @@ def gen_add_query_code(*args, **kwargs):
 
         if optional:
             content += "}"
+
+    if value_nullable:
+        content += "}"
 
     global main_body
     main_body += content
@@ -642,16 +686,22 @@ def gen_add_header_code(*args, **kwargs):
     optional = kwargs["optional"]
     optional_value = kwargs.get("optional_value", None)
     value_type = kwargs[value + ".type"]
+    value_nullable = kwargs.get(value + ".nullable", False)
     default_value = kwargs.get("default_value", None)
 
     if default_value and not optional:
         raise RuntimeError("type with default value must be optional")
 
+    content = ""
+    if value_nullable:
+        content += "if ({}.HasValue()) {{".format(value)
+        value += ".GetValue()"
+
     if value_type == "std::string":
         if not optional:
-            content = "request.AddHeader({}, {});".format(key, value)
+            content += "request.AddHeader({}, {});".format(key, value)
         else:
-            content = inspect.cleandoc(
+            content += inspect.cleandoc(
                 """
                 if (!{1}.empty())
                 {{
@@ -668,19 +718,19 @@ def gen_add_header_code(*args, **kwargs):
                     """.format(key, default_value))
     elif value_type == "uint64_t":
         if not optional:
-            content = "request.AddHeader({}, std::to_string({}));".format(key, value)
+            content += "request.AddHeader({}, std::to_string({}));".format(key, value)
         else:
-            content = inspect.cleandoc(
+            content += inspect.cleandoc(
                 """if ({member_name} != {member_optional_value}) {{
                     request.AddHeader({header_name}, std::to_string({member_name}));
                 }}""".format(member_name=value, member_optional_value=optional_value, header_name=key))
             #raise RuntimeError("optional int header not supported yet")
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
-            content = "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
+            content += "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
         else:
             str_name = value.replace(".", "_").lower() + "_str"
-            content = inspect.cleandoc(
+            content += inspect.cleandoc(
                 """
                 auto {var_str} = {typename}ToString({value});
                 if (!{var_str}.empty())
@@ -691,6 +741,9 @@ def gen_add_header_code(*args, **kwargs):
     else:
         raise RuntimeError("unknown type " + value_type.type if hasattr(value_type, "type") else value_type)
 
+    if value_nullable:
+        content += "}"
+
     global main_body
     main_body += content
 
@@ -699,23 +752,25 @@ def gen_add_range_header_code(*args, **kwargs):
     key = args[0]
     value = args[1]
     value_type = kwargs[value + ".type"]
+    value_nullable = kwargs[value + ".nullable"]
     assert value_type == "std::pair<uint64_t, uint64_t>"
 
-    content = inspect.cleandoc(
-        """
-        if ({1}.first == std::numeric_limits<decltype({1}.first)>::max())
-        {{
-            // do nothing
-        }}
-        else if ({1}.second == std::numeric_limits<decltype({1}.second)>::max())
-        {{
-            request.AddHeader({0}, \"bytes=\" + std::to_string({1}.first) + \"-\");
-        }}
-        else
-        {{
-            request.AddHeader({0}, \"bytes=\" + std::to_string({1}.first) + \"-\" + std::to_string({1}.second));
-        }}
-        """.format(key, value))
+    if (value_nullable):
+        content = inspect.cleandoc(
+            """
+            if ({var}.HasValue()) {{
+                auto startOffset = {var}.GetValue().first;
+                auto endOffset = {var}.GetValue().second;
+                if (endOffset != std::numeric_limits<decltype(endOffset)>::max()) {{
+                    request.AddHeader({key}, \"bytes=\" + std::to_string(startOffset) + \"-\" + std::to_string(endOffset));
+                }}
+                else {{
+                    request.AddHeader({key}, \"bytes=\" + std::to_string(startOffset) + \"-\");
+                }}
+            }}
+            """.format(key=key, var=value))
+    else:
+        content = "request.AddHeader({key}, \"bytes=\" + std::to_string({var}.first) + \"-\" + std::to_string({var}.second));".format(key=key, var=value)
 
     global main_body
     main_body += content
@@ -815,6 +870,7 @@ def gen_get_header_code(*args, **kwargs):
     key = args[0]
     target = args[1]
     target_type = kwargs[target + ".type"]
+    target_nullable = kwargs[target + ".nullable"]
     target_str_name = target.replace(".", "_").lower() + "_str"
     optional = kwargs["optional"]
 
@@ -834,8 +890,8 @@ def gen_get_header_code(*args, **kwargs):
                 }}
                 """.format(target, target_str_name, target_type.name, enum_v, enum_literal))
 
-    if optional:
-        ite_name = target.replace(".", "_").lower() + "_iterator"
+    if optional or target_nullable:
+        ite_name = get_snake_case_name(target) + "_iterator"
         content = inspect.cleandoc(
             """
             auto {1} = http_response.GetHeaders().find({0});
@@ -859,7 +915,7 @@ def gen_get_header_code(*args, **kwargs):
         content += "}"
     else:
         if target_type == "int":
-            content = "{1} = std::stoi(http_respone.GetHeaders().at({0}));".format(key, target)
+            content = "{1} = std::stoi(http_response.GetHeaders().at({0}));".format(key, target)
         elif target_type == "uint64_t":
             content = "{1} = std::stoull(http_response.GetHeaders().at({0}));".format(key, target)
         elif target_type == "std::string":
