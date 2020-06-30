@@ -1,8 +1,9 @@
 service_name: Blobs
 output: generated/blob_rest_client.hpp
 
-request_version_date_id_package: &REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
   - [add_header_code, "x-ms-version", "2019-07-07"]
+  - [add_query_code, "timeout", Timeout]
 
 response_version_date_id_package: &RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
   - [get_header_code, "x-ms-version", Version]
@@ -93,7 +94,7 @@ Services:
           - MaxResults: int32_t, nullable
           - IncludeMetadata: ListBlobContainersIncludeOption, nullable
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "list"]
           - [add_query_code, "prefix", Prefix]
           - [add_query_code, "marker", Marker]
@@ -119,7 +120,7 @@ Services:
           - [add_xml_body_code]  # must be the first one
           - [add_query_code, "restype", "service"]
           - [add_query_code, "comp", "userdelegationkey"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
           - [get_xml_body_code]  # must be the first
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -135,7 +136,7 @@ Services:
           - Metadata: std::map<std::string, std::string>
         request_action:
           - [add_query_code, "restype", "container"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-blob-public-access", AccessType]
         response_action:
@@ -152,7 +153,7 @@ Services:
           - IfUnmodifiedSince: std::string, nullable
         request_action:
           - [add_query_code, "restype", "container"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "If-Modified-Since", IfModifiedSince]
           - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
         response_action:
@@ -170,7 +171,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
         request_action:
           - [add_query_code, "restype", "container"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -192,7 +193,7 @@ Services:
         request_action:
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "metadata"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "If-Modified-Since", IfModifiedSince]
         response_action:
@@ -231,7 +232,7 @@ Services:
           - MaxResults: int32_t, nullable
           - Include: std::vector<ListBlobsIncludeItem>
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "list"]
           - [add_query_code, "prefix", Prefix]
@@ -254,7 +255,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
@@ -281,7 +282,7 @@ Services:
           - DeleteSnapshots: DeleteSnapshotsOption, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-delete-snapshots", DeleteSnapshots]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -294,7 +295,7 @@ Services:
         options:
           - BasicRequestOptions: inline
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "undelete"]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -307,7 +308,7 @@ Services:
           - BasicRequestOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -337,7 +338,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "properties"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
@@ -357,7 +358,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "metadata"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
@@ -375,7 +376,7 @@ Services:
           - RehydratePriority: RehydratePriority, nullable
         request_action:
           - [add_query_code, "comp", "tier"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-access-tier", Tier]
           - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
         response_action:
@@ -396,7 +397,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
           - BlobRequestSourceConditionalHeaders: inline
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_header_code, "x-ms-lease-id", LeaseId]
@@ -420,7 +421,7 @@ Services:
           - CopyId: std::string
           - LeaseId: std::string, nullable
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "copy"]
           - [add_query_code, "copyid", CopyId]
           - [add_header_code, "x-ms-copy-action", "abort"]
@@ -440,7 +441,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "snapshot"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-lease-id", LeaseId]
@@ -468,7 +469,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_body_code, BodyStream]  # must be the first one
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
@@ -500,7 +501,7 @@ Services:
           #- [add_body_code, BodyStream]
           - [add_query_code, "comp", "block"]
           - [add_query_code, "blockid", BlockId]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
@@ -526,7 +527,7 @@ Services:
         request_action:
           - [add_query_code, "comp", "block"]
           - [add_query_code, "blockid", BlockId]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source_range", SourceRange]
           - [add_header_code, "x-ms-source-content-md5", ContentMD5]
@@ -558,7 +559,7 @@ Services:
         request_action:
           - [add_xml_body_code]  # must be the first one
           - [add_query_code, "comp", "blocklist"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-lease-id", LeaseId]
@@ -593,7 +594,7 @@ Services:
         request_action:
             - [add_query_code, "comp", "blocklist"]
             - [add_query_code, "blocklisttype", ListType]
-            - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+            - *REQUEST_VERSION_TIMEOUT_PACKAGE
             - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
             - [get_xml_body_code]  # must be the first
@@ -618,7 +619,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-lease-id", LeaseId]
@@ -652,7 +653,7 @@ Services:
         request_action:
           - [add_body_code, BodyStream]  # must be the first one
           - [add_query_code, "comp", "page"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
           - [add_header_code, "x-ms-page-write", "update"]
@@ -688,7 +689,7 @@ Services:
         return_type: PageInfo
         request_action:
           - [add_query_code, "comp", "page"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source-range", SourceRange]
@@ -723,7 +724,7 @@ Services:
         return_type: PageInfo
         request_action:
           - [add_query_code, "comp", "page"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
           - [add_header_code, "x-ms-page-write", "clear"]
           - [add_header_code, "x-ms-lease-id", LeaseId]
@@ -753,7 +754,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "properties"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-blob-content-length", BlobContentLength]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
@@ -780,7 +781,7 @@ Services:
         request_action:
           - [add_query_code, "comp", "pagelist"]
           - [add_query_code, "prevsnapshot", PreviousSnapshot]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-previous-snapshot-url", PreviousSnapshotUrl]
@@ -801,7 +802,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "incrementalcopy"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-copy-source", CopySource]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -823,7 +824,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-lease-id", LeaseId]
@@ -852,7 +853,7 @@ Services:
         request_action:
           - [add_body_code, BodyStream]  # must be the first one
           - [add_query_code, "comp", "appendblock"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-condition-maxsize", MaxSize]
@@ -884,7 +885,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "appendblock"]
-          - *REQUEST_VERSION_DATE_ID_HEADER_PACKAGE
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source-range", SourceRange]
           - [add_header_code, "x-ms-source-content-md5", ContentMD5]
@@ -905,6 +906,7 @@ Services:
 Models:
   BasicRequestOptions:
     - type: struct
+    - Timeout: int32_t, nullable
   BodiedRequestOptions:
     - type: struct
     - BasicRequestOptions: inline
