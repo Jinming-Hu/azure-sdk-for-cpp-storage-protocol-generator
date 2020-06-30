@@ -326,6 +326,11 @@ Services:
           - [get_header_code, "x-ms-access-tier-inferred", AccessTierInferred]
           - [get_header_code, "x-ms-archive-status", ArchiveStatus]
           - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangeTime]
+          - [get_header_code, "x-ms-copy-id", CopyId]
+          - [get_header_code, "x-ms-copy-source", CopySource]
+          - [get_header_code, "x-ms-copy-status", CopyStatus]
+          - [get_header_code, "x-ms-copy-progress", CopyProgress]
+          - [get_header_code, "x-ms-copy-completion-time", CopyCompletionTime]
 
     - SetHttpHeaders:
         http_method: Put
@@ -1161,6 +1166,11 @@ Models:
     - AccessTierInferred: bool, nullable
     - ArchiveStatus: BlobArchiveStatus, nullable
     - AccessTierChangeTime: std::string, nullable
+    - CopyId: std::string, nullable
+    - CopySource: std::string, nullable
+    - CopyStatus: CopyStatus, nullable
+    - CopyProgress: std::string, nullable
+    - CopyCompletionTime: std::string, nullable
   BlobInfo:
     - BasicResponse: inline
     - ETag: std::string
