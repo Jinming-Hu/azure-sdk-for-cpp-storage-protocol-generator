@@ -1155,7 +1155,7 @@ Models:
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int32_t, nullable  # only for append blob
     - BlobResponseEncryptionOptions: inline
-    - Tier: AccessTier = AccessTier::Unknown
+    - Tier: AccessTier, nullable
     - AccessTierInferred: bool, nullable
     - ArchiveStatus: BlobArchiveStatus, nullable
     - AccessTierChangeTime: std::string, nullable
