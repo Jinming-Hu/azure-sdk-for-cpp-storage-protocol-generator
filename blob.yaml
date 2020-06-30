@@ -1012,7 +1012,7 @@ Models:
     - EncryptionAlgorithm: std::string, nullable
   BlobResponseEncryptionOptions:
     - noexport: true
-    - ServerEncrypted: bool = true
+    - ServerEncrypted: bool, nullable
     - EncryptionKeySHA256: std::string, nullable
   FlattenedDownloadProperties:
     - noexport: true
@@ -1029,8 +1029,8 @@ Models:
     - ContentMD5: std::string, nullable  # MD5 for the downloaded range
     - ContentCRC64: std::string, nullable
     - LeaseDuration: std::string, nullable
-    - LeaseState: BlobLeaseState = BlobLeaseState::Available
-    - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
+    - LeaseState: BlobLeaseState, nullable
+    - LeaseStatus: BlobLeaseStatus, nullable
     - BlobResponseEncryptionOptions: inline
   BlobDownloadInfo:
     - FlattenedDownloadProperties: inline
@@ -1148,15 +1148,15 @@ Models:
     - Metadata: std::map<std::string, std::string>
     - BlobType: BlobType = BlobType::Unknown
     - LeaseDuration: std::string, nullable
-    - LeaseState: BlobLeaseState = BlobLeaseState::Available
-    - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
+    - LeaseState: BlobLeaseState, nullable
+    - LeaseStatus: BlobLeaseStatus, nullable
     - ContentLength: int64_t = 0
     - BlobHttpHeaders: inline
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int32_t, nullable  # only for append blob
     - BlobResponseEncryptionOptions: inline
     - Tier: AccessTier = AccessTier::Unknown
-    - AccessTierInferred: bool = true
+    - AccessTierInferred: bool, nullable
     - ArchiveStatus: BlobArchiveStatus, nullable
     - AccessTierChangeTime: std::string, nullable
   BlobInfo:
