@@ -276,6 +276,7 @@ for config_resource in config["Services"]:
         code_template.gen_construct_request_function_begin(function_name)
         request_declared = False
         request_options_used = False
+        request_has_user_input_body = False
         for action in config_request_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
@@ -321,10 +322,14 @@ for config_resource in config["Services"]:
             if not request_declared:
                 request_declared = True
                 if action[0] == "add_body_code":
+                    arg = "body"
+                    args.append(arg)
+                    kwargs[arg + ".type"] = "std::unique_ptr<Azure::Core::Http::BodyStream>"
                     code_template.gen_request_definition(http_method, *args, **kwargs)
+                    request_has_user_input_body = True
                 elif action[0] == "add_xml_body_code":
                     method_to_call(*args, **kwargs)
-                    arg = "body_buffer"
+                    arg = "xml_body"
                     args.append(arg)
                     kwargs[arg + ".type"] = "std::string"
                     code_template.gen_request_definition(http_method, *args, **kwargs)
@@ -376,7 +381,7 @@ for config_resource in config["Services"]:
             method_to_call(*args, **kwargs)
         code_template.gen_parse_response_function_end()
 
-        code_template.gen_resource_function(function_name, return_type)
+        code_template.gen_resource_function(function_name, return_type, request_has_user_input_body)
 
     code_template.gen_resource_helper_functions()
     code_template.gen_resource_end(resource_name)

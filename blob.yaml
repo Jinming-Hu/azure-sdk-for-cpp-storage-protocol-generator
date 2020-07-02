@@ -473,7 +473,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - [add_body_code, BodyStream]  # must be the first one
+          - [add_body_code]  # must be the first one
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
@@ -501,9 +501,7 @@ Services:
           - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
         request_action:
-          - [add_body_code, BodyStream]  # must be the first one
-          # Stream not implemented yet
-          #- [add_body_code, BodyStream]
+          - [add_body_code]  # must be the first one
           - [add_query_code, "comp", "block"]
           - [add_query_code, "blockid", BlockId]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -656,7 +654,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
         request_action:
-          - [add_body_code, BodyStream]  # must be the first one
+          - [add_body_code]  # must be the first one
           - [add_query_code, "comp", "page"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
@@ -856,7 +854,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - [add_body_code, BodyStream]  # must be the first one
+          - [add_body_code]  # must be the first one
           - [add_query_code, "comp", "appendblock"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
@@ -915,7 +913,6 @@ Models:
   BodiedRequestOptions:
     - type: struct
     - BasicRequestOptions: inline
-    - BodyStream: std::unique_ptr<Azure::Core::Http::BodyStream>
   BasicResponse:
     - type: struct
     - RequestId: std::string

@@ -45,7 +45,11 @@ namespace_end = """
 """
 
 constant_string = ""
-model_definitions = ""
+model_definitions = """
+
+using BodyStreamPointer = std::unique_ptr<Azure::Core::Http::BodyStream, std::function<void(Azure::Core::Http::BodyStream*)>>;
+
+"""
 rest_client_begin = ""
 main_body = ""
 rest_client_end = ""
@@ -511,7 +515,7 @@ def gen_function_option_definition(service_name, function_name, class_def):
 def gen_construct_request_function_begin(function_name):
     content = inspect.cleandoc(
         """
-        static Azure::Core::Http::Request {0}ConstructRequest(const std::string& url, {0}Options& options)
+        static Azure::Core::Http::Request {0}ConstructRequest(const std::string& url, BodyStreamPointer& body, const {0}Options& options)
         {{
         """.format(function_name))
 
@@ -527,17 +531,25 @@ def gen_request_definition(http_method, *args, **kwargs):
         body = None
 
     if not body:
-        content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url);".format(http_method)
+        content = "unused(body);"
+        content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url);".format(http_method)
         content += "request.AddHeader(\"Content-Length\", \"0\");"
     else:
         if body_type == "std::string":
-            content = "auto body_buffer_length = {}.size();".format(body)
-            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, std::make_unique<Azure::Core::Http::MemoryBodyStream>(std::move({})));".format(http_method, body)
-            content += "request.AddHeader(\"Content-Length\", std::to_string(body_buffer_length));"
+            content = inspect.cleandoc(
+                """
+                std::shared_ptr<std::string> xml_body_ptr = std::make_shared<std::string>(std::move({xml_body}));
+                body = BodyStreamPointer(new Azure::Core::Http::MemoryBodyStream(reinterpret_cast<const uint8_t*>(xml_body_ptr->data()), xml_body_ptr->length()),
+                                         [xml_body_ptr](Azure::Core::Http::BodyStream* bodyStream) {{
+                                             delete bodyStream;
+                                         }}
+                );
+                auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url, body.get());
+                request.AddHeader(\"Content-Length\", std::to_string(body->Length()));
+                """.format(xml_body=body, http_method=http_method))
         elif body_type == "std::unique_ptr<Azure::Core::Http::BodyStream>":
-            content = "auto body_stream_length = {}->Length();".format(body)
-            content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, std::move({}));".format(http_method, body)
-            content += "request.AddHeader(\"Content-Length\", std::to_string(body_stream_length));"
+            content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, body.get());".format(http_method)
+            content += "request.AddHeader(\"Content-Length\", std::to_string(body->Length()));"
         else:
             raise RuntimeError("unknown body type " + body_type)
 
@@ -558,8 +570,9 @@ def gen_construct_request_function_end(request_options_used):
 def gen_parse_response_function_begin(function_name, http_method, http_status_code, return_type):
     content = inspect.cleandoc(
         """
-        static {1} {0}ParseResponse(std::unique_ptr<Azure::Core::Http::Response> pHttpResponse)
+        static {1} {0}ParseResponse(Azure::Core::Context context, std::unique_ptr<Azure::Core::Http::Response> pHttpResponse)
         {{
+            unused(context);
             Azure::Core::Http::Response& httpResponse = *pHttpResponse;
             {1} response;
             auto http_status_code = static_cast<std::underlying_type<Azure::Core::Http::HttpStatusCode>::type>(httpResponse.GetStatusCode());
@@ -589,15 +602,25 @@ def gen_parse_response_function_end():
     main_body += content
 
 
-def gen_resource_function(function_name, return_type):
-    content = inspect.cleandoc(
+def gen_resource_function(function_name, return_type, request_has_user_input_body):
+    content = "static {return_type} {function_name}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
+    if request_has_user_input_body:
+        content += "Azure::Core::Http::BodyStream& requestBody,"
+    content += "const {function_name}Options& options) {{".format(function_name=function_name)
+
+    if request_has_user_input_body:
+        content += "BodyStreamPointer pRequestBody(&requestBody, [](Azure::Core::Http::BodyStream* /* requestBody */) {});"
+    else:
+        content += "BodyStreamPointer pRequestBody;"
+
+    content += inspect.cleandoc(
         """
-        static {1} {0}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url, {0}Options& options)
-        {{
-            auto request = {0}ConstructRequest(url, options);
-            return {0}ParseResponse(pipeline.Send(context, request));
+            auto request = {function_name}ConstructRequest(url, pRequestBody, options);
+            auto pResponse = pipeline.Send(context, request);
+            pRequestBody.reset();
+            return {function_name}ParseResponse(context, std::move(pResponse));
         }}
-        """.format(function_name, return_type))
+        """.format(function_name=function_name))
     content += "\n\n"
 
     global main_body
@@ -837,10 +860,12 @@ def gen_add_xml_body_code(*args, **kwargs):
 
     content = inspect.cleandoc(
         """
-        XmlWriter writer;
-        {}ToXml(writer, options);
-        std::string xml_body = writer.GetDocument();
-        std::vector<uint8_t> body_buffer(xml_body.begin(), xml_body.end());
+        std::string xml_body;
+        {{
+            XmlWriter writer;
+            {}ToXml(writer, options);
+            xml_body = writer.GetDocument();
+        }}
         """.format(option_type))
 
     global main_body
@@ -852,11 +877,19 @@ def gen_get_xml_body_code(*args, **kwargs):
 
     content = inspect.cleandoc(
         """
-        auto bodyStream = httpResponse.GetBodyStream();
-        std::vector<uint8_t> bodyContent(static_cast<std::size_t>(bodyStream->Length()));
-        bodyStream->Read(&bodyContent[0], bodyContent.size());
-        XmlReader reader(reinterpret_cast<const char*>(bodyContent.data()), bodyContent.size());
-        response = {}FromXml(reader);
+        {{
+            auto bodyStream = httpResponse.GetBodyStream();
+            std::vector<uint8_t> bodyContent;
+            if (bodyStream->Length() == -1) {{
+                bodyContent = Azure::Core::Http::BodyStream::ReadToEnd(context, *bodyStream);
+            }}
+            else {{
+                bodyContent.resize(static_cast<std::size_t>(bodyStream->Length()));
+                Azure::Core::Http::BodyStream::ReadToCount(context, *bodyStream, &bodyContent[0], bodyStream->Length());
+            }}
+            XmlReader reader(reinterpret_cast<const char*>(bodyContent.data()), bodyContent.size());
+            response = {}FromXml(reader);
+        }}
         """.format(return_type))
     fromxml_classes.add(return_type)
 
