@@ -77,14 +77,12 @@ Services:
             - Prefix: std::string
             - Marker: std::string
             - NextMarker: std::string
-            - MaxResults: int32_t, nullable
             - Items: std::vector<BlobContainerItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
               [text, EnumerationResults.Prefix, Prefix],
               [text, EnumerationResults.Marker, Marker],
               [text, EnumerationResults.NextMarker, NextMarker],
-              [text, EnumerationResults.MaxResults, MaxResults],
               [start_tag, EnumerationResults.Containers.Container, Items],
             ]
         options:
@@ -211,7 +209,6 @@ Services:
             - Prefix: std::string
             - Marker: std::string
             - NextMarker: std::string
-            - MaxResults: int32_t, nullable
             - Delimiter: std::string
             - Items: std::vector<BlobItem>
             - from_xml: [
@@ -220,7 +217,6 @@ Services:
               [text, EnumerationResults.Prefix, Prefix],
               [text, EnumerationResults.Marker, Marker],
               [text, EnumerationResults.NextMarker, NextMarker],
-              [text, EnumerationResults.MaxResults, MaxResults],
               [text, EnumerationResults.Delimiter, Delimiter],
               [start_tag, EnumerationResults.Blobs.Blob, Items],
             ]
