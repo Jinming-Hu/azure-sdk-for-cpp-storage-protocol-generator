@@ -144,7 +144,9 @@ Services:
     - Delete:
         http_method: Delete
         http_status_code: 202
-        return_type: BasicResponse
+        return_type:
+          DeleteContainerResponse:
+            - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
           - IfModifiedSince: std::string, nullable
@@ -272,7 +274,9 @@ Services:
     - Delete:
         http_method: Delete
         http_status_code: 202
-        return_type: BasicResponse
+        return_type:
+          DeleteBlobResponse:
+            - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
           - DeleteSnapshots: DeleteSnapshotsOption, nullable
@@ -287,7 +291,9 @@ Services:
     - Undelete:
         http_method: Put
         http_status_code: 200
-        return_type: BasicResponse
+        return_type:
+          UndeleteBlobResponse:
+            - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
         request_action:
@@ -370,7 +376,9 @@ Services:
     - SetAccessTier:
         http_method: Put
         http_status_code: [200, 202]
-        return_type: BasicResponse
+        return_type:
+          SetAccessTierResponse:
+            - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
           - Tier: AccessTier = AccessTier::Unknown
@@ -416,7 +424,9 @@ Services:
     - AbortCopyFromUri:
         http_method: Put
         http_status_code: 204
-        return_type: BasicResponse
+        return_type:
+          AbortCopyBlobResponse:
+            - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
           - CopyId: std::string
@@ -904,18 +914,22 @@ Services:
 
 Models:
   BasicRequestOptions:
+    - noexport: true
     - type: struct
     - Timeout: int32_t, nullable
   BodiedRequestOptions:
+    - noexport: true
     - type: struct
     - BasicRequestOptions: inline
   BasicResponse:
+    - noexport: true
     - type: struct
     - RequestId: std::string
     - Date: std::string
     - Version: std::string
     - ClientRequestId: std::string, nullable
   BodiedResponse:
+    - noexport: true
     - type: struct
     - BasicResponse: inline
     - BodyStream: std::unique_ptr<Azure::Core::Http::BodyStream>
