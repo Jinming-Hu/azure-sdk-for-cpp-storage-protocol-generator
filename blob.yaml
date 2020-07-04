@@ -33,20 +33,20 @@ response_checksum_package: &RESPONSE_CHECKSUM_HEADER_PACKAGE
   - [get_header_code, "x-ms-content-crc64", ContentCRC64]
 
 request_mime_package: &REQUEST_MIME_HEADER_PACKAGE
-  - [add_header_code, "x-ms-blob-content-type", Properties.ContentType, optional]
-  - [add_header_code, "x-ms-blob-content-encoding", Properties.ContentEncoding, optional]
-  - [add_header_code, "x-ms-blob-content-language", Properties.ContentLanguage, optional]
-  - [add_header_code, "x-ms-blob-cache-control", Properties.CacheControl, optional]
-  - [add_header_code, "x-ms-blob-content-md5", Properties.ContentMD5, optional]
-  - [add_header_code, "x-ms-blob-content-disposition", Properties.ContentDisposition, optional]
+  - [add_header_code, "x-ms-blob-content-type", HttpHeaders.ContentType, optional]
+  - [add_header_code, "x-ms-blob-content-encoding", HttpHeaders.ContentEncoding, optional]
+  - [add_header_code, "x-ms-blob-content-language", HttpHeaders.ContentLanguage, optional]
+  - [add_header_code, "x-ms-blob-cache-control", HttpHeaders.CacheControl, optional]
+  - [add_header_code, "x-ms-blob-content-md5", HttpHeaders.ContentMD5, optional]
+  - [add_header_code, "x-ms-blob-content-disposition", HttpHeaders.ContentDisposition, optional]
 
 response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
-  - [get_header_code, "Content-Type", Properties.ContentType, optional]
-  - [get_header_code, "Content-Encoding", Properties.ContentEncoding, optional]
-  - [get_header_code, "Content-Language", Properties.ContentLanguage, optional]
-  - [get_header_code, "Cache-Control", Properties.CacheControl, optional]
-  - [get_header_code, "Content-MD5", Properties.ContentMD5, optional]
-  - [get_header_code, "Content-Disposition", Properties.ContentDisposition, optional]
+  - [get_header_code, "Content-Type", HttpHeaders.ContentType, optional]
+  - [get_header_code, "Content-Encoding", HttpHeaders.ContentEncoding, optional]
+  - [get_header_code, "Content-Language", HttpHeaders.ContentLanguage, optional]
+  - [get_header_code, "Cache-Control", HttpHeaders.CacheControl, optional]
+  - [get_header_code, "Content-MD5", HttpHeaders.ContentMD5, optional]
+  - [get_header_code, "Content-Disposition", HttpHeaders.ContentDisposition, optional]
 
 response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE
   - [get_header_code, "x-ms-lease-status", LeaseStatus]
@@ -338,7 +338,7 @@ Services:
         return_type: BlobInfo
         options:
           - BasicRequestOptions: inline
-          - BlobHttpHeaders: inline
+          - HttpHeaders: BlobHttpHeaders
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -466,7 +466,7 @@ Services:
           - BodiedRequestOptions: inline
           - ContentMD5: std::string, nullable
           - ContentCRC64: std::string, nullable
-          - Properties: BlobHttpHeaders
+          - HttpHeaders: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
           - Tier: AccessTier, nullable
@@ -550,7 +550,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - BlockList: std::vector<std::pair<BlockType, std::string>>
-          - Properties: BlobHttpHeaders
+          - HttpHeaders: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
@@ -615,7 +615,7 @@ Services:
           - BasicRequestOptions: inline
           - BlobContentLength: int64_t
           - SequenceNumber: int64_t, nullable
-          - Properties: BlobHttpHeaders
+          - HttpHeaders: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
           - Tier: AccessTier, nullable
@@ -821,7 +821,7 @@ Services:
         return_type: BlobContentInfo
         options:
           - BasicRequestOptions: inline
-          - Properties: BlobHttpHeaders
+          - HttpHeaders: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
@@ -1025,7 +1025,7 @@ Models:
     - ETag: std::string
     - LastModified: std::string
     - ContentRange: std::string, nullable
-    - Properties: BlobHttpHeaders
+    - HttpHeaders: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int64_t, nullable  # only for append blob
@@ -1077,7 +1077,7 @@ Models:
     - Name: std::string
     - Deleted: bool = false
     - Snapshot: std::string
-    - Properties: BlobHttpHeaders
+    - HttpHeaders: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
     - CreationTime: std::string
     - LastModified: std::string
@@ -1094,12 +1094,12 @@ Models:
       [text, Name, Name],
       [text, Deleted, Deleted],
       [text, Snapshot, Snapshot],
-      [text, Properties.Content-Type, Properties.ContentType],
-      [text, Properties.Content-Encoding, Properties.ContentEncoding],
-      [text, Properties.Content-Language, Properties.ContentLanguage],
-      [text, Properties.Content-MD5, Properties.ContentMD5],
-      [text, Properties.Cache-Control, Properties.CacheControl],
-      [text, Properties.Content-Disposition, Properties.ContentDisposition],
+      [text, Properties.Content-Type, HttpHeaders.ContentType],
+      [text, Properties.Content-Encoding, HttpHeaders.ContentEncoding],
+      [text, Properties.Content-Language, HttpHeaders.ContentLanguage],
+      [text, Properties.Content-MD5, HttpHeaders.ContentMD5],
+      [text, Properties.Cache-Control, HttpHeaders.CacheControl],
+      [text, Properties.Content-Disposition, HttpHeaders.ContentDisposition],
       [text, Properties.Creation-Time, CreationTime],
       [text, Properties.Last-Modified, LastModified],
       [text, Properties.Etag, ETag],
@@ -1155,7 +1155,7 @@ Models:
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
     - ContentLength: int64_t = 0
-    - BlobHttpHeaders: inline
+    - HttpHeaders: BlobHttpHeaders
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int32_t, nullable  # only for append blob
     - BlobResponseEncryptionOptions: inline
