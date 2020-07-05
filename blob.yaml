@@ -625,7 +625,7 @@ Services:
         return_type: BlobContentInfo
         options:
           - BasicRequestOptions: inline
-          - BlobContentLength: int64_t
+          - BlobContentLength: int64_t = -1
           - SequenceNumber: int64_t, nullable
           - HttpHeaders: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
@@ -760,7 +760,7 @@ Services:
         return_type: PageBlobInfo
         options:
           - BasicRequestOptions: inline
-          - BlobContentLength: int64_t
+          - BlobContentLength: int64_t = -1
           - LeaseId: std::string, nullable
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
