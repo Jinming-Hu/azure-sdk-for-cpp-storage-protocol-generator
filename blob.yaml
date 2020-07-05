@@ -185,7 +185,9 @@ Services:
     - SetMetadata:
         http_method: Put
         http_status_code: 200
-        return_type: BlobContainerInfo
+        return_type:
+          SetContainerMetadataResponse:
+            - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
@@ -246,7 +248,7 @@ Services:
     - Download:
         http_method: Get
         http_status_code: [200, 206]
-        return_type: BlobDownloadInfo
+        return_type: BlobDownloadResponse
         options:
           - BasicRequestOptions: inline
           - Range: std::pair<int64_t, int64_t>, nullable
@@ -337,7 +339,9 @@ Services:
     - SetHttpHeaders:
         http_method: Put
         http_status_code: 200
-        return_type: BlobInfo
+        return_type:
+          SetBlobHttpHeadersResponse:
+            - BlobInfo: inline
         options:
           - BasicRequestOptions: inline
           - HttpHeaders: BlobHttpHeaders
@@ -357,7 +361,9 @@ Services:
     - SetMetadata:
         http_method: Put
         http_status_code: 200
-        return_type: BlobInfo
+        return_type:
+          SetBlobMetadataResponse:
+            - BlobInfo: inline
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
@@ -1046,7 +1052,7 @@ Models:
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
     - BlobResponseEncryptionOptions: inline
-  BlobDownloadInfo:
+  BlobDownloadResponse:
     - FlattenedDownloadProperties: inline
   BlobContentInfo:
     - type: struct
