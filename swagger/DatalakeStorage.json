@@ -93,6 +93,12 @@
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
                 },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
+                },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
                   "description": "The version of the REST protocol used to process the request.",
@@ -102,10 +108,7 @@
                   "x-ms-client-name": "Continuation",
                   "description": "If the number of filesystems to be listed exceeds the maxResults limit, a continuation token is returned in this response header.  When a continuation token is returned in the response, it must be specified in a subsequent invocation of the list operation to continue listing the filesystems.",
                   "required": false,
-                  "type": "string"
-                },
-                "Content-Type": {
-                  "description": "The content type of list filesystem response. The default content type is application/json.",
+
                   "type": "string"
                 }
               },
@@ -161,10 +164,16 @@
                   "type": "string"
                 },
                 "x-ms-request-id": {
-                  "x-ms-client-name": "ClientRequestId",
+                  "x-ms-client-name": "RequestId",
                   "description": "A server-generated UUID recorded in the analytics logs for troubleshooting and correlation.",
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
+                },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
                 },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
@@ -235,6 +244,12 @@
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
                 },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
+                },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
                   "description": "The version of the REST protocol used to process the request.",
@@ -288,6 +303,12 @@
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
                 },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
+                },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
                   "description": "The version of the REST protocol used to process the request.",
@@ -335,6 +356,12 @@
                   "description": "A server-generated UUID recorded in the analytics logs for troubleshooting and correlation.",
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
+                },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
                 },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
@@ -423,21 +450,17 @@
                   "type": "string",
                   "format": "date-time-rfc1123"
                 },
-                "ETag": {
-                  "description": "An HTTP entity tag associated with the filesystem.  Changes to filesystem properties affect the entity tag, but operations on files and directories do not.",
-                  "format": "etag",
-                  "type": "string"
-                },
-                "Last-Modified": {
-                  "description": "The data and time the filesystem was last modified.  Changes to filesystem properties update the last modified time, but operations on files and directories do not.",
-                  "format": "date-time-rfc1123",
-                  "type": "string"
-                },
                 "x-ms-request-id": {
                   "x-ms-client-name": "RequestId",
                   "description": "A server-generated UUID recorded in the analytics logs for troubleshooting and correlation.",
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
+                },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
                 },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
@@ -599,11 +622,13 @@
                 "ETag": {
                   "description": "An HTTP entity tag associated with the file or directory.",
                   "format": "etag",
+                  "required": false,
                   "type": "string"
                 },
                 "Last-Modified": {
                   "description": "The data and time the file or directory was last modified.  Write operations on the file or directory update the last modified time.",
                   "format": "date-time-rfc1123",
+                  "required": false,
                   "type": "string"
                 },
                 "x-ms-request-id": {
@@ -611,6 +636,12 @@
                   "description": "A server-generated UUID recorded in the analytics logs for troubleshooting and correlation.",
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
+                },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
                 },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
@@ -778,6 +809,7 @@
                 },
                 "Accept-Ranges": {
                   "description": "Indicates that the service supports requests for partial file content.",
+                  "required": false,
                   "type": "string"
                 },
                 "Cache-Control": {
@@ -837,6 +869,12 @@
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
                 },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
+                },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
                   "description": "The version of the REST protocol used to process the request.",
@@ -852,6 +890,7 @@
               "headers": {
                 "Content-MD5": {
                   "description": "An MD5 hash of the request content. This header is only returned for \"Append\" operation. This header is returned so that the client can check for message content integrity. The value of this header is computed by the service; it is not necessarily the same value specified in the request headers.",
+                  "required": false,
                   "type": "string"
                 },
                 "Date": {
@@ -864,6 +903,12 @@
                   "description": "A server-generated UUID recorded in the analytics logs for troubleshooting and correlation.",
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
+                },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
                 },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
@@ -977,6 +1022,12 @@
                   "description": "The version of the REST protocol used to process the request.",
                   "type": "string"
                 },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
+                },
                 "x-ms-lease-id": {
                   "x-ms-client-name": "LeaseId",
                   "description": "A successful \"renew\" action returns the lease ID.",
@@ -1015,6 +1066,12 @@
                   "description": "The version of the REST protocol used to process the request.",
                   "type": "string"
                 },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
+                },
                 "x-ms-lease-id": {
                   "x-ms-client-name": "LeaseId",
                   "description": "A successful \"acquire\" action returns the lease ID.",
@@ -1046,6 +1103,12 @@
                   "x-ms-client-name": "Version",
                   "description": "The version of the REST protocol used to process the request.",
                   "type": "string"
+                },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
                 },
                 "x-ms-lease-time": {
                   "x-ms-client-name": "LeaseTime",
@@ -1174,6 +1237,12 @@
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
                 },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
+                },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
                   "description": "The version of the REST protocol used to process the request.",
@@ -1198,15 +1267,32 @@
                 },
                 "x-ms-lease-state": {
                   "x-ms-client-name": "LeaseState",
-                  "description": "Lease state of the resource.",
-                  "required": false,
-                  "type": "string"
+                  "description": "Lease state of the blob.",
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "leased",
+                    "expired",
+                    "breaking",
+                    "broken"
+                  ],
+                  "x-ms-enum": {
+                    "name": "LeaseStateType",
+                    "modelAsString": false
+                  }
                 },
                 "x-ms-lease-status": {
                   "x-ms-client-name": "LeaseStatus",
-                  "description": "The lease status of the resource.",
-                  "required": false,
-                  "type": "string"
+                  "description": "The current lease status of the blob.",
+                  "type": "string",
+                  "enum": [
+                    "locked",
+                    "unlocked"
+                  ],
+                  "x-ms-enum": {
+                    "name": "LeaseStatusType",
+                    "modelAsString": false
+                  }
                 }
               },
               "schema": {
@@ -1256,11 +1342,13 @@
                   "type": "string"
                 },
                 "Content-MD5": {
+                  "x-ms-client-name": "TransactionalMD5",
                   "description": "The MD5 hash of read range. If the request is to read a specified range and the \"x-ms-range-get-content-md5\" is set to true, then the request returns an MD5 hash for the range, as long as the range size is less than or equal to 4 MB.",
                   "required": false,
                   "type": "string"
                 },
                 "x-ms-content-md5": {
+                  "x-ms-client-name": "ContentMD5",
                   "description": "The MD5 hash of complete file stored in storage. If the file has a MD5 hash, and if request contains range header (Range or x-ms-range), this response header is returned with the value of the complete file's MD5 value. This value may or may not be equal to the value returned in Content-MD5 header, with the latter calculated from the requested range.",
                   "required": false,
                   "type": "string"
@@ -1286,6 +1374,12 @@
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
                 },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
+                },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
                   "description": "The version of the REST protocol used to process the request.",
@@ -1310,15 +1404,32 @@
                 },
                 "x-ms-lease-state": {
                   "x-ms-client-name": "LeaseState",
-                  "description": "Lease state of the resource. ",
-                  "required": false,
-                  "type": "string"
+                  "description": "Lease state of the blob.",
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "leased",
+                    "expired",
+                    "breaking",
+                    "broken"
+                  ],
+                  "x-ms-enum": {
+                    "name": "LeaseStateType",
+                    "modelAsString": false
+                  }
                 },
                 "x-ms-lease-status": {
                   "x-ms-client-name": "LeaseStatus",
-                  "description": "The lease status of the resource.",
-                  "required": false,
-                  "type": "string"
+                  "description": "The current lease status of the blob.",
+                  "type": "string",
+                  "enum": [
+                    "locked",
+                    "unlocked"
+                  ],
+                  "x-ms-enum": {
+                    "name": "LeaseStatusType",
+                    "modelAsString": false
+                  }
                 }
               },
               "schema": {
@@ -1388,6 +1499,7 @@
               "headers": {
                 "Accept-Ranges": {
                   "description": "Indicates that the service supports requests for partial file content.",
+                  "required": false,
                   "type": "string"
                 },
                 "Cache-Control": {
@@ -1422,6 +1534,7 @@
                 },
                 "Content-Type": {
                   "description": "The content type specified for the resource. If no content type was specified, the default content type is application/octet-stream.",
+                  "required": false,
                   "type": "string"
                 },
                 "Content-MD5": {
@@ -1450,6 +1563,12 @@
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
                 },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
+                },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
                   "description": "The version of the REST protocol used to process the request.",
@@ -1458,6 +1577,7 @@
                 "x-ms-resource-type": {
                   "x-ms-client-name": "ResourceType",
                   "description": "The type of the resource.  The value may be \"file\" or \"directory\".  If not set, the value is \"file\".",
+                  "required": false,
                   "type": "string"
                 },
                 "x-ms-properties": {
@@ -1498,15 +1618,34 @@
                 },
                 "x-ms-lease-state": {
                   "x-ms-client-name": "LeaseState",
-                  "description": "Lease state of the resource.",
+                  "description": "Lease state of the blob.",
+                  "type": "string",
                   "required": false,
-                  "type": "string"
+                  "enum": [
+                    "available",
+                    "leased",
+                    "expired",
+                    "breaking",
+                    "broken"
+                  ],
+                  "x-ms-enum": {
+                    "name": "LeaseStateType",
+                    "modelAsString": false
+                  }
                 },
                 "x-ms-lease-status": {
                   "x-ms-client-name": "LeaseStatus",
-                  "description": "The lease status of the resource.",
+                  "description": "The current lease status of the blob.",
+                  "type": "string",
                   "required": false,
-                  "type": "string"
+                  "enum": [
+                    "locked",
+                    "unlocked"
+                  ],
+                  "x-ms-enum": {
+                    "name": "LeaseStatusType",
+                    "modelAsString": false
+                  }
                 }
               }
             },
@@ -1568,6 +1707,12 @@
                   "description": "A server-generated UUID recorded in the analytics logs for troubleshooting and correlation.",
                   "pattern": "^[{(]?[0-9a-f]{8}[-]?([0-9a-f]{4}[-]?){3}[0-9a-f]{12}[)}]?$",
                   "type": "string"
+                },
+                "x-ms-client-request-id": {
+                  "x-ms-client-name": "ClientRequestId",
+                  "type": "string",
+                  "required": false,
+                  "description": "If a client request id header is sent in the request, this header will be present in the response with the same value."
                 },
                 "x-ms-version": {
                   "x-ms-client-name": "Version",
@@ -2604,6 +2749,7 @@
       },
       "SetAccessControlRecursiveResponse": {
         "type": "object",
+        "required": false,
         "properties": {
           "directoriesSuccessful": {
             "type": "integer",
@@ -2639,10 +2785,14 @@
             "type": "string"
           },
           "eTag": {
-            "type": "string"
+            "type": "string",
+            "json": {
+              "name": "etag"
+            }
           },
           "contentLength": {
             "type": "integer",
+            "default": 0,
             "format": "int64"
           },
           "owner": {
@@ -2677,7 +2827,10 @@
             "type": "string"
           },
           "eTag": {
-            "type": "string"
+            "type": "string",
+            "json": {
+              "name": "etag"
+            }
           }
         }
       },

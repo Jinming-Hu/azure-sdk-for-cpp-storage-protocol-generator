@@ -1,6 +1,7 @@
 import inspect
 
 models_cache = {}
+ignored_response_headers = ["Date", "x-ms-request-id", "x-ms-client-request-id", "x-ms-version"]
 
 global_header = """
 // Copyright (c) Microsoft Corporation. All rights reserved.
@@ -18,10 +19,12 @@ include_headers = """
 #include <functional>
 #include <stdexcept>
 
+#include "common/storage_error.hpp"
 #include "json.hpp"
 #include "nullable.hpp"
 #include "http/http.hpp"
 #include "http/pipeline.hpp"
+#include "response.hpp"
 #include "common/storage_error.hpp"
 """
 
@@ -34,6 +37,18 @@ details_namespace_end = "} // namespace Details"
 
 parameter_string = ""
 model_definitions = ""
+# adding fantastic 5
+def gen_http_headers_in_struct(headers):
+    content = ""
+    for header in headers:
+        content += "std::string {};\n".format(header)
+    return content
+
+http_headers = ["CacheControl", "ContentDisposition", "ContentEncoding", "ContentLanguage", "ContentType"]
+model_definitions += "struct DataLakeHttpHeaders\n{\n"
+model_definitions += gen_http_headers_in_struct(http_headers)
+model_definitions += "};\n"
+
 rest_client_begin = ""
 main_body = ""
 rest_client_end = ""
@@ -46,9 +61,9 @@ def gen_service_namespace(service_name):
     global namespace_begin
     global namespace_end
 
-    namespace_begin = "\nnamespace Azure  {{  namespace Storage  {{  namespace  {}  {{\n".format(service_name)
+    namespace_begin = "\nnamespace Azure  {{  namespace Storage  {{ namespace Files {{  namespace  {}  {{\n".format(service_name)
 
-    namespace_end = "\n}}}}}} // Azure::Storage::{}\n".format(service_name)
+    namespace_end = "\n}}}}}}}} // Azure::Storage::Files::{}\n".format(service_name)
 
 def gen_rest_client(service_name):
     global rest_client_begin
@@ -108,6 +123,8 @@ def get_cpp_type_nullable_from_value(key, value):
     is_required = True
     if isinstance(value, dict):
         is_required = False if value.get("required") == False else True
+        if "default" in value:
+            is_required = False 
     else:
         is_required = value.isRequired
     if not is_required:
@@ -166,7 +183,7 @@ def gen_parameter_code(parameterObject):
             parameterCppType = c_PARAMETER_CPP_TYPE
         else:
             return
-        return "{} {} = \"{}\";\n".format(parameterCppType, parameterObject.parameterName, parameterObject.actualName)
+        return "{} {} = \"{}\";\n".format(parameterCppType, parameterObject.parameterName, parameterObject.actualName.lower())
     if parameterObject.default != None:
         parameterCppType = c_PARAMETER_CPP_TYPE
         parameterName = "c_" + parameterObject.usedIn[0].upper() + parameterObject.usedIn[1:] + cpp_name_unify(parameterObject.name)
@@ -232,13 +249,13 @@ def gen_ref_to_xml_code(model, memberName):
         raise RuntimeError("Not supported model type: " + model.type)
 
 def gen_get_json_node_value(nodeName, key, cppType):
-    if cppType == "std::string":
+    if "std::string" in cppType:
         return "{}.get<std::string>()".format(gen_get_json_node(nodeName, key))
-    elif cppType == "int64_t":
+    elif "int64_t" in cppType:
         return "std::stoll({}.get<std::string>())".format(gen_get_json_node(nodeName, key))
-    elif cppType == "int32_t":
+    elif "int32_t" in cppType:
         return "std::stoi({}.get<std::string>())".format(gen_get_json_node(nodeName, key))
-    elif cppType == "bool":
+    elif "bool" in cppType:
         return "({}.get<std::string>() == \"true\")".format(gen_get_json_node(nodeName, key))
 
 def gen_get_json_node(nodeName, key):
@@ -260,7 +277,12 @@ def gen_model_from_json_code(model, models):
             memberObjectName = get_reference_type_from_ref(v)
             result += gen_ref_from_json_code(models[memberObjectName], memberName)
         else:
-            result += "result.{} = {};\n".format(memberName, gen_get_json_node_value("node", k, get_cpp_type_nullable_from_value(k, v)))
+            if "default" in v:
+                result += "if(node.contains(\"{}\"))\n{{\nresult.{} = {};\n}}\n".format(k, memberName, gen_get_json_node_value("node", k, get_cpp_type_nullable_from_value(k, v)))
+            else:
+                if v.get("json"):
+                    k = v.get("json").get("name")
+                result += "result.{} = {};\n".format(memberName, gen_get_json_node_value("node", k, get_cpp_type_nullable_from_value(k, v)))
     result += "return result;\n}\n"
     return result
 
@@ -409,9 +431,8 @@ def gen_method_code(rest_client_subclasses, method, parameters, models, serializ
     publicContent = ""
     privateContent = ""
     publicContent += gen_method_options_code(method, parameters, models)
-    privateContent += gen_method_create_request_code(method, parameters, models, serializationFormat)
     privateContent += gen_method_create_response_code(method, parameters, models, serializationFormat)
-    publicContent += gen_method_run_code(method, parameters, models)
+    publicContent += gen_method_run_code(method, parameters, models, serializationFormat)
     if not method.className in rest_client_subclasses:
         rest_client_subclasses[method.className] = { "public:": "", "private:": ""}
     rest_client_subclasses[method.className]["public:"] += publicContent
@@ -472,9 +493,10 @@ def gen_method_options_member_code(methodParameters, models, parameters):
         else:
             parameterRefType = get_reference_type_from_ref(methodParameter)
             if parameterRefType == "Body":
-                parameterType = "std::unique_ptr<Azure::Core::Http::BodyStream>"
-                parameterComment = " // The stream that contains the body of this request.\n"
-                defaultValue = ""
+                continue # skip body in options
+                # parameterType = "std::unique_ptr<Azure::Core::Http::BodyStream>"
+                # parameterComment = " // The stream that contains the body of this request.\n"
+                # defaultValue = ""
             else:
                 parameter = parameters[parameterRefType]
                 if parameter == None:
@@ -607,29 +629,36 @@ def gen_method_create_request_parameter_code(methodParameters, methodOptionsObje
 
 def gen_method_create_request_code(method, parameters, models, serializationFormat):
     content = ""
-    methodName = method.methodName + "CreateRequest"
     methodReturnType = "Azure::Core::Http::Request"
     methodOptionsClassName = method.methodName + "Options"
     methodOptionsObjectName = methodOptionsClassName[0].lower() + methodOptionsClassName[1:]
     # Declaration of the method.
-    content += "static {} {}(std::string url, {}& {})\n{{\n".format(methodReturnType, methodName, methodOptionsClassName, methodOptionsObjectName)
     # Line 1 is always request initialization.
+    downloadViaStreamStr = ""
+    if method.responses:
+        for k, v in method.responses.items():
+            if k != "default" and v.get("schema") and v.get("schema").get("format") == "file":
+                downloadViaStreamStr = ", true"
+                break
     if method.hasBody:
-        content += "{} request(Azure::Core::Http::HttpMethod::{}, std::move(url), std::move({}.Body));\n".format(methodReturnType, method.method[0] + method.method[1:], methodOptionsObjectName)
+        content += "{} request(Azure::Core::Http::HttpMethod::{}, std::move(url), &bodyStream{});\n".format(methodReturnType, method.method, downloadViaStreamStr)
     elif method.hasBodyToSerialize:
         if serializationFormat == "xml":
             bodyParam = method.bodyParameter
             bodyParamType = get_reference_type_from_ref(bodyParam.get("schema"))
-            content += "{} request(Azure::Core::Http::HttpMethod::{}, url, XmlWrapper::SerializeNode({}::SerializeToXml({})));\n".format(methodReturnType, method.method[0] + method.method[1:], bodyParamType, cpp_name_unify(bodyParam.get("name")))
+            content += "auto body = XmlWrapper::SerializeNode({}::SerializeToXml({}));"
+            content += "auto bodyStream = Azure::Core::MemoryBodyStream(static_cast<uint8*>(body.c_str()), body.size());"
+            content += "{} request(Azure::Core::Http::HttpMethod::{}, url, &bodyStream{});\n".format(methodReturnType, method.method, downloadViaStreamStr)
     else:
-        content += "{} request(Azure::Core::Http::HttpMethod::{}, url);\n".format(methodReturnType, method.method[0] + method.method[1:])
+        content += "{} request(Azure::Core::Http::HttpMethod::{}, url{});\n".format(methodReturnType, method.method, downloadViaStreamStr)
+        if (method.method == "Put") or (method.method == "Post"):
+            content += "request.AddHeader(Details::c_HeaderContentLength, \"0\");"
+
 
     # Adding Query/Headers/Body for the operation.
     content += gen_method_create_request_parameter_code(method.pathParameters, methodOptionsObjectName, models, parameters, serializationFormat) if method.pathParameters else ""
     content += gen_method_create_request_parameter_code(method.parameters, methodOptionsObjectName, models, parameters, serializationFormat) if method.parameters else ""
 
-    # Return request.
-    content += "return request;\n}\n\n"
     return content
 
 def gen_add_metadata_headers(metadataName):
@@ -708,11 +737,22 @@ def gen_response_object_code(method, parameters, models):
                     headers[k] = v
                 generate_from_body_code = gen_resposne_object_from_body_code(get_response_object_name(method.methodName, method.className, ""), refType, model)
 
-
+    http_header_initialized = False
+    # Remove the ignored headers.
+    global ignored_response_headers
+    for v in ignored_response_headers:
+        headers.pop(v, None)
     for k, v in headers.items():
+        objectName = get_member_object_name(k, v)
+        global http_headers
+        if (objectName in http_headers):
+            if (not http_header_initialized):
+                http_header_initialized = True;
+                content += "DataLakeHttpHeaders HttpHeaders;\n"
+            continue
         valueType = get_cpp_type_nullable_from_value(k, v)
         defaultValue = " = {}()".format(valueType) if valueType == "int32_t" or valueType == "int64_t" or valueType == "bool" else ""
-        content += "{} {}{};\n".format(valueType, get_member_object_name(k, v), defaultValue)
+        content += "{} {}{};\n".format(valueType, objectName, defaultValue)
     content += generate_from_body_code
     content += "};\n\n" if content != "" else ""
 
@@ -724,11 +764,11 @@ def gen_method_create_response_code(method, parameters, models, serializationFor
     # TODO: Support more colorful response.
     methodReturnType = get_response_object_name(method.methodName, method.className, "")
     methodReturnName = "result"
-    methodResponseParameterName = "std::unique_ptr<Azure::Core::Http::Response>"
+    methodResponseParameterName = "std::unique_ptr<Azure::Core::Http::RawResponse>"
     methodResponsePtrName = "responsePtr"
     methodResponseObjectName = "response"
     # Declaration of the method.
-    content += "static {} {}({} {})\n{{\n".format(methodReturnType, methodName, methodResponseParameterName, methodResponsePtrName)
+    content += "static Azure::Core::Response<{}> {}(Azure::Core::Context context, {} {})\n{{\n".format(methodReturnType, methodName, methodResponseParameterName, methodResponsePtrName)
     # response object.
     content += "/* const */auto& {} = *{};\n".format(methodResponseObjectName, methodResponsePtrName)
     # Branch on status code.
@@ -752,59 +792,78 @@ def gen_method_create_response_code(method, parameters, models, serializationFor
                 content += "{}.BodyStream = {}.GetBodyStream();\n".format(methodReturnName, methodResponseObjectName)
             else:
                 refType = get_reference_type_from_ref(schema)
-                if serializationFormat == "xml":
-                    content += "{0}.{1}Object = {1}::CreateFromXml(XmlWrapper::CreateFromBodyBuffer(*Azure::Core::Http::Response::ConstructBodyBufferFromStream({2}.GetBodyStream().get())));\n".format(methodReturnName, refType, methodResponseObjectName)
-                elif serializationFormat == "json":
-                    # Declare the return value.
-                    content += "{1} {0} = {1}::{1}From{2}({2}::CreateFromJson(nlohmann::json::parse(*Azure::Core::Http::Response::ConstructBodyBufferFromStream({3}.GetBodyStream().get()))));\n".format(methodReturnName, methodReturnType, refType, methodResponseObjectName)
+                is_required = (value.get("required") == "true")
+                content += "const auto& bodyBuffer = {}.GetBody();".format(methodResponseObjectName)
+                if is_required:
+                    if serializationFormat == "xml":
+                        content += "{0}.{1}Object = {1}::CreateFromXml(XmlWrapper::CreateFromBodyBuffer(bodyBuffer));\n".format(methodReturnName, refType)
+                    elif serializationFormat == "json":
+                        # Declare the return value.
+                        content += "{1} {0} = {1}::{1}From{2}({2}::CreateFromJson(nlohmann::json::parse(bodyBuffer)));\n".format(methodReturnName, methodReturnType, refType)
+                else:
+                    content += "{1} {0} = bodyBuffer.empty() ? {1}() : {1}::{1}From{2}({2}::CreateFromJson(nlohmann::json::parse(bodyBuffer)));".format(methodReturnName, methodReturnType, refType)
         else:
             # empty body.
             # Declare the return value.
             content += "{} {};\n".format(methodReturnType, methodReturnName)
+
         # Parse headers of the response:
         for k, v in value.get("headers").items():
+            # Ignore the ignored headers.
+            global ignored_response_headers
+            if k in ignored_response_headers:
+                continue
             parameter = next((parameter for name, parameter in parameters.items() if parameter.name == cpp_name_unify(k)), None)
-            parameterName = parameter.parameterName if parameter else "\"{}\"".format(k)
+            parameterName = "Details::" + parameter.parameterName if parameter and (parameter.actualName == k) else "\"{}\"".format(k.lower())
             # Parse as different type:
             cppType = get_cpp_type_from_value(k, v)
             if cppType == "std::string":
-                parseString = "{}.GetHeaders().at(Details::{})".format(methodResponseObjectName, parameterName)
+                parseString = "{}.GetHeaders().at({})".format(methodResponseObjectName, parameterName)
             elif cppType == "int64_t":
-                parseString = "std::stoll({}.GetHeaders().at(Details::{}))".format(methodResponseObjectName, parameterName)
+                parseString = "std::stoll({}.GetHeaders().at({}))".format(methodResponseObjectName, parameterName)
             elif cppType == "int32_t":
-                parseString = "std::stoi({}.GetHeaders().at(Details::{}))".format(methodResponseObjectName, parameterName)
+                parseString = "std::stoi({}.GetHeaders().at({}))".format(methodResponseObjectName, parameterName)
             elif cppType == "bool":
-                parseString = "{}.GetHeaders().at(Details::{}) == \"true\"".format(methodResponseObjectName, parameterName)
+                parseString = "{}.GetHeaders().at({}) == \"true\"".format(methodResponseObjectName, parameterName)
             else:
-                raise RuntimeError("The type is not supported as a header type: " + cppType)
-            if parameter.isRequired:
-                content += "{}.{} = {};\n".format(methodReturnName, get_member_object_name(k, v), parseString)
-            else:
-                content += "if ({0}.GetHeaders().find(Details::{1}) != {0}.GetHeaders().end())\n{{\n".format(methodResponseObjectName, parameterName)
-                content += "{}.{} = {};\n".format(methodReturnName, get_member_object_name(k, v), parseString)
-                content += "}\n"
+                model = models[cppType]
+                if model:
+                    parseString = "{}FromString({}.GetHeaders().at({}))".format(cppType, methodResponseObjectName, parameterName)          
+                else:
+                    raise RuntimeError("The type is not supported as a header type: " + cppType)
 
-        content += "return {};\n".format(methodReturnName)
+            if v.get("required") == False or (not parameter.isRequired):
+                content += "if ({0}.GetHeaders().find({1}) != {0}.GetHeaders().end())\n{{\n".format(methodResponseObjectName, parameterName)
+                objectName = get_member_object_name(k, v)
+                global http_headers
+                objectName = "HttpHeaders." + objectName if (objectName in http_headers) else objectName
+                content += "{}.{} = {};\n".format(methodReturnName, objectName, parseString)
+                content += "}\n"
+            else:
+                content += "{}.{} = {};\n".format(methodReturnName, get_member_object_name(k, v), parseString)
+
+        content += "return Azure::Core::Response<{}>(std::move({}), std::move({}));\n".format(methodReturnType, methodReturnName, methodResponsePtrName)
         content += "}\n"
 
     # Parse error:
     content += "else\n{\n"
-    errorType = get_reference_type_from_ref(method.responses.get("default").get("schema"))
-    # TODO: remove the temporary work around for error parsing.
-    content += "throw Azure::Storage::StorageError::CreateFromResponse(std::move({}));\n".format(methodResponsePtrName)
+    content += "throw Azure::Storage::StorageError::CreateFromResponse(context, std::move({}));\n".format(methodResponsePtrName)
     content += "}\n}\n\n"
     return content
 
-def gen_method_run_code(method, parameters, models):
+def gen_method_run_code(method, parameters, models, serializationFormat):
     content = ""
     methodName = method.methodName
-    createRequestMethodName = method.methodName + "CreateRequest"
     parseResponseMethodName = method.methodName + "ParseResponse"
     methodReturnType = get_response_object_name(method.methodName, method.className, "")
     methodOptionsClassName = method.methodName + "Options"
     methodOptionsObjectName = methodOptionsClassName[0].lower() + methodOptionsClassName[1:]
+    bodyStreamCode = ""
+    if method.hasBody:
+        bodyStreamCode = ", Azure::Core::Http::BodyStream& bodyStream"
     # Declaration of the method.
-    content += "static {} {}(std::string url, Azure::Core::Http::HttpPipeline& pipeline, Azure::Core::Context context, {}& {})\n{{\n".format(methodReturnType, methodName, methodOptionsClassName, methodOptionsObjectName)
-    content += "auto request = {}(std::move(url), {});\n".format(createRequestMethodName, methodOptionsObjectName)
-    content += "return {}(pipeline.Send(context, request));\n}}\n\n".format(parseResponseMethodName)
+    content += "static Azure::Core::Response<{}> {}(std::string url{}, Azure::Core::Http::HttpPipeline& pipeline, Azure::Core::Context context, const {}& {})\n{{\n".format(methodReturnType, methodName, bodyStreamCode, methodOptionsClassName, methodOptionsObjectName)
+    # Create request code.
+    content += gen_method_create_request_code(method, parameters, models, serializationFormat)
+    content += "return {}(context, pipeline.Send(context, request));\n}}\n\n".format(parseResponseMethodName)
     return content

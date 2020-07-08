@@ -48,7 +48,7 @@ for name, model in modelsRaw.items():
 
 code_template.model_definitions += method_models
 
-code_template.k_API_VERSION = swagger.get("info").get("version")
+code_template.c_API_VERSION = swagger.get("info").get("version")
 code_template.parameter_string += code_template.details_namespace_begin
 code_template.parameter_string += "{} {} = \"{}\";\n".format(code_template.c_PARAMETER_CPP_TYPE, code_template.c_API_VERSION_CONST_NAME, code_template.c_API_VERSION)
 for name, parameter in parametersRaw.items():
