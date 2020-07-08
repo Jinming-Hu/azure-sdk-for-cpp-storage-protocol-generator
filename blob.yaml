@@ -149,11 +149,13 @@ Services:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
+          - LeaseId: std::string, nullable
           - IfModifiedSince: std::string, nullable
           - IfUnmodifiedSince: std::string, nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "If-Modified-Since", IfModifiedSince]
           - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
         response_action:
@@ -169,10 +171,12 @@ Services:
         options:
           - BasicRequestOptions: inline
           - BlobRequestEncryptionOptions: inline
+          - LeaseId: std::string, nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
@@ -191,12 +195,14 @@ Services:
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
+          - LeaseId: std::string, nullable
           - IfModifiedSince: std::string, nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "metadata"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "If-Modified-Since", IfModifiedSince]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -253,12 +259,14 @@ Services:
           - BasicRequestOptions: inline
           - Range: std::pair<int64_t, int64_t>, nullable
           - BlobRequestEncryptionOptions: inline
+          - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
@@ -282,10 +290,12 @@ Services:
         options:
           - BasicRequestOptions: inline
           - DeleteSnapshots: DeleteSnapshotsOption, nullable
+          - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-delete-snapshots", DeleteSnapshots]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -310,9 +320,11 @@ Services:
         return_type: BlobProperties
         options:
           - BasicRequestOptions: inline
+          - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -346,12 +358,14 @@ Services:
           - BasicRequestOptions: inline
           - HttpHeaders: BlobHttpHeaders
           - BlobRequestEncryptionOptions: inline
+          - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -368,12 +382,14 @@ Services:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
           - BlobRequestEncryptionOptions: inline
+          - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "metadata"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
