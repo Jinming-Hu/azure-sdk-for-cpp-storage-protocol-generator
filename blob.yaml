@@ -592,7 +592,7 @@ Services:
         options:
             - BasicRequestOptions: inline
             - ListType: BlockListTypeOption, nullable
-            - BlobRequestConditionalHeaders: inline
+            - LeaseId: std::string, nullable
         return_type:
           BlobBlockListInfo:
             - BasicResponse: inline
@@ -610,7 +610,7 @@ Services:
             - [add_query_code, "comp", "blocklist"]
             - [add_query_code, "blocklisttype", ListType]
             - *REQUEST_VERSION_TIMEOUT_PACKAGE
-            - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+            - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
             - [get_xml_body_code]  # must be the first
             - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
