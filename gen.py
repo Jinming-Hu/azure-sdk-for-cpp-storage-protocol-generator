@@ -186,7 +186,7 @@ def get_class_definition(class_name, config_class_def=None):
                 class_def.add_inline_class(get_class_definition(member_name))
             elif class_type == "struct":
                 class_def.add_member(member_name, member_type=member_type, member_comment=member_comment, member_default_value=member_default_value, member_nullable=member_nullable)
-            elif class_type == "enum class":
+            elif class_type == "enum class" or class_type == "bitwise enum":
                 member_literal = member_type
                 class_def.add_member(member_name, member_literal=member_literal, member_comment=member_comment, member_default_value=member_default_value)
             else:

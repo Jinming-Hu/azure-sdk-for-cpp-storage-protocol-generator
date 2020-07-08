@@ -115,7 +115,10 @@ def gen_rest_client(service_name):
 
 
 def gen_model_definition(service_name, class_name, class_def):
-    content = "{} {} {{".format(class_def.type, class_name)
+    if class_def.type == "enum class" or class_def.type == "struct":
+        content = "{} {} {{".format(class_def.type, class_name)
+    elif class_def.type == "bitwise enum":
+        content = "enum class {} {{".format(class_name)
     for i in range(len(class_def.member)):
         if class_def.member_type[i]:
             # for struct
@@ -134,13 +137,13 @@ def gen_model_definition(service_name, class_name, class_def):
                 else:
                     content += "=" + class_def.member_default_value[i]
             content += ";"
-            if class_def.member_comment[i]:
-                content += "// " + class_def.member_comment[i] + "\n"
+        elif class_def.type == "bitwise enum":
+            content += class_def.member[i] + "=" + str(2**i // 2) + ","
         else:
             # for enum
             content += class_def.member[i] + ","
-            if class_def.member_comment[i]:
-                content += "// " + class_def.member_comment[i] + "\n"
+        if class_def.member_comment[i]:
+            content += "// " + class_def.member_comment[i] + "\n"
     content += "}};  // {} {}\n\n".format(class_def.type, class_name)
 
     if class_def.type == "enum class":
@@ -176,6 +179,52 @@ def gen_model_definition(service_name, class_name, class_def):
             content += "if ({1} == \"{3}\") {{ return {0}::{2}; }}".format(class_def.name, snake_case_name, enum_v, enum_literal)
 
         content += "throw std::runtime_error(\"cannot convert \" + {1} + \" to {0}\"); }}\n\n".format(class_def.name, snake_case_name)
+    elif class_def.type == "bitwise enum":
+        # Bitwise or, and
+        content += inspect.cleandoc(
+            """
+            inline {typename} operator|({typename} lhs, {typename} rhs) {{
+                using type = std::underlying_type_t<{typename}>;
+                return static_cast<{typename}>(static_cast<type>(lhs) | static_cast<type>(rhs));
+            }}\n
+            inline {typename}& operator|=({typename}& lhs, {typename} rhs) {{
+                lhs = lhs | rhs;
+                return lhs;
+            }}\n
+            inline {typename} operator&({typename} lhs, {typename} rhs) {{
+                using type = std::underlying_type_t<{typename}>;
+                return static_cast<{typename}>(static_cast<type>(lhs) & static_cast<type>(rhs));
+            }}\n
+            inline {typename}& operator&=({typename}& lhs, {typename} rhs) {{
+                lhs = lhs & rhs;
+                return lhs;
+            }}
+            """.format(typename=class_def.name))
+        content += "\n\n"
+        # To string converter
+        content += "inline std::string {typename}ToString(const {typename}& val) {{".format(typename=class_def.name)
+        enum_list = class_def.name + " value_list[] = {"
+        string_list = "const char* string_list[] = {"
+        for i, enum_v in enumerate(class_def.member):
+            enum_literal = class_def.member_literal[i]
+            if len(enum_literal) == 0: continue
+            enum_list += class_def.name + "::" + enum_v + ","
+            string_list += "\"" + enum_literal + "\"" + ","
+        enum_list += "};"
+        string_list += "};"
+        content += enum_list + string_list
+        content += inspect.cleandoc(
+            """
+            std::string ret;
+            for (std::size_t i = 0; i < sizeof(value_list) / sizeof({typename}); ++i) {{
+                if ((val & value_list[i]) == value_list[i]) {{
+                    if (!ret.empty()) {{ ret += ","; }}
+                    ret += string_list[i];
+                }}
+            }}
+            return ret;}}
+            """.format(typename=class_def.name))
+        content += "\n\n"
 
     global model_definitions
     model_definitions += content
@@ -639,60 +688,36 @@ def gen_add_query_code(*args, **kwargs):
         content += "if ({}.HasValue()) {{".format(value)
         value += ".GetValue()"
 
-    if type(value_type) is str and value_type.startswith("std::vector<") and value_type.endswith(">"):
-        template_type = models_cache[value_type[len("std::vector<"): -len(">")]]
-        if template_type.type == "enum class":
-            str_name = value.replace(".", "_").lower() + "_str"
-
+    if optional:
+        if value_type == "std::string":
+            content += "if (!{}.empty()) {{".format(value)
+        elif value_type == "int32_t" or value_type == "int64_t":
+            optional_value = kwargs["optional_value"]
+            content += "if ({} != {}) {{".format(value, optional_value)
+        elif hasattr(value_type, "type") and (value_type.type == "enum class" or value_type.type == "bitwise enum"):
+            snake_case_name = get_snake_case_name(value_type.name)
             content += inspect.cleandoc(
                 """
-                std::string {var_str};
-                for (auto i : {var})
+                std::string {var_name} = {typename}ToString({var});
+                if (!{var_name}.empty())
                 {{
-                    if (!{var_str}.empty())
-                    {{
-                        {var_str} += ",";
-                    }}
-                    {var_str} += {typename}ToString(i);
-                }}
-                """.format(typename=template_type.name, var_str=str_name, var=value))
-
-            if optional:
-                content += "if (!{}.empty()){{".format(str_name)
-            content += "request.AddQueryParameter({}, {});".format(key, str_name)
-            if optional:
-                content += "}"
+                """.format(var=value, var_name=snake_case_name, typename=value_type.name))
+            value = snake_case_name
+        else:
+            raise RuntimeError("unknown type " + value_type.type + " " + value_type.name if hasattr(value_type, "type") else value_type)
     else:
-        if optional:
-            if value_type == "std::string":
-                content += "if (!{}.empty()) {{".format(value)
-            elif value_type == "int32_t" or value_type == "int64_t":
-                optional_value = kwargs["optional_value"]
-                content += "if ({} != {}) {{".format(value, optional_value)
-            elif hasattr(value_type, "type") and value_type.type == "enum class":
-                snake_case_name = get_snake_case_name(value_type.name)
-                content += inspect.cleandoc(
-                    """
-                    std::string {var_name} = {typename}ToString({var});
-                    if (!{var_name}.empty())
-                    {{
-                    """.format(var=value, var_name=snake_case_name, typename=value_type.name))
-                value = snake_case_name
-            else:
-                raise RuntimeError("unknown type " + value_type.type + " " + value_type.name if hasattr(value_type, "type") else value_type)
-        else:
-            if hasattr(value_type, "type") and value_type.type == "enum class":
-                snake_case_name = get_snake_case_name(value_type.name)
-                content += "std::string {var_name} = {typename}ToString({var});".format(var=value, var_name=snake_case_name, typename=value_type.name)
-                value = snake_case_name
+        if hasattr(value_type, "type") and value_type.type == "enum class":
+            snake_case_name = get_snake_case_name(value_type.name)
+            content += "std::string {var_name} = {typename}ToString({var});".format(var=value, var_name=snake_case_name, typename=value_type.name)
+            value = snake_case_name
 
-        if value_type == "int32_t" or value_type == "int64_t":
-            content += "request.AddQueryParameter({}, std::to_string({}));".format(key, value)
-        else:
-            content += "request.AddQueryParameter({}, {});".format(key, value)
+    if value_type == "int32_t" or value_type == "int64_t":
+        content += "request.AddQueryParameter({}, std::to_string({}));".format(key, value)
+    else:
+        content += "request.AddQueryParameter({}, {});".format(key, value)
 
-        if optional:
-            content += "}"
+    if optional:
+        content += "}"
 
     if value_nullable:
         content += "}"

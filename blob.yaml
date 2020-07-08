@@ -90,14 +90,14 @@ Services:
           - Prefix: std::string, nullable
           - Marker: std::string, nullable
           - MaxResults: int32_t, nullable
-          - IncludeMetadata: ListBlobContainersIncludeOption, nullable
+          - IncludeMetadata: ListBlobContainersIncludeOption = ListBlobContainersIncludeOption::None
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "list"]
           - [add_query_code, "prefix", Prefix]
           - [add_query_code, "marker", Marker]
           - [add_query_code, "maxresults", MaxResults]
-          - [add_query_code, "include", IncludeMetadata]
+          - [add_query_code, "include", IncludeMetadata, optional]
         response_action:
           - [get_xml_body_code]  # must be the first
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
@@ -236,7 +236,7 @@ Services:
           - Delimiter: std::string, nullable
           - Marker: std::string, nullable
           - MaxResults: int32_t, nullable
-          - Include: std::vector<ListBlobsIncludeItem>
+          - Include: ListBlobsIncludeItem = ListBlobsIncludeItem::None
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -1147,8 +1147,9 @@ Models:
       [start_tag, Metadata, Metadata],
     ]
   ListBlobsIncludeItem:
-    - type: enum class
-    - Copy: copy
+    - type: bitwise enum
+    - None: ""
+    - Copy: "copy"
     - Deleted: "deleted"
     - Metadata: "metadata"
     - Snapshots: "snapshots"
@@ -1158,7 +1159,7 @@ Models:
     - ETag: std::string
     - LastModified: std::string
   ListBlobContainersIncludeOption:
-    - type: enum class
+    - type: bitwise enum
     - None: ""
     - Metadata: "metadata"
   BlockListTypeOption:
