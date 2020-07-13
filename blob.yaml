@@ -208,7 +208,7 @@ Services:
           - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
-    - ListBlobs:
+    - ListBlobsFlat:
         http_method: Get
         http_status_code: 200
         return_type:
@@ -219,7 +219,6 @@ Services:
             - Prefix: std::string
             - Marker: std::string
             - NextMarker: std::string
-            - Delimiter: std::string
             - Items: std::vector<BlobItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
@@ -227,8 +226,49 @@ Services:
               [text, EnumerationResults.Prefix, Prefix],
               [text, EnumerationResults.Marker, Marker],
               [text, EnumerationResults.NextMarker, NextMarker],
-              [text, EnumerationResults.Delimiter, Delimiter],
               [start_tag, EnumerationResults.Blobs.Blob, Items],
+            ]
+        options:
+          - BasicRequestOptions: inline
+          - Prefix: std::string, nullable
+          - Marker: std::string, nullable
+          - MaxResults: int32_t, nullable
+          - Include: ListBlobsIncludeItem = ListBlobsIncludeItem::None
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "restype", "container"]
+          - [add_query_code, "comp", "list"]
+          - [add_query_code, "prefix", Prefix]
+          - [add_query_code, "marker", Marker]
+          - [add_query_code, "maxresults", MaxResults]
+          - [add_query_code, "include", Include, optional]
+        response_action:
+          - [get_xml_body_code]  # must be the first
+          - *RESPONSE_VERSION_DATE_ID_HEADER_PACKAGE
+
+    - ListBlobsByHierarchy:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+          BlobsHierarchySegment:
+            - BasicResponse: inline
+            - ServiceEndpoint: std::string
+            - Container: std::string
+            - Prefix: std::string
+            - Delimiter: std::string
+            - Marker: std::string
+            - NextMarker: std::string
+            - Items: std::vector<BlobItem>
+            - BlobPrefixes: std::vector<BlobPrefix>
+            - from_xml: [
+              [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
+              [attribute, EnumerationResults, ContainerName, Container],
+              [text, EnumerationResults.Prefix, Prefix],
+              [text, EnumerationResults.Delimiter, Delimiter],
+              [text, EnumerationResults.Marker, Marker],
+              [text, EnumerationResults.NextMarker, NextMarker],
+              [start_tag, EnumerationResults.Blobs.Blob, Items],
+              [start_tag, EnumerationResults.Blobs.BlobPrefix, BlobPrefixes]
             ]
         options:
           - BasicRequestOptions: inline
@@ -1145,6 +1185,11 @@ Models:
       [text, Properties.ServerEncrypted, ServerEncrypted],
       [text, Properties.EncryptionKeySHA256, EncryptionKeySHA256],
       [start_tag, Metadata, Metadata],
+    ]
+  BlobPrefix:
+    - Name: std::string
+    - from_xml: [
+      [text, Name, Name],
     ]
   ListBlobsIncludeItem:
     - type: bitwise enum
