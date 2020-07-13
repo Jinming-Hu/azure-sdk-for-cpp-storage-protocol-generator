@@ -265,8 +265,8 @@ def gen_fromxml_function(class_name):
                     int depth = 0;
                     bool is_start = false;
                     bool is_end = false;
-                    int64_t start;
-                    int64_t end;
+                    int64_t start = 0;
+                    int64_t end = 0;
                     while (true) {{
                         auto node = reader.Read();
                         if (node.Type == XmlNodeType::End) {{
