@@ -953,7 +953,7 @@ def gen_get_header_code(*args, **kwargs):
             auto {1} = httpResponse.GetHeaders().find({0});
             if ({1} != httpResponse.GetHeaders().end())
             {{
-            """.format(key, ite_name))
+            """.format(key.lower(), ite_name))
 
         if target_type == "int32_t":
             content += "{} = std::stoi({}->second);".format(target, ite_name)
@@ -971,15 +971,15 @@ def gen_get_header_code(*args, **kwargs):
         content += "}"
     else:
         if target_type == "int32_t":
-            content = "{1} = std::stoi(httpResponse.GetHeaders().at({0}));".format(key, target)
+            content = "{1} = std::stoi(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
         elif target_type == "int64_t":
-            content = "{1} = std::stoll(httpResponse.GetHeaders().at({0}));".format(key, target)
+            content = "{1} = std::stoll(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
         elif target_type == "std::string":
-            content = "{1} = httpResponse.GetHeaders().at({0});".format(key, target)
+            content = "{1} = httpResponse.GetHeaders().at({0});".format(key.lower(), target)
         elif target_type == "bool":
-            content = "{1} = httpResponse.GetHeaders().at({0}) == \"true\";".format(key, target)
+            content = "{1} = httpResponse.GetHeaders().at({0}) == \"true\";".format(key.lower(), target)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
-            content = "{target} = {typename}FromString(httpResponse.GetHeaders().at({key}));".format(key=key, target=target, typename=target_type.name)
+            content = "{target} = {typename}FromString(httpResponse.GetHeaders().at({key}));".format(key=key.lower(), target=target, typename=target_type.name)
         else:
             raise RuntimeError("unknown type " + target_type.type if hasattr(target_type, "type") else target_type)
 

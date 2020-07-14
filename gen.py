@@ -395,7 +395,7 @@ for class_name in toposort.toposort_flatten(export_models):
 output_path = pathlib.Path(config["output"])
 output_path.parents[0].mkdir(parents=True, exist_ok=True)
 with open(output_path, "w") as f:
-    f.write(code_template.global_header)
+    f.write(code_template.global_header.lstrip())
     f.write(code_template.include_headers)
     f.write(code_template.namespace_begin)
     f.write(code_template.constant_string)
