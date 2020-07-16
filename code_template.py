@@ -582,7 +582,8 @@ def gen_request_definition(http_method, *args, **kwargs):
     if not body:
         content = "unused(body);"
         content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url);".format(http_method)
-        content += "request.AddHeader(\"Content-Length\", \"0\");"
+        if http_method not in ["Get", "Head", "Delete"]:
+            content += "request.AddHeader(\"Content-Length\", \"0\");"
     else:
         if body_type == "std::string":
             content = inspect.cleandoc(
