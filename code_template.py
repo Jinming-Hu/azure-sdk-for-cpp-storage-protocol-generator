@@ -620,10 +620,10 @@ def gen_construct_request_function_end(request_options_used):
 def gen_parse_response_function_begin(function_name, http_method, http_status_code, return_type):
     content = inspect.cleandoc(
         """
-        static {1} {0}ParseResponse(Azure::Core::Context context, std::unique_ptr<Azure::Core::Http::Response> pHttpResponse)
+        static {1} {0}ParseResponse(Azure::Core::Context context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse)
         {{
             unused(context);
-            Azure::Core::Http::Response& httpResponse = *pHttpResponse;
+            Azure::Core::Http::RawResponse& httpResponse = *pHttpResponse;
             {1} response;
             auto http_status_code = static_cast<std::underlying_type<Azure::Core::Http::HttpStatusCode>::type>(httpResponse.GetStatusCode());
             if (!(
