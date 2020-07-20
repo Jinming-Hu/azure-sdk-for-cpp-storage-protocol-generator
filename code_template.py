@@ -24,6 +24,7 @@ include_headers = """
 
 #include "nullable.hpp"
 #include "context.hpp"
+#include "response.hpp"
 #include "http/http.hpp"
 #include "http/pipeline.hpp"
 #include "common/xml_wrapper.hpp"
@@ -620,7 +621,7 @@ def gen_construct_request_function_end(request_options_used):
 def gen_parse_response_function_begin(function_name, http_method, http_status_code, return_type):
     content = inspect.cleandoc(
         """
-        static {1} {0}ParseResponse(Azure::Core::Context context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse)
+        static Azure::Core::Response<{1}> {0}ParseResponse(Azure::Core::Context context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse)
         {{
             unused(context);
             Azure::Core::Http::RawResponse& httpResponse = *pHttpResponse;
@@ -645,15 +646,15 @@ def gen_parse_response_function_begin(function_name, http_method, http_status_co
     main_body += content
 
 
-def gen_parse_response_function_end():
-    content = "return response;}\n\n"
+def gen_parse_response_function_end(return_type):
+    content = "return Azure::Core::Response<{return_type}>(std::move(response), std::move(pHttpResponse));}}\n\n".format(return_type=return_type)
 
     global main_body
     main_body += content
 
 
 def gen_resource_function(function_name, return_type, request_has_user_input_body):
-    content = "static {return_type} {function_name}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Core::Response<{return_type}> {function_name}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
     if request_has_user_input_body:
         content += "Azure::Core::Http::BodyStream& requestBody,"
     content += "const {function_name}Options& options) {{".format(function_name=function_name)

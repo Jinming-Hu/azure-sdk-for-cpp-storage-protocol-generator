@@ -379,7 +379,7 @@ for config_resource in config["Services"]:
                     args.append(arg)
                     kwargs[arg + ".type"] = "std::string"
             method_to_call(*args, **kwargs)
-        code_template.gen_parse_response_function_end()
+        code_template.gen_parse_response_function_end(return_type)
 
         code_template.gen_resource_function(function_name, return_type, request_has_user_input_body)
 
