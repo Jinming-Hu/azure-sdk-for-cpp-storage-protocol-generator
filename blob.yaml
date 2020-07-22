@@ -136,7 +136,7 @@ Services:
         http_method: Delete
         http_status_code: 202
         return_type:
-          DeleteContainerResponse:
+          DeleteContainerInfo:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -308,7 +308,7 @@ Services:
         http_method: Delete
         http_status_code: 202
         return_type:
-          DeleteBlobResponse:
+          DeleteBlobInfo:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -326,7 +326,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          UndeleteBlobResponse:
+          UndeleteBlobInfo:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -413,7 +413,7 @@ Services:
         http_method: Put
         http_status_code: [200, 202]
         return_type:
-          SetAccessTierResponse:
+          SetAccessTierInfo:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -459,7 +459,7 @@ Services:
         http_method: Put
         http_status_code: 204
         return_type:
-          AbortCopyBlobResponse:
+          AbortCopyBlobInfo:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -1041,8 +1041,7 @@ Models:
     - noexport: true
     - ServerEncrypted: bool, nullable
     - EncryptionKeySHA256: std::string, nullable
-  FlattenedDownloadProperties:
-    - noexport: true
+  BlobDownloadResponse:
     - type: struct
     - BodiedResponse: inline
     - ETag: std::string
@@ -1059,8 +1058,6 @@ Models:
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
     - BlobResponseEncryptionOptions: inline
-  BlobDownloadResponse:
-    - FlattenedDownloadProperties: inline
   BlobContentInfo:
     - type: struct
     - BasicResponse: inline
