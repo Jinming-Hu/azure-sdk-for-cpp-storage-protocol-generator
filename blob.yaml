@@ -413,7 +413,7 @@ Services:
         http_method: Put
         http_status_code: [200, 202]
         return_type:
-          SetAccessTierInfo:
+          SetBlobAccessTierInfo:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
