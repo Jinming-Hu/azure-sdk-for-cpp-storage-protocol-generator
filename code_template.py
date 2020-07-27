@@ -59,6 +59,8 @@ fromxml_classes = set()
 toxml_classes = set()
 toxml_options_def_cache = {}
 
+constants_map = {}
+
 
 def get_snake_case_name(var):
     res = str()
@@ -85,6 +87,17 @@ def get_snake_case_name(var):
     while res.startswith("_"):
         res = res[1:]
     return res
+
+
+def gen_constant_definition():
+    content = str()
+    if len(constants_map):
+        for k, v in sorted(constants_map.items()):
+            content += "constexpr static const char* {key} = \"{value}\";".format(key=k, value=v)
+    content += "\n\n"
+
+    global model_definitions
+    model_definitions += content
 
 
 def gen_service_namespace(service_name):

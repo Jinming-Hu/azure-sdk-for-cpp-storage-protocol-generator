@@ -1,8 +1,11 @@
 service_name: Blobs
 output: generated/blob_rest_client.hpp
 
+Constants:
+  c_APIVersion: "2019-12-12"
+
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
-  - [add_header_code, "x-ms-version", "2019-12-12"]
+  - [add_header_code, "x-ms-version", c_APIVersion]
   - [add_query_code, "timeout", Timeout]
 
 request_encryption_package: &REQUEST_ENCRYPTION_HEADER_PACKAGE

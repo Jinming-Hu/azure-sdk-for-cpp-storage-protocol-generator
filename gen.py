@@ -206,6 +206,10 @@ def add_export_model(class_name):
         add_export_model(d)
 
 
+for c_k, c_v in config["Constants"].items():
+    code_template.constants_map[c_k] = c_v
+
+
 for config_resource in config["Services"]:
     resource_name = next(iter(config_resource))
     code_template.gen_resource_begin(resource_name)
@@ -290,6 +294,9 @@ for config_resource in config["Services"]:
                     kwargs["optional_value"] = match_res.group(1)
                 elif match_res := re.match("default\\((.*)\\)", action[i]):
                     kwargs["default_value"] = match_res.group(1)
+                elif type(action[i]) is str and action[i].startswith("c_"):
+                    args.append(action[i])
+                    kwargs[args[-1] + ".type"] = "std::string"
                 elif type(action[i]) is str:
                     request_options_used = True
                     arg = "options"
@@ -387,6 +394,7 @@ for config_resource in config["Services"]:
     code_template.gen_resource_end(resource_name)
 
 
+code_template.gen_constant_definition()
 for class_name in toposort.toposort_flatten(export_models):
     if models_cache[class_name].noexport:
         raise RuntimeError("Trying to export a non-export class " + class_name)
