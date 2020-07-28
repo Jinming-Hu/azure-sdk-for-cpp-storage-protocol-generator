@@ -636,7 +636,6 @@ def gen_parse_response_function_begin(function_name, http_method, http_status_co
         """
         static Azure::Core::Response<{1}> {0}ParseResponse(Azure::Core::Context context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse)
         {{
-            unused(context);
             Azure::Core::Http::RawResponse& httpResponse = *pHttpResponse;
             {1} response;
             auto http_status_code = static_cast<std::underlying_type<Azure::Core::Http::HttpStatusCode>::type>(httpResponse.GetStatusCode());
@@ -651,7 +650,7 @@ def gen_parse_response_function_begin(function_name, http_method, http_status_co
         """
         ))
         {
-            throw StorageError::CreateFromResponse(std::move(pHttpResponse));
+            throw StorageError::CreateFromResponse(context, std::move(pHttpResponse));
         }
         """)
 
@@ -666,7 +665,7 @@ def gen_parse_response_function_end(return_type):
     main_body += content
 
 
-def gen_resource_function(function_name, return_type, request_has_user_input_body):
+def gen_resource_function(function_name, return_type, request_has_user_input_body, response_use_body_stream):
     content = "static Azure::Core::Response<{return_type}> {function_name}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
     if request_has_user_input_body:
         content += "Azure::Core::Http::BodyStream& requestBody,"
@@ -680,6 +679,11 @@ def gen_resource_function(function_name, return_type, request_has_user_input_bod
     content += inspect.cleandoc(
         """
             auto request = {function_name}ConstructRequest(url, pRequestBody, options);
+        """.format(function_name=function_name))
+    if response_use_body_stream:
+        content += "context = Azure::Core::Http::TransportPolicy::DownloadViaStream(context);"
+    content += inspect.cleandoc(
+        """
             auto pResponse = pipeline.Send(context, request);
             pRequestBody.reset();
             return {function_name}ParseResponse(context, std::move(pResponse));
@@ -884,12 +888,10 @@ def gen_get_body_code(*args, **kwargs):
     body = args[0]
     value_type = kwargs[body + ".type"]
 
-    if value_type == "std::vector<uint8_t>":
-        func_name = "GetBodyBuffer"
-    elif value_type == "std::unique_ptr<Azure::Core::Http::BodyStream>":
-        func_name = "GetBodyStream"
+    if value_type != "std::unique_ptr<Azure::Core::Http::BodyStream>":
+        raise RuntimeError("Unknown response body type")
 
-    content = "{0} = httpResponse.{1}();".format(body, func_name)
+    content = "{0} = httpResponse.GetBodyStream();".format(body)
 
     global main_body
     main_body += content
@@ -918,16 +920,8 @@ def gen_get_xml_body_code(*args, **kwargs):
     content = inspect.cleandoc(
         """
         {{
-            auto bodyStream = httpResponse.GetBodyStream();
-            std::vector<uint8_t> bodyContent;
-            if (bodyStream->Length() == -1) {{
-                bodyContent = Azure::Core::Http::BodyStream::ReadToEnd(context, *bodyStream);
-            }}
-            else {{
-                bodyContent.resize(static_cast<std::size_t>(bodyStream->Length()));
-                Azure::Core::Http::BodyStream::ReadToCount(context, *bodyStream, &bodyContent[0], bodyStream->Length());
-            }}
-            XmlReader reader(reinterpret_cast<const char*>(bodyContent.data()), bodyContent.size());
+            const auto& httpResponseBody = httpResponse.GetBody();
+            XmlReader reader(reinterpret_cast<const char*>(httpResponseBody.data()), httpResponseBody.size());
             response = {}FromXml(reader);
         }}
         """.format(return_type))

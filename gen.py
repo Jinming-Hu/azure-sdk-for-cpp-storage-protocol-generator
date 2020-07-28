@@ -349,7 +349,10 @@ for config_resource in config["Services"]:
 
         config_response_action = flatten_actions(config_function_def["response_action"])
         code_template.gen_parse_response_function_begin(function_name, http_method, http_status_code, return_type)
+        response_use_body_stream = False
         for action in config_response_action:
+            if action[0] == "get_body_code":
+                response_use_body_stream = True
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
             kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "return_type": return_type}
@@ -388,7 +391,7 @@ for config_resource in config["Services"]:
             method_to_call(*args, **kwargs)
         code_template.gen_parse_response_function_end(return_type)
 
-        code_template.gen_resource_function(function_name, return_type, request_has_user_input_body)
+        code_template.gen_resource_function(function_name, return_type, request_has_user_input_body, response_use_body_stream)
 
     code_template.gen_resource_helper_functions()
     code_template.gen_resource_end(resource_name)
