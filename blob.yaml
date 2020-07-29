@@ -118,6 +118,20 @@ Services:
         response_action:
           - [get_xml_body_code]  # must be the first
 
+    - GetProperties:
+        http_method: Get
+        http_status_code: 200
+        return_type: BlobServiceProperties
+        options:
+          - BasicRequestOptions: inline
+        request_action:
+          - [add_query_code, "restype", "service"]
+          - [add_query_code, "comp", "properties"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action:
+          - [get_xml_body_code]  # must be the first
+
+
   - Container:
     - Create:
         http_method: Put
@@ -1012,6 +1026,78 @@ Models:
     - from_xml: [
       [text, Name, Name],
       [text, Size, Size],
+    ]
+  BlobAnalyticsLogging:
+    - Version: std::string
+    - Delete: bool = false
+    - Read: bool = false
+    - Write: bool = false
+    - RetentionPolicy: BlobRetentionPolicy
+    - from_xml: [
+      [text, Version, Version],
+      [text, Delete, Delete],
+      [text, Read, Read],
+      [text, Write, Write],
+      [start_tag, RetentionPolicy, RetentionPolicy],
+    ]
+  BlobMetrics:
+    - Version: std::string
+    - Enabled: bool = false
+    - RetentionPolicy: BlobRetentionPolicy
+    - IncludeApis: bool, nullable
+    - from_xml: [
+      [text, Version, Version],
+      [text, Enabled, Enabled],
+      [text, IncludeAPIs, IncludeApis],
+      [start_tag, RetentionPolicy, RetentionPolicy],
+    ]
+  BlobCorsRule:
+    - AllowedOrigins: std::string
+    - AllowedMethods: std::string
+    - AllowedHeaders: std::string
+    - ExposedHeaders: std::string
+    - MaxAgeInSeconds: int32_t = 0
+    - from_xml: [
+      [text, AllowedOrigins, AllowedOrigins],
+      [text, AllowedMethods, AllowedMethods],
+      [text, MaxAgeInSeconds, MaxAgeInSeconds],
+      [text, ExposedHeaders, ExposedHeaders],
+      [text, AllowedHeaders, AllowedHeaders],
+    ]
+  BlobRetentionPolicy:
+    - Enabled: bool = false
+    - Days: int32_t, nullable
+    - from_xml: [
+      [text, Enabled, Enabled],
+      [text, Days, Days],
+    ]
+  BlobStaticWebsite:
+    - Enabled: bool = false
+    - IndexDocument: std::string
+    - DefaultIndexDocumentPath: std::string
+    - ErrorDocument404Path: std::string
+    - from_xml: [
+      [text, Enabled, Enabled],
+      [text, IndexDocument, IndexDocument],
+      [text, DefaultIndexDocumentPath, DefaultIndexDocumentPath],
+      [text, ErrorDocument404Path, ErrorDocument404Path],
+    ]
+  BlobServiceProperties:
+    - Logging: BlobAnalyticsLogging
+    - HourMetrics: BlobMetrics
+    - MinuteMetrics: BlobMetrics
+    - Cors: std::vector<BlobCorsRule>
+    - DefaultServiceVersion: std::string
+    - DeleteRetentionPolicy: BlobRetentionPolicy
+    - StaticWebsite: BlobStaticWebsite
+    - from_xml: [
+      [start_tag, StorageServiceProperties.Logging, Logging],
+      [start_tag, StorageServiceProperties.HourMetrics, HourMetrics],
+      [start_tag, StorageServiceProperties.MinuteMetrics, MinuteMetrics],
+      [start_tag, StorageServiceProperties.Cors.CorsRule, Cors],
+      [text, StorageServiceProperties.DefaultServiceVersion, DefaultServiceVersion],
+      [start_tag, StorageServiceProperties.DefaultRetentionPolicy, DeleteRetentionPolicy],
+      [start_tag, StorageServiceProperties.StaticWebsite, StaticWebsite],
     ]
   BlobRequestConditionalHeaders:
     - IfModifiedSince: std::string, nullable
