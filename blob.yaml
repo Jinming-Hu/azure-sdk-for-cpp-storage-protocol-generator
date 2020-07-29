@@ -96,7 +96,7 @@ Services:
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", IncludeMetadata, optional]
         response_action:
-          - [get_xml_body_code]  # must be the first
+          - [get_xml_body_code]
 
     - GetUserDelegationKey:
         http_method: Post
@@ -111,12 +111,12 @@ Services:
             [tag, KeyInfo.Expiry, ExpiresOn],
           ]
         request_action:
-          - [add_xml_body_code]  # must be the first one
+          - [add_xml_body_code]
           - [add_query_code, "restype", "service"]
           - [add_query_code, "comp", "userdelegationkey"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
-          - [get_xml_body_code]  # must be the first
+          - [get_xml_body_code]
 
     - GetProperties:
         http_method: Get
@@ -129,7 +129,26 @@ Services:
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
-          - [get_xml_body_code]  # must be the first
+          - [get_xml_body_code]
+
+    - SetProperties:
+        http_method: Put
+        http_status_code: 202
+        return_type:
+          SetServicePropertiesInfo:
+            - BasicResponse: inline
+        options:
+          - BasicRequestOptions: inline
+          - Properties: BlobServiceProperties
+          - to_xml: [
+            [tag, StorageServiceProperties, Properties],
+          ]
+        request_action:
+          - [add_xml_body_code]
+          - [add_query_code, "restype", "service"]
+          - [add_query_code, "comp", "properties"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action: {}
 
 
   - Container:
@@ -246,7 +265,7 @@ Services:
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
-          - [get_xml_body_code]  # must be the first
+          - [get_xml_body_code]
 
     - ListBlobsByHierarchy:
         http_method: Get
@@ -289,7 +308,7 @@ Services:
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
-          - [get_xml_body_code]  # must be the first
+          - [get_xml_body_code]
 
   - Blob:
     - Download:
@@ -528,7 +547,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - [add_body_code]  # must be the first one
+          - [add_body_code]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
@@ -555,7 +574,7 @@ Services:
           - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
         request_action:
-          - [add_body_code]  # must be the first one
+          - [add_body_code]
           - [add_query_code, "comp", "block"]
           - [add_query_code, "blockid", BlockId]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -612,7 +631,7 @@ Services:
             [tag, BlockList, BlockList]
           ]
         request_action:
-          - [add_xml_body_code]  # must be the first one
+          - [add_xml_body_code]
           - [add_query_code, "comp", "blocklist"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
@@ -651,7 +670,7 @@ Services:
             - *REQUEST_VERSION_TIMEOUT_PACKAGE
             - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
-            - [get_xml_body_code]  # must be the first
+            - [get_xml_body_code]
             - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
             - [get_header_code, "Content-Type", ContentType]
             - [get_header_code, "x-ms-blob-content-length", ContentLength]
@@ -703,7 +722,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
         request_action:
-          - [add_body_code]  # must be the first one
+          - [add_body_code]
           - [add_query_code, "comp", "page"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
@@ -835,7 +854,7 @@ Services:
           - [add_header_code, "x-ms-previous-snapshot-url", PreviousSnapshotUrl]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - [get_xml_body_code]  # must be the first
+          - [get_xml_body_code]
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-content-length", BlobContentLength]
 
@@ -896,7 +915,7 @@ Services:
           - BlobRequestEncryptionOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
-          - [add_body_code]  # must be the first one
+          - [add_body_code]
           - [add_query_code, "comp", "appendblock"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
@@ -1040,6 +1059,13 @@ Models:
       [text, Write, Write],
       [start_tag, RetentionPolicy, RetentionPolicy],
     ]
+    - to_xml: [
+      [tag, Version, Version],
+      [tag, Delete, Delete],
+      [tag, Read, Read],
+      [tag, Write, Write],
+      [tag, RetentionPolicy, RetentionPolicy],
+    ]
   BlobMetrics:
     - Version: std::string
     - Enabled: bool = false
@@ -1050,6 +1076,12 @@ Models:
       [text, Enabled, Enabled],
       [text, IncludeAPIs, IncludeApis],
       [start_tag, RetentionPolicy, RetentionPolicy],
+    ]
+    - to_xml: [
+      [tag, Version, Version],
+      [tag, Enabled, Enabled],
+      [tag, IncludeAPIs, IncludeApis],
+      [tag, RetentionPolicy, RetentionPolicy],
     ]
   BlobCorsRule:
     - AllowedOrigins: std::string
@@ -1064,6 +1096,13 @@ Models:
       [text, ExposedHeaders, ExposedHeaders],
       [text, AllowedHeaders, AllowedHeaders],
     ]
+    - to_xml: [
+      [tag, CorsRule.AllowedOrigins, AllowedOrigins],
+      [tag, CorsRule.AllowedMethods, AllowedMethods],
+      [tag, CorsRule.AllowedHeaders, AllowedHeaders],
+      [tag, CorsRule.ExposedHeaders, ExposedHeaders],
+      [tag, CorsRule.MaxAgeInSeconds, MaxAgeInSeconds],
+    ]
   BlobRetentionPolicy:
     - Enabled: bool = false
     - Days: int32_t, nullable
@@ -1071,16 +1110,26 @@ Models:
       [text, Enabled, Enabled],
       [text, Days, Days],
     ]
+    - to_xml: [
+      [tag, Enabled, Enabled],
+      [tag, Days, Days],
+    ]
   BlobStaticWebsite:
     - Enabled: bool = false
-    - IndexDocument: std::string
-    - DefaultIndexDocumentPath: std::string
-    - ErrorDocument404Path: std::string
+    - IndexDocument: std::string, nullable
+    - DefaultIndexDocumentPath: std::string, nullable
+    - ErrorDocument404Path: std::string, nullable
     - from_xml: [
       [text, Enabled, Enabled],
       [text, IndexDocument, IndexDocument],
       [text, DefaultIndexDocumentPath, DefaultIndexDocumentPath],
       [text, ErrorDocument404Path, ErrorDocument404Path],
+    ]
+    - to_xml: [
+      [tag, Enabled, Enabled],
+      [tag, IndexDocument, IndexDocument],
+      [tag, DefaultIndexDocumentPath, DefaultIndexDocumentPath],
+      [tag, ErrorDocument404Path, ErrorDocument404Path],
     ]
   BlobServiceProperties:
     - Logging: BlobAnalyticsLogging
@@ -1096,8 +1145,17 @@ Models:
       [start_tag, StorageServiceProperties.MinuteMetrics, MinuteMetrics],
       [start_tag, StorageServiceProperties.Cors.CorsRule, Cors],
       [text, StorageServiceProperties.DefaultServiceVersion, DefaultServiceVersion],
-      [start_tag, StorageServiceProperties.DefaultRetentionPolicy, DeleteRetentionPolicy],
+      [start_tag, StorageServiceProperties.DeleteRetentionPolicy, DeleteRetentionPolicy],
       [start_tag, StorageServiceProperties.StaticWebsite, StaticWebsite],
+    ]
+    - to_xml: [
+      [tag, Logging, Logging],
+      [tag, HourMetrics, HourMetrics],
+      [tag, MinuteMetrics, MinuteMetrics],
+      [tag, Cors, Cors],
+      [tag, DefaultServiceVersion, DefaultServiceVersion],
+      [tag, DeleteRetentionPolicy, DeleteRetentionPolicy],
+      [tag, StaticWebsite, StaticWebsite],
     ]
   BlobRequestConditionalHeaders:
     - IfModifiedSince: std::string, nullable

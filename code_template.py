@@ -468,8 +468,14 @@ def gen_toxml_function(class_name):
             content = "writer.Write(XmlNode{{XmlNodeType::StartTag, {0}.data(), {1}.data() }});".format(inner_type1_to_string, inner_type2_to_string)
         elif member_type == "std::string":
             content = "writer.Write(XmlNode{{XmlNodeType::Text, nullptr, {}.data()}});".format(member_name)
+        elif member_type == "bool":
+            content = "writer.Write(XmlNode{{XmlNodeType::Text, nullptr, {} ? \"true\":\"false\"}});".format(member_name)
+        elif member_type in ["int32_t", "int64_t"]:
+            content = "writer.Write(XmlNode{{XmlNodeType::Text, nullptr, std::to_string({}).data()}});".format(member_name)
         else:
             content = "{}ToXml(writer, {});".format(member_type, member_name)
+            toxml_classes.add(member_type)
+            toxml_options_def_cache[member_type] = models_cache[member_type]
         return content
 
     if class_name in toxml_options_def_cache:
@@ -483,26 +489,40 @@ def gen_toxml_function(class_name):
         xml_path = []
         for a in class_def.toxml_actions:
             xml_action_type = a[0]
-            cur_xml_path = a[1].split(".")
+            target_xml_path = a[1].split(".")
             member = a[2]
             member_type = class_def.member_type[class_def.member.index(member)]
+            member_nullable = class_def.member_nullable[class_def.member.index(member)]
 
             if xml_action_type == "tag":
-                common_prefix = os.path.commonprefix([xml_path, cur_xml_path])
+                common_prefix = os.path.commonprefix([xml_path, target_xml_path])
                 while len(xml_path) > len(common_prefix):
                     content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
                     xml_path.pop()
-                while len(xml_path) < len(cur_xml_path):
-                    p = cur_xml_path[len(xml_path)]
+                while len(xml_path) < len(target_xml_path) - 1:
+                    p = target_xml_path[len(xml_path)]
                     content += "writer.Write(XmlNode{{XmlNodeType::StartTag, \"{}\"}});".format(p)
                     xml_path.append(p)
+                if member_nullable:
+                    content += "if (options.{}.HasValue()) {{".format(member)
+                    member += ".GetValue()"
+                last_path_added = False
+                if len(xml_path) < len(target_xml_path):
+                    p = target_xml_path[len(xml_path)]
+                    content += "writer.Write(XmlNode{{XmlNodeType::StartTag, \"{}\"}});".format(p)
+                    xml_path.append(p)
+                    last_path_added = True
                 content += toxml_content("options." + member, member_type)
+                if last_path_added:
+                    content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+                    xml_path.pop()
+                if member_nullable:
+                    content += "}"
             else:
                 raise RuntimeError("unsupported toxml action " + xml_action_type)
         while len(xml_path):
             content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
             xml_path.pop()
-        content += "writer.Write(XmlNode{XmlNodeType::End});"
 
         content += "}\n\n"
     elif class_name in models_cache:
@@ -847,6 +867,7 @@ def gen_add_xml_body_code(*args, **kwargs):
             XmlWriter writer;
             {}ToXml(writer, options);
             xml_body = writer.GetDocument();
+            writer.Write(XmlNode{{XmlNodeType::End}});
         }}
         """.format(option_type))
 

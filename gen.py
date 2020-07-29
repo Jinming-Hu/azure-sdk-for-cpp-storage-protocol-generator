@@ -157,8 +157,20 @@ def get_class_definition(class_name, config_class_def=None):
     else:
         fromxml_actions = None
 
+    # to xml
+    toxml_index = [i for i, v in enumerate(config_class_def) if next(iter(v)) == "to_xml"]
+    if len(toxml_index) == 1:
+        index = toxml_index[0]
+        toxml_actions = next(iter(config_class_def[index].values()))
+        del config_class_def[index]
+    elif len(toxml_index) > 1:
+        raise RuntimeError("multiple to_xml")
+    else:
+        toxml_actions = None
+
     class_def = class_definition(class_name, class_type)
     class_def.fromxml_actions = fromxml_actions
+    class_def.toxml_actions = toxml_actions
     if noexport:
         class_def.noexport = True
     for i, m in enumerate(config_class_def):
