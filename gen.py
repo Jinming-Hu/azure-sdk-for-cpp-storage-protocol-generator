@@ -8,6 +8,7 @@ import toposort
 
 import code_template
 from code_template import models_cache
+from code_template import HttpBodyType
 
 
 class class_definition:
@@ -276,38 +277,67 @@ for config_resource in config["Services"]:
                     res.append(i)
             return res
 
+        request_body_type = HttpBodyType.NoBody
+        response_body_type = HttpBodyType.NoBody
         config_request_action = flatten_actions(config_function_def["request_action"])
-        code_template.gen_construct_request_function_begin(function_name)
-        request_declared = False
-        request_options_used = False
-        request_has_user_input_body = False
+        config_response_action = flatten_actions(config_function_def["response_action"])
+        for i in range(len(config_request_action)):
+            action = config_request_action[i]
+            move_to_first = True
+            if action[0] == "add_body_code":
+                request_body_type = HttpBodyType.PassOn
+            elif action[0] == "add_xml_body_code":
+                request_body_type = HttpBodyType.Xml
+            else:
+                move_to_first = False
+            if move_to_first:
+                del config_request_action[i]
+                config_request_action.insert(0, action)
+        if request_body_type == HttpBodyType.NoBody:
+            config_request_action.insert(0, ["no_body_code"])
+
+        for i in range(len(config_response_action)):
+            action = config_response_action[i]
+            move_to_first = True
+            if action[0] == "get_body_code":
+                response_body_type = HttpBodyType.PassOn
+            elif action[0] == "get_xml_body_code":
+                response_body_type = HttpBodyType.Xml
+            else:
+                move_to_first = False
+            if move_to_first:
+                del config_response_action[i]
+                config_response_action.insert(0, action)
+
+        code_template.gen_resource_function_begin(function_name, return_type, request_body_type, response_body_type)
         for action in config_request_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
-            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "option_type": function_name + "Options"}
+            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "option_type": function_name + "Options", "request_body_type": request_body_type, "response_body_type": response_body_type, "http_method": http_method}
 
             for i in range(1, len(action)):
-                if action[i] == "optional":
+                a = action[i]
+                if a == "optional":
                     kwargs["optional"] = True
-                elif match_res := re.match("optional\\((.*)\\)", action[i]):
+                elif match_res := re.match("optional\\((.*)\\)", a):
                     kwargs["optional"] = True
                     kwargs["optional_value"] = match_res.group(1)
-                elif match_res := re.match("default\\((.*)\\)", action[i]):
+                elif match_res := re.match("default\\((.*)\\)", a):
                     kwargs["default_value"] = match_res.group(1)
-                elif type(action[i]) is str and action[i].startswith("c_"):
-                    args.append(action[i])
+                elif type(a) is str and a.startswith("c_"):
+                    args.append(a)
                     kwargs[args[-1] + ".type"] = "std::string"
-                elif type(action[i]) is str:
+                elif type(a) is str:
                     request_options_used = True
                     arg = "options"
-                    arg_types = action[i].split(".")
+                    arg_types = a.split(".")
                     arg_def = option_def
                     for j, t in enumerate(arg_types):
                         if t not in arg_def.member:
                             if j < len(arg_types) - 1:  # Not the last one
                                 continue
                             else:
-                                raise RuntimeError("cannot find " + action[i] + " in request options")
+                                raise RuntimeError("cannot find " + a + " in request options")
                         arg += "." + t
                         arg_type = arg_def.member_type[arg_def.member.index(t)]
                         arg_nullable = arg_def.member_nullable[arg_def.member.index(t)]
@@ -317,47 +347,26 @@ for config_resource in config["Services"]:
                     arg_def = models_cache[arg_type] if arg_type in models_cache else arg_type
                     kwargs[arg + ".type"] = arg_def
                     kwargs[arg + ".nullable"] = arg_nullable
-                elif type(action[i]) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
+                elif type(a) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
                     # maybe add const string definition
-                    arg = "\"{}\"".format(action[i])
+                    arg = "\"{}\"".format(a)
                     args.append(arg)
                     kwargs[arg + ".type"] = "std::string"  # we may need to change this to literal string to distinguish from std::string variable
                 elif type(action[i]) is ruamel.yaml.scalarstring.SingleQuotedScalarString:
-                    arg = "\"{}\"".format(action[i])
+                    arg = "\"{}\"".format(a)
                     args.append(arg)
                     kwargs[arg + ".type"] = "std::string"
-            if not request_declared:
-                request_declared = True
-                if action[0] == "add_body_code":
-                    arg = "body"
-                    args.append(arg)
-                    kwargs[arg + ".type"] = "std::unique_ptr<Azure::Core::Http::BodyStream>"
-                    code_template.gen_request_definition(http_method, *args, **kwargs)
-                    request_has_user_input_body = True
-                elif action[0] == "add_xml_body_code":
-                    method_to_call(*args, **kwargs)
-                    arg = "xml_body"
-                    args.append(arg)
-                    kwargs[arg + ".type"] = "std::string"
-                    code_template.gen_request_definition(http_method, *args, **kwargs)
-                else:
-                    code_template.gen_request_definition(http_method)
-                    method_to_call(*args, **kwargs)
-            else:
-                method_to_call(*args, **kwargs)
-        code_template.gen_construct_request_function_end(request_options_used)
+            method_to_call(*args, **kwargs)
 
-        config_response_action = flatten_actions(config_function_def["response_action"])
-        code_template.gen_parse_response_function_begin(function_name, http_method, http_status_code, return_type)
-        response_use_body_stream = False
+        code_template.gen_resource_send_request(return_type, http_status_code)
+
         for action in config_response_action:
-            if action[0] == "get_body_code":
-                response_use_body_stream = True
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
-            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "return_type": return_type}
+            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "return_type": return_type, "request_body_type": request_body_type, "response_body_type": response_body_type, "http_method": http_method}
 
             for i in range(1, len(action)):
+                a = action[i]
                 if action[i] == "optional":
                     kwargs["optional"] = True
                 elif type(action[i]) is str:
@@ -389,9 +398,8 @@ for config_resource in config["Services"]:
                     args.append(arg)
                     kwargs[arg + ".type"] = "std::string"
             method_to_call(*args, **kwargs)
-        code_template.gen_parse_response_function_end(return_type)
 
-        code_template.gen_resource_function(function_name, return_type, request_has_user_input_body, response_use_body_stream)
+        code_template.gen_resource_function_end(return_type)
 
     code_template.gen_resource_helper_functions()
     code_template.gen_resource_end(resource_name)

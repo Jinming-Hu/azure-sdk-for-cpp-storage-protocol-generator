@@ -1,5 +1,13 @@
 import os
 import inspect
+from enum import Enum
+
+
+class HttpBodyType(Enum):
+    NoBody = 0
+    PassOn = 1
+    Xml = 2
+    Json = 3
 
 
 models_cache = {}
@@ -18,7 +26,6 @@ include_headers = """
 #include <map>
 #include <set>
 #include <vector>
-#include <functional>
 #include <stdexcept>
 #include <limits>
 
@@ -47,8 +54,6 @@ namespace_end = """
 
 constant_string = ""
 model_definitions = """
-
-using BodyStreamPointer = std::unique_ptr<Azure::Core::Http::BodyStream, std::function<void(Azure::Core::Http::BodyStream*)>>;
 
 """
 rest_client_begin = ""
@@ -221,7 +226,8 @@ def gen_model_definition(service_name, class_name, class_def):
         string_list = "const char* string_list[] = {"
         for i, enum_v in enumerate(class_def.member):
             enum_literal = class_def.member_literal[i]
-            if len(enum_literal) == 0: continue
+            if len(enum_literal) == 0:
+                continue
             enum_list += class_def.name + "::" + enum_v + ","
             string_list += "\"" + enum_literal + "\"" + ","
         enum_list += "};"
@@ -575,72 +581,25 @@ def gen_function_option_definition(service_name, function_name, class_def):
     main_body += content
 
 
-def gen_construct_request_function_begin(function_name):
+def gen_resource_function_begin(function_name, return_type, request_body_type, response_body_type):
+    content = "static Azure::Core::Response<{return_type}> {function_name}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
+    if request_body_type == HttpBodyType.PassOn:
+        content += "Azure::Core::Http::BodyStream* requestBody,"
+    content += "const {function_name}Options& options) {{".format(function_name=function_name)
+
+    global main_body
+    main_body += content
+
+
+def gen_resource_send_request(return_type, http_status_code):
     content = inspect.cleandoc(
         """
-        static Azure::Core::Http::Request {0}ConstructRequest(const std::string& url, BodyStreamPointer& body, const {0}Options& options)
-        {{
-        """.format(function_name))
-
-    global main_body
-    main_body += content
-
-
-def gen_request_definition(http_method, *args, **kwargs):
-    if args:
-        body = args[0]
-        body_type = kwargs[body + ".type"]
-    else:
-        body = None
-
-    if not body:
-        content = "unused(body);"
-        content += "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url);".format(http_method)
-        if http_method not in ["Get", "Head", "Delete"]:
-            content += "request.AddHeader(\"Content-Length\", \"0\");"
-    else:
-        if body_type == "std::string":
-            content = inspect.cleandoc(
-                """
-                std::shared_ptr<std::string> xml_body_ptr = std::make_shared<std::string>(std::move({xml_body}));
-                body = BodyStreamPointer(new Azure::Core::Http::MemoryBodyStream(reinterpret_cast<const uint8_t*>(xml_body_ptr->data()), xml_body_ptr->length()),
-                                         [xml_body_ptr](Azure::Core::Http::BodyStream* bodyStream) {{
-                                             delete bodyStream;
-                                         }}
-                );
-                auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url, body.get());
-                request.AddHeader(\"Content-Length\", std::to_string(body->Length()));
-                """.format(xml_body=body, http_method=http_method))
-        elif body_type == "std::unique_ptr<Azure::Core::Http::BodyStream>":
-            content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{}, url, body.get());".format(http_method)
-            content += "request.AddHeader(\"Content-Length\", std::to_string(body->Length()));"
-        else:
-            raise RuntimeError("unknown body type " + body_type)
-
-    global main_body
-    main_body += content
-
-
-def gen_construct_request_function_end(request_options_used):
-    content = ""
-    if not request_options_used:
-        content += "unused(options);"
-    content += "return request;}\n\n"
-
-    global main_body
-    main_body += content
-
-
-def gen_parse_response_function_begin(function_name, http_method, http_status_code, return_type):
-    content = inspect.cleandoc(
-        """
-        static Azure::Core::Response<{1}> {0}ParseResponse(Azure::Core::Context context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse)
-        {{
-            Azure::Core::Http::RawResponse& httpResponse = *pHttpResponse;
-            {1} response;
-            auto http_status_code = static_cast<std::underlying_type<Azure::Core::Http::HttpStatusCode>::type>(httpResponse.GetStatusCode());
-            if (!(
-        """.format(function_name, return_type))
+        auto pHttpResponse = pipeline.Send(context, request);
+        Azure::Core::Http::RawResponse& httpResponse = *pHttpResponse;
+        {return_type} response;
+        auto http_status_code = static_cast<std::underlying_type<Azure::Core::Http::HttpStatusCode>::type>( httpResponse.GetStatusCode());
+        if (!(
+        """.format(return_type=return_type))
     for i, code in enumerate(http_status_code):
         if i != 0:
             content += "||"
@@ -658,38 +617,8 @@ def gen_parse_response_function_begin(function_name, http_method, http_status_co
     main_body += content
 
 
-def gen_parse_response_function_end(return_type):
+def gen_resource_function_end(return_type):
     content = "return Azure::Core::Response<{return_type}>(std::move(response), std::move(pHttpResponse));}}\n\n".format(return_type=return_type)
-
-    global main_body
-    main_body += content
-
-
-def gen_resource_function(function_name, return_type, request_has_user_input_body, response_use_body_stream):
-    content = "static Azure::Core::Response<{return_type}> {function_name}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
-    if request_has_user_input_body:
-        content += "Azure::Core::Http::BodyStream& requestBody,"
-    content += "const {function_name}Options& options) {{".format(function_name=function_name)
-
-    if request_has_user_input_body:
-        content += "BodyStreamPointer pRequestBody(&requestBody, [](Azure::Core::Http::BodyStream* /* requestBody */) {});"
-    else:
-        content += "BodyStreamPointer pRequestBody;"
-
-    content += inspect.cleandoc(
-        """
-            auto request = {function_name}ConstructRequest(url, pRequestBody, options);
-        """.format(function_name=function_name))
-    if response_use_body_stream:
-        content += "context = Azure::Core::Http::TransportPolicy::DownloadViaStream(context);"
-    content += inspect.cleandoc(
-        """
-            auto pResponse = pipeline.Send(context, request);
-            pRequestBody.reset();
-            return {function_name}ParseResponse(context, std::move(pResponse));
-        }}
-        """.format(function_name=function_name))
-    content += "\n\n"
 
     global main_body
     main_body += content
@@ -789,7 +718,6 @@ def gen_add_header_code(*args, **kwargs):
                 """if ({member_name} != {member_optional_value}) {{
                     request.AddHeader({header_name}, std::to_string({member_name}));
                 }}""".format(member_name=value, member_optional_value=optional_value, header_name=key))
-            #raise RuntimeError("optional int header not supported yet")
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
             content += "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
@@ -879,25 +807,37 @@ def gen_get_metadata_code(*args, **kwargs):
     main_body += content
 
 
+def gen_no_body_code(*args, **kwargs):
+    response_body_type = kwargs["response_body_type"]
+    http_method = kwargs["http_method"]
+
+    content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url".format(http_method=http_method)
+    if response_body_type == HttpBodyType.PassOn:
+        content += ", true"
+    content += ");"
+    if http_method not in ["Get", "Head", "Delete"]:
+        content += "request.AddHeader(\"Content-Length\", \"0\");"
+
+    global main_body
+    main_body += content
+
+
 def gen_add_body_code(*args, **kwargs):
-    raise RuntimeError("this function should never be called")
-    pass
-
-
-def gen_get_body_code(*args, **kwargs):
-    body = args[0]
-    value_type = kwargs[body + ".type"]
-
-    if value_type != "std::unique_ptr<Azure::Core::Http::BodyStream>":
-        raise RuntimeError("Unknown response body type")
-
-    content = "{0} = httpResponse.GetBodyStream();".format(body)
+    response_body_type = kwargs["response_body_type"]
+    http_method = kwargs["http_method"]
+    content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url, requestBody".format(http_method=http_method)
+    if response_body_type == HttpBodyType.PassOn:
+        content += ", true"
+    content += ");"
+    content += "request.AddHeader(\"Content-Length\", std::to_string(requestBody->Length()));"
 
     global main_body
     main_body += content
 
 
 def gen_add_xml_body_code(*args, **kwargs):
+    response_body_type = kwargs["response_body_type"]
+    http_method = kwargs["http_method"]
     option_type = kwargs["option_type"]
 
     content = inspect.cleandoc(
@@ -909,6 +849,30 @@ def gen_add_xml_body_code(*args, **kwargs):
             xml_body = writer.GetDocument();
         }}
         """.format(option_type))
+
+    content += inspect.cleandoc(
+        """
+        Azure::Core::Http::MemoryBodyStream xml_body_stream(reinterpret_cast<const uint8_t*>(xml_body.data()), xml_body.length());
+        auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url, &xml_body_stream
+        """.format(http_method=http_method))
+
+    if response_body_type == HttpBodyType.PassOn:
+        content += ", true"
+    content += ");"
+    content += "request.AddHeader(\"Content-Length\", std::to_string(xml_body_stream.Length()));"
+
+    global main_body
+    main_body += content
+
+
+def gen_get_body_code(*args, **kwargs):
+    body = args[0]
+    value_type = kwargs[body + ".type"]
+
+    if value_type != "std::unique_ptr<Azure::Core::Http::BodyStream>":
+        raise RuntimeError("Unknown response body type")
+
+    content = "{0} = httpResponse.GetBodyStream();".format(body)
 
     global main_body
     main_body += content
