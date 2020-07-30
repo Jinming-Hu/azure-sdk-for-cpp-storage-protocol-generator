@@ -150,6 +150,41 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action: {}
 
+    - GetAccountInfo:
+        http_method: Head
+        http_status_code: 200
+        return_type:
+          AccountInfo:
+            - SkuName: SkuName = SkuName::Unknown
+            - AccountKind: AccountKind = AccountKind::Unknown
+        options:
+            - BasicRequestOptions: inline
+        request_action:
+          - [add_query_code, "restype", "account"]
+          - [add_query_code, "comp", "properties"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action:
+          - [get_header_code, "x-ms-sku-name", SkuName]
+          - [get_header_code, "x-ms-account-kind", AccountKind]
+
+    - GetStatistics:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+          BlobServiceStatistics:
+            - GeoReplication: BlobGeoReplication
+            - from_xml: [
+              [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
+            ]
+        options:
+          - BasicRequestOptions: inline
+        request_action:
+          - [add_query_code, "restype", "service"]
+          - [add_query_code, "comp", "stats"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action:
+          - [get_xml_body_code]
+
 
   - Container:
     - Create:
@@ -1039,6 +1074,25 @@ Models:
     - Unknown: ""
     - Success: "success"
     - Pending: "pending"
+  SkuName:
+    - type: enum class
+    - Unknown: ""
+    - StandardLrs: "Standard_LRS"
+    - StandardGrs: "Standard_GRS"
+    - StandardRagrs: "Standard_RAGRS"
+    - StandardZrs: "Standard_ZRS"
+    - PremiumLrs: "Premium_LRS"
+    - PremiumZrs: "Premium_ZRS"
+    - StandardGzrs: "Standard_GZRS"
+    - StandardRagzrs: "Standard_RAGZRS"
+  AccountKind:
+    - type: enum class
+    - Unknown: ""
+    - Storage: "Storage"
+    - BlobStorage: "BlobStorage"
+    - StorageV2: "StorageV2"
+    - FileStorage: "FileStorage"
+    - BlockBlobStorage: "BlockBlobStorage"
   BlobBlock:
     - Name: std::string
     - Size: int64_t = 0
@@ -1409,3 +1463,16 @@ Models:
     - AppendOffset: int64_t = 0
     - CommittedBlockCount: int64_t = 0
     - BlobResponseEncryptionOptions: inline
+  BlobGeoReplicationStatus:
+    - type: enum class
+    - Unknown: ""
+    - Live: "live"
+    - Bootstrap: "bootstrap"
+    - Unavailable: "unavailable"
+  BlobGeoReplication:
+    - Status: BlobGeoReplicationStatus = BlobGeoReplicationStatus::Unknown
+    - LastSyncedOn: std::string, nullable
+    - from_xml: [
+      [text, Status, Status],
+      [text, LastSyncTime, LastSyncedOn],
+    ]
