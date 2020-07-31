@@ -345,6 +345,48 @@ Services:
         response_action:
           - [get_xml_body_code]
 
+    - GetAccessPolicy:
+        http_method: Get
+        http_status_code: 200
+        return_type: BlobContainerAccessPolicy
+        options:
+          - BasicRequestOptions: inline
+          - LeaseId: std::string, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "restype", "container"]
+          - [add_query_code, "comp", "acl"]
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-blob-public-access", AccessType]
+          - [get_xml_body_code]
+
+    - SetAccessPolicy:
+        http_method: Put
+        http_status_code: 200
+        return_type: BlobContainerInfo
+        options:
+          - BasicRequestOptions: inline
+          - AccessType: PublicAccessType, nullable
+          - LeaseId: std::string, nullable
+          - IfModifiedSince: std::string, nullable
+          - IfUnmodifiedSince: std::string, nullable
+          - SignedIdentifiers: std::vector<BlobSignedIdentifier>
+          - to_xml: [
+              [tag, SignedIdentifiers, SignedIdentifiers],
+            ]
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "restype", "container"]
+          - [add_query_code, "comp", "acl"]
+          - [add_header_code, "x-ms-blob-public-access", AccessType]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "If-Modified-Since", IfModifiedSince]
+          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+          - [add_xml_body_code]
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+
   - Blob:
     - Download:
         http_method: Get
@@ -1475,4 +1517,29 @@ Models:
     - from_xml: [
       [text, Status, Status],
       [text, LastSyncTime, LastSyncedOn],
+    ]
+  BlobSignedIdentifier:
+    - Id: std::string
+    - StartsOn: std::string
+    - ExpiresOn: std::string
+    - Permissions: std::string
+    - from_xml: [
+      [text, Id, Id],
+      [text, AccessPolicy.Start, StartsOn],
+      [text, AccessPolicy.Expiry, ExpiresOn],
+      [text, AccessPolicy.Permission, Permissions],
+    ]
+    - to_xml: [
+      [tag, SignedIdentifier.Id, Id],
+      [tag, SignedIdentifier.AccessPolicy.Start, StartsOn],
+      [tag, SignedIdentifier.AccessPolicy.Expiry, ExpiresOn],
+      [tag, SignedIdentifier.AccessPolicy.Permission, Permissions],
+    ]
+  BlobContainerAccessPolicy:
+    - AccessType: PublicAccessType
+    - ETag: std::string
+    - LastModified: std::string
+    - SignedIdentifiers: std::vector<BlobSignedIdentifier>
+    - from_xml: [
+      [start_tag, SignedIdentifiers.SignedIdentifier, SignedIdentifiers],
     ]
