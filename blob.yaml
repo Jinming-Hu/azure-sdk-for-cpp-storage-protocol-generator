@@ -387,6 +387,119 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
+    - AcquireLease:
+        http_method: Put
+        http_status_code: 201
+        return_type: BlobLease
+        options:
+          - BasicRequestOptions: inline
+          - LeaseDuration: int32_t = -1
+          - ProposedLeaseId: std::string, nullable
+          - IfModifiedSince: std::string, nullable
+          - IfUnmodifiedSince: std::string, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "restype", "container"]
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "acquire"]
+          - [add_header_code, "x-ms-lease-duration", LeaseDuration]
+          - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
+          - [add_header_code, "If-Modified-Since", IfModifiedSince]
+          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-lease-id", LeaseId]
+
+    - RenewLease:
+        http_method: Put
+        http_status_code: 200
+        return_type: BlobLease
+        options:
+          - BasicRequestOptions: inline
+          - LeaseId: std::string
+          - IfModifiedSince: std::string, nullable
+          - IfUnmodifiedSince: std::string, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "restype", "container"]
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "renew"]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "If-Modified-Since", IfModifiedSince]
+          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-lease-id", LeaseId]
+
+    - ChangeLease:
+        http_method: Put
+        http_status_code: 200
+        return_type: BlobLease
+        options:
+          - BasicRequestOptions: inline
+          - LeaseId: std::string
+          - ProposedLeaseId: std::string
+          - IfModifiedSince: std::string, nullable
+          - IfUnmodifiedSince: std::string, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "restype", "container"]
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "change"]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
+          - [add_header_code, "If-Modified-Since", IfModifiedSince]
+          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-lease-id", LeaseId]
+
+    - ReleaseLease:
+        http_method: Put
+        http_status_code: 200
+        return_type: BlobContainerInfo
+        options:
+          - BasicRequestOptions: inline
+          - LeaseId: std::string
+          - IfModifiedSince: std::string, nullable
+          - IfUnmodifiedSince: std::string, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "restype", "container"]
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "release"]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "If-Modified-Since", IfModifiedSince]
+          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+
+    - BreakLease:
+        http_method: Put
+        http_status_code: 202
+        return_type:
+          BrokenLease:
+            - ETag: std::string
+            - LastModified: std::string
+            - LeaseTime: int32_t = 0
+        options:
+          - BasicRequestOptions: inline
+          - BreakPeriod: int32_t, nullable
+          - IfModifiedSince: std::string, nullable
+          - IfUnmodifiedSince: std::string, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "restype", "container"]
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "break"]
+          - [add_header_code, "x-ms-lease-break-period", BreakPeriod]
+          - [add_header_code, "If-Modified-Since", IfModifiedSince]
+          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-lease-time", LeaseTime]
+
+
   - Blob:
     - Download:
         http_method: Get
@@ -607,6 +720,106 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
           - [get_header_code, "x-ms-snapshot", Snapshot]
+
+    - AcquireLease:
+        http_method: Put
+        http_status_code: 201
+        return_type: BlobLease
+        options:
+          - BasicRequestOptions: inline
+          - LeaseDuration: int32_t = -1
+          - ProposedLeaseId: std::string, nullable
+          - BlobRequestConditionalHeaders: inline
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "acquire"]
+          - [add_header_code, "x-ms-lease-duration", LeaseDuration]
+          - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-lease-id", LeaseId]
+
+    - RenewLease:
+        http_method: Put
+        http_status_code: 200
+        return_type: BlobLease
+        options:
+          - BasicRequestOptions: inline
+          - LeaseId: std::string
+          - BlobRequestConditionalHeaders: inline
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "renew"]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-lease-id", LeaseId]
+
+    - ChangeLease:
+        http_method: Put
+        http_status_code: 200
+        return_type: BlobLease
+        options:
+          - BasicRequestOptions: inline
+          - LeaseId: std::string
+          - ProposedLeaseId: std::string
+          - BlobRequestConditionalHeaders: inline
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "change"]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-lease-id", LeaseId]
+
+    - ReleaseLease:
+        http_method: Put
+        http_status_code: 200
+        return_type: BlobInfo
+        options:
+          - BasicRequestOptions: inline
+          - LeaseId: std::string
+          - BlobRequestConditionalHeaders: inline
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "release"]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
+
+    - BreakLease:
+        http_method: Put
+        http_status_code: 202
+        return_type:
+          BrokenLease:
+            - BasicResponse: inline
+            - ETag: std::string
+            - LastModified: std::string
+            - LeaseTime: int32_t = 0
+        options:
+          - BasicRequestOptions: inline
+          - BreakPeriod: int32_t, nullable
+          - BlobRequestConditionalHeaders: inline
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "lease"]
+          - [add_header_code, "x-ms-lease-action", "break"]
+          - [add_header_code, "x-ms-lease-break-period", BreakPeriod]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-lease-time", LeaseTime]
+
 
   - BlockBlob:
     - Upload:
@@ -1041,6 +1254,7 @@ Services:
           - [get_header_code, "x-ms-blob-append-offset", AppendOffset]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+
 
 Models:
   BasicRequestOptions:
@@ -1543,3 +1757,7 @@ Models:
     - from_xml: [
       [start_tag, SignedIdentifiers.SignedIdentifier, SignedIdentifiers],
     ]
+  BlobLease:
+    - ETag: std::string
+    - LastModified: std::string
+    - LeaseId: std::string

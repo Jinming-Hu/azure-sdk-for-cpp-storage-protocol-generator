@@ -730,7 +730,7 @@ def gen_add_header_code(*args, **kwargs):
                         request.AddHeader({0}, {1});
                     }}
                     """.format(key, default_value))
-    elif value_type == "int64_t":
+    elif value_type in ["int64_t", "int32_t"]:
         if not optional:
             content += "request.AddHeader({}, std::to_string({}));".format(key, value)
         else:
