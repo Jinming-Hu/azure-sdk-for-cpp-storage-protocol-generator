@@ -2,39 +2,39 @@ service_name: Blobs
 output: generated/blob_rest_client.hpp
 
 Constants:
-  c_APIVersion: "2019-12-12"
+  c_ApiVersion: "2019-12-12"
 
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
-  - [add_header_code, "x-ms-version", c_APIVersion]
+  - [add_header_code, "x-ms-version", c_ApiVersion]
   - [add_query_code, "timeout", Timeout]
 
 request_encryption_package: &REQUEST_ENCRYPTION_HEADER_PACKAGE
   - [add_header_code, "x-ms-encryption-key", EncryptionKey]
-  - [add_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256]
+  - [add_header_code, "x-ms-encryption-key-sha256", EncryptionKeySha256]
   - [add_header_code, "x-ms-encryption-algorithm", EncryptionAlgorithm]
 
 response_encryption_package: &RESPONSE_ENCRYPTION_HEADER_PACKAGE
   - [get_header_code, "x-ms-server-encrypted", ServerEncrypted]
-  - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySHA256]
+  - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySha256]
 
 response_etag_last_modified_package: &RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
   - [get_header_code, "ETag", ETag]
   - [get_header_code, "Last-Modified", LastModified]
 
 request_checksum_package: &REQUEST_CHECKSUM_HEADER_PACKAGE
-  - [add_header_code, "Content-MD5", ContentMD5]
-  - [add_header_code, "x-ms-content-crc64", ContentCRC64]
+  - [add_header_code, "Content-MD5", ContentMd5]
+  - [add_header_code, "x-ms-content-crc64", ContentCrc64]
 
 response_checksum_package: &RESPONSE_CHECKSUM_HEADER_PACKAGE
-  - [get_header_code, "Content-MD5", ContentMD5]
-  - [get_header_code, "x-ms-content-crc64", ContentCRC64]
+  - [get_header_code, "Content-MD5", ContentMd5]
+  - [get_header_code, "x-ms-content-crc64", ContentCrc64]
 
 request_mime_package: &REQUEST_MIME_HEADER_PACKAGE
   - [add_header_code, "x-ms-blob-content-type", HttpHeaders.ContentType, optional]
   - [add_header_code, "x-ms-blob-content-encoding", HttpHeaders.ContentEncoding, optional]
   - [add_header_code, "x-ms-blob-content-language", HttpHeaders.ContentLanguage, optional]
   - [add_header_code, "x-ms-blob-cache-control", HttpHeaders.CacheControl, optional]
-  - [add_header_code, "x-ms-blob-content-md5", HttpHeaders.ContentMD5, optional]
+  - [add_header_code, "x-ms-blob-content-md5", HttpHeaders.ContentMd5, optional]
   - [add_header_code, "x-ms-blob-content-disposition", HttpHeaders.ContentDisposition, optional]
 
 response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
@@ -42,7 +42,7 @@ response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
   - [get_header_code, "Content-Encoding", HttpHeaders.ContentEncoding, optional]
   - [get_header_code, "Content-Language", HttpHeaders.ContentLanguage, optional]
   - [get_header_code, "Cache-Control", HttpHeaders.CacheControl, optional]
-  - [get_header_code, "Content-MD5", HttpHeaders.ContentMD5, optional]
+  - [get_header_code, "Content-MD5", HttpHeaders.ContentMd5, optional]
   - [get_header_code, "Content-Disposition", HttpHeaders.ContentDisposition, optional]
 
 response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE
@@ -615,8 +615,8 @@ Services:
         return_type: BlobContentInfo
         options:
           - BodiedRequestOptions: inline
-          - ContentMD5: std::string, nullable
-          - ContentCRC64: std::string, nullable
+          - ContentMd5: std::string, nullable
+          - ContentCrc64: std::string, nullable
           - HttpHeaders: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
@@ -646,8 +646,8 @@ Services:
         options:
           - BodiedRequestOptions: inline
           - BlockId: std::string
-          - ContentMD5: std::string, nullable
-          - ContentCRC64: std::string, nullable
+          - ContentMd5: std::string, nullable
+          - ContentCrc64: std::string, nullable
           - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
         request_action:
@@ -671,8 +671,8 @@ Services:
           - BlockId: std::string
           - SourceUri: std::string
           - SourceRange: std::pair<int64_t, int64_t>, nullable
-          - ContentMD5: std::string, nullable
-          - ContentCRC64: std::string, nullable
+          - ContentMd5: std::string, nullable
+          - ContentCrc64: std::string, nullable
           - LeaseId: std::string, nullable
           - BlobRequestEncryptionOptions: inline
           - BlobRequestSourceConditionalHeaders: inline
@@ -682,8 +682,8 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source_range", SourceRange]
-          - [add_header_code, "x-ms-source-content-md5", ContentMD5]
-          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64]
+          - [add_header_code, "x-ms-source-content-md5", ContentMd5]
+          - [add_header_code, "x-ms-source-content-crc64", ContentCrc64]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
@@ -789,8 +789,8 @@ Services:
         options:
           - BodiedRequestOptions: inline
           - Range: std::pair<int64_t, int64_t>
-          - ContentMD5: std::string, nullable
-          - ContentCRC64: std::string, nullable
+          - ContentMd5: std::string, nullable
+          - ContentCrc64: std::string, nullable
           - LeaseId: std::string, nullable
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
@@ -825,8 +825,8 @@ Services:
           - SourceUri: std::string
           - SourceRange: std::pair<int64_t, int64_t>
           - Range: std::pair<int64_t, int64_t>
-          - ContentMD5: std::string, nullable
-          - ContentCRC64: std::string, nullable
+          - ContentMd5: std::string, nullable
+          - ContentCrc64: std::string, nullable
           - LeaseId: std::string, nullable
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
@@ -840,8 +840,8 @@ Services:
           - [add_range_header_code, "x-ms-range", Range]
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source-range", SourceRange]
-          - [add_header_code, "x-ms-source-content-md5", ContentMD5]
-          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64]
+          - [add_header_code, "x-ms-source-content-md5", ContentMd5]
+          - [add_header_code, "x-ms-source-content-crc64", ContentCrc64]
           - [add_header_code, "x-ms-page-write", "update"]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
@@ -984,8 +984,8 @@ Services:
         return_type: BlobAppendInfo
         options:
           - BodiedRequestOptions: inline
-          - ContentMD5: std::string, nullable
-          - ContentCRC64: std::string, nullable
+          - ContentMd5: std::string, nullable
+          - ContentCrc64: std::string, nullable
           - LeaseId: std::string, nullable
           - MaxSize: int64_t, nullable
           - AppendPosition: int64_t, nullable
@@ -1016,8 +1016,8 @@ Services:
           - BasicRequestOptions: inline
           - SourceUri: std::string
           - SourceRange: std::pair<int64_t, int64_t>, nullable
-          - ContentMD5: std::string, nullable
-          - ContentCRC64: std::string, nullable
+          - ContentMd5: std::string, nullable
+          - ContentCrc64: std::string, nullable
           - LeaseId: std::string, nullable
           - MaxSize: int64_t, nullable
           - AppendPosition: int64_t, nullable
@@ -1028,8 +1028,8 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source-range", SourceRange]
-          - [add_header_code, "x-ms-source-content-md5", ContentMD5]
-          - [add_header_code, "x-ms-source-content-crc64", ContentCRC64]
+          - [add_header_code, "x-ms-source-content-md5", ContentMd5]
+          - [add_header_code, "x-ms-source-content-crc64", ContentCrc64]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-condition-maxsize", MaxSize]
           - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition]
@@ -1265,25 +1265,25 @@ Models:
     - SourceIfNoneMatch: std::string, nullable
   BlockInfo:
     - BasicResponse: inline
-    - ContentMD5: std::string, nullable
-    - ContentCRC64: std::string, nullable
+    - ContentMd5: std::string, nullable
+    - ContentCrc64: std::string, nullable
     - BlobResponseEncryptionOptions: inline
   BlobHttpHeaders:
     - ContentType: std::string
     - ContentEncoding: std::string
     - ContentLanguage: std::string
-    - ContentMD5: std::string
+    - ContentMd5: std::string
     - CacheControl: std::string
     - ContentDisposition: std::string
   BlobRequestEncryptionOptions:
     - noexport: true
     - EncryptionKey: std::string, nullable
-    - EncryptionKeySHA256: std::string, nullable
+    - EncryptionKeySha256: std::string, nullable
     - EncryptionAlgorithm: std::string, nullable
   BlobResponseEncryptionOptions:
     - noexport: true
     - ServerEncrypted: bool, nullable
-    - EncryptionKeySHA256: std::string, nullable
+    - EncryptionKeySha256: std::string, nullable
   BlobDownloadResponse:
     - type: struct
     - BodiedResponse: inline
@@ -1295,8 +1295,8 @@ Models:
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int64_t, nullable  # only for append blob
     - BlobType: BlobType = BlobType::Unknown
-    - ContentMD5: std::string, nullable  # MD5 for the downloaded range
-    - ContentCRC64: std::string, nullable
+    - ContentMd5: std::string, nullable  # Md5 for the downloaded range
+    - ContentCrc64: std::string, nullable
     - LeaseDuration: std::string, nullable
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
@@ -1306,8 +1306,8 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - ContentMD5: std::string, nullable
-    - ContentCRC64: std::string, nullable
+    - ContentMd5: std::string, nullable
+    - ContentCrc64: std::string, nullable
     - SequenceNumber: int64_t, nullable
     - BlobResponseEncryptionOptions: inline
   BlobContainerItemWithoutName:
@@ -1360,7 +1360,7 @@ Models:
       [text, Properties.Content-Type, HttpHeaders.ContentType],
       [text, Properties.Content-Encoding, HttpHeaders.ContentEncoding],
       [text, Properties.Content-Language, HttpHeaders.ContentLanguage],
-      [text, Properties.Content-MD5, HttpHeaders.ContentMD5],
+      [text, Properties.Content-MD5, HttpHeaders.ContentMd5],
       [text, Properties.Cache-Control, HttpHeaders.CacheControl],
       [text, Properties.Content-Disposition, HttpHeaders.ContentDisposition],
       [text, Properties.Creation-Time, CreationTime],
@@ -1374,7 +1374,7 @@ Models:
       [text, Properties.LeaseState, LeaseState],
       [text, Properties.LeaseDuration, LeaseDuration],
       [text, Properties.ServerEncrypted, ServerEncrypted],
-      [text, Properties.EncryptionKeySHA256, EncryptionKeySHA256],
+      [text, Properties.EncryptionKeySHA256, EncryptionKeySha256],
       [start_tag, Metadata, Metadata],
     ]
   BlobPrefix:
@@ -1476,8 +1476,8 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - ContentMD5: std::string, nullable
-    - ContentCRC64: std::string, nullable
+    - ContentMd5: std::string, nullable
+    - ContentCrc64: std::string, nullable
     - SequenceNumber: int64_t = 0
     - BlobResponseEncryptionOptions: inline
   PageBlobInfo:
@@ -1500,8 +1500,8 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - ContentMD5: std::string, nullable
-    - ContentCRC64: std::string, nullable
+    - ContentMd5: std::string, nullable
+    - ContentCrc64: std::string, nullable
     - AppendOffset: int64_t = 0
     - CommittedBlockCount: int64_t = 0
     - BlobResponseEncryptionOptions: inline
