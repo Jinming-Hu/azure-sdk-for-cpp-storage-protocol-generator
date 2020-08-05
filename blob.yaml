@@ -1750,7 +1750,7 @@ Models:
       [tag, SignedIdentifier.AccessPolicy.Permission, Permissions],
     ]
   BlobContainerAccessPolicy:
-    - AccessType: PublicAccessType
+    - AccessType: PublicAccessType = PublicAccessType::Private
     - ETag: std::string
     - LastModified: std::string
     - SignedIdentifiers: std::vector<BlobSignedIdentifier>
