@@ -680,6 +680,7 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-copy-id", CopyId]
           - [get_header_code, "x-ms-copy-status", CopyStatus]
+          - [get_header_code, "x-ms-version-id", VersionId]
 
     - AbortCopyFromUri:
         http_method: Put
@@ -720,6 +721,7 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
           - [get_header_code, "x-ms-snapshot", Snapshot]
+          - [get_header_code, "x-ms-version-id", VersionId]
 
     - AcquireLease:
         http_method: Put
@@ -850,6 +852,7 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
+          - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
     - StageBlock:
@@ -932,6 +935,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
     - GetBlockList:
@@ -994,6 +998,7 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
+          - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
     - UploadPages:
@@ -1165,6 +1170,7 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-copy-id", CopyId]
           - [get_header_code, "x-ms-copy-status", CopyStatus]
+          - [get_header_code, "x-ms-version-id", VersionId]
 
   - AppendBlob:
     - Create:
@@ -1189,6 +1195,7 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
+          - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
     - AppendBlock:
@@ -1522,6 +1529,7 @@ Models:
     - LastModified: std::string
     - ContentMd5: std::string, nullable
     - ContentCrc64: std::string, nullable
+    - VersionId: std::string, nullable
     - SequenceNumber: int64_t, nullable
     - BlobResponseEncryptionOptions: inline
   BlobContainerItemWithoutName:
@@ -1554,6 +1562,8 @@ Models:
     - Name: std::string
     - Deleted: bool = false
     - Snapshot: std::string
+    - VersionId: std::string, nullable
+    - IsCurrentVersion: bool, nullable
     - HttpHeaders: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
     - CreationTime: std::string
@@ -1571,6 +1581,8 @@ Models:
       [text, Name, Name],
       [text, Deleted, Deleted],
       [text, Snapshot, Snapshot],
+      [text, VersionId, VersionId],
+      [text, IsCurrentVersion, IsCurrentVersion],
       [text, Properties.Content-Type, HttpHeaders.ContentType],
       [text, Properties.Content-Encoding, HttpHeaders.ContentEncoding],
       [text, Properties.Content-Language, HttpHeaders.ContentLanguage],
@@ -1603,6 +1615,7 @@ Models:
     - Deleted: "deleted"
     - Metadata: "metadata"
     - Snapshots: "snapshots"
+    - Versions: "versions"
     - UncomittedBlobs: "uncommittedblobs"
   BlobContainerInfo:
     - BasicResponse: inline
@@ -1662,11 +1675,13 @@ Models:
     - LastModified: std::string
     - CopyId: std::string
     - CopyStatus: CopyStatus = CopyStatus::Unknown
+    - VersionId: std::string, nullable
   BlobSnapshotInfo:
     - BasicResponse: inline
     - Snapshot: std::string
     - ETag: std::string
     - LastModified: std::string
+    - VersionId: std::string, nullable
     - BlobResponseEncryptionOptions: inline
   UserDelegationKey:
     - BasicResponse: inline
