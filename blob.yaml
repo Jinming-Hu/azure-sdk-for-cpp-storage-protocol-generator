@@ -12,10 +12,12 @@ request_encryption_package: &REQUEST_ENCRYPTION_HEADER_PACKAGE
   - [add_header_code, "x-ms-encryption-key", EncryptionKey]
   - [add_header_code, "x-ms-encryption-key-sha256", EncryptionKeySha256]
   - [add_header_code, "x-ms-encryption-algorithm", EncryptionAlgorithm]
+  - [add_header_code, "x-ms-encryption-scope", EncryptionScope, ignorable]
 
 response_encryption_package: &RESPONSE_ENCRYPTION_HEADER_PACKAGE
-  - [get_header_code, "x-ms-server-encrypted", ServerEncrypted]
+  - [get_header_code, "x-ms-request-server-encrypted", ServerEncrypted]
   - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySha256]
+  - [get_header_code, "x-ms-encryption-scope", EncryptionScope]
 
 response_etag_last_modified_package: &RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
   - [get_header_code, "ETag", ETag]
@@ -195,11 +197,15 @@ Services:
           - BasicRequestOptions: inline
           - AccessType: PublicAccessType, nullable
           - Metadata: std::map<std::string, std::string>
+          - DefaultEncryptionScope: std::string, nullable
+          - PreventEncryptionScopeOverride: bool, nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-blob-public-access", AccessType]
+          - [add_header_code, "x-ms-default-encryption-scope", DefaultEncryptionScope]
+          - [add_header_code, "x-ms-deny-encryption-scope-override", PreventEncryptionScopeOverride]
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
@@ -230,12 +236,10 @@ Services:
             - BlobContainerItemWithoutName: inline
         options:
           - BasicRequestOptions: inline
-          - BlobRequestEncryptionOptions: inline
           - LeaseId: std::string, nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
-          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
@@ -501,7 +505,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - Range: std::pair<int64_t, int64_t>, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -560,10 +564,12 @@ Services:
         return_type: BlobProperties
         options:
           - BasicRequestOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -594,14 +600,12 @@ Services:
         options:
           - BasicRequestOptions: inline
           - HttpHeaders: BlobHttpHeaders
-          - BlobRequestEncryptionOptions: inline
           - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
-          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -615,7 +619,8 @@ Services:
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -701,7 +706,8 @@ Services:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "snapshot"]
@@ -829,7 +835,8 @@ Services:
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
           - Tier: AccessTier, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_body_code]
@@ -858,7 +865,8 @@ Services:
           - ContentMd5: std::string, nullable
           - ContentCrc64: std::string, nullable
           - LeaseId: std::string, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
         request_action:
           - [add_body_code]
           - [add_query_code, "comp", "block"]
@@ -883,7 +891,8 @@ Services:
           - ContentMd5: std::string, nullable
           - ContentCrc64: std::string, nullable
           - LeaseId: std::string, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestSourceConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "block"]
@@ -910,7 +919,8 @@ Services:
           - HttpHeaders: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
           - Tier: AccessTier, nullable
           - to_xml: [
@@ -975,7 +985,8 @@ Services:
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
           - Tier: AccessTier, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1006,7 +1017,8 @@ Services:
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
           - IfSequenceNumberEqualTo: int64_t, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
         request_action:
@@ -1042,7 +1054,8 @@ Services:
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
           - IfSequenceNumberEqualTo: int64_t, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
         request_action:
@@ -1076,7 +1089,8 @@ Services:
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
           - IfSequenceNumberEqualTo: int64_t, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         return_type: PageInfo
         request_action:
@@ -1106,7 +1120,8 @@ Services:
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
           - IfSequenceNumberEqualTo: int64_t, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "properties"]
@@ -1175,7 +1190,8 @@ Services:
           - HttpHeaders: BlobHttpHeaders
           - Metadata: std::map<std::string, std::string>
           - LeaseId: std::string, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1202,7 +1218,8 @@ Services:
           - LeaseId: std::string, nullable
           - MaxSize: int64_t, nullable
           - AppendPosition: int64_t, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_body_code]
@@ -1234,7 +1251,8 @@ Services:
           - LeaseId: std::string, nullable
           - MaxSize: int64_t, nullable
           - AppendPosition: int64_t, nullable
-          - BlobRequestEncryptionOptions: inline
+          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+          - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "appendblock"]
@@ -1349,6 +1367,10 @@ Models:
     - StorageV2: "StorageV2"
     - FileStorage: "FileStorage"
     - BlockBlobStorage: "BlockBlobStorage"
+  EncryptionAlgorithmType:
+    - type: enum class
+    - Unknown: ""
+    - Aes256: "AES256"
   BlobBlock:
     - Name: std::string
     - Size: int64_t = 0
@@ -1489,15 +1511,19 @@ Models:
     - ContentMd5: std::string
     - CacheControl: std::string
     - ContentDisposition: std::string
-  BlobRequestEncryptionOptions:
+  BlobRequestCustomerProvidedKeyEncryptionOptions:
     - noexport: true
     - EncryptionKey: std::string, nullable
     - EncryptionKeySha256: std::string, nullable
-    - EncryptionAlgorithm: std::string, nullable
+    - EncryptionAlgorithm: EncryptionAlgorithmType, nullable
+  BlobRequestEncryptionScopeOptions:
+    - noexport: true
+    - EncryptionScope: std::string, nullable
   BlobResponseEncryptionOptions:
     - noexport: true
     - ServerEncrypted: bool, nullable
     - EncryptionKeySha256: std::string, nullable
+    - EncryptionScope: std::string, nullable
   BlobDownloadResponse:
     - type: struct
     - BodiedResponse: inline

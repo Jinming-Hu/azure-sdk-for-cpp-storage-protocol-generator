@@ -708,7 +708,7 @@ def gen_add_header_code(*args, **kwargs):
 
     content = ""
     if value_nullable:
-        content += "if ({}.HasValue()) {{".format(value)
+        content += "if ({}.HasValue()) {{\n".format(value)
         value += ".GetValue()"
 
     if value_type == "std::string":
@@ -738,6 +738,8 @@ def gen_add_header_code(*args, **kwargs):
                 """if ({member_name} != {member_optional_value}) {{
                     request.AddHeader({header_name}, std::to_string({member_name}));
                 }}""".format(member_name=value, member_optional_value=optional_value, header_name=key))
+    elif value_type == "bool":
+        content += "request.AddHeader({}, {} ? \"true\":\"false\");".format(key, value)
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
             content += "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
