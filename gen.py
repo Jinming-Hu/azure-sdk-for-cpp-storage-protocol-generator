@@ -327,9 +327,14 @@ for config_resource in config["Services"]:
             args = []
             kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "option_type": function_name + "Options", "request_body_type": request_body_type, "response_body_type": response_body_type, "http_method": http_method}
 
+            should_ignore = False
+            ignorable = "ignorable" in action[1:]
+
             for i in range(1, len(action)):
                 a = action[i]
-                if a == "optional":
+                if a == "ignorable":
+                    continue
+                elif a == "optional":
                     kwargs["optional"] = True
                 elif match_res := re.match("optional\\((.*)\\)", a):
                     kwargs["optional"] = True
@@ -349,6 +354,9 @@ for config_resource in config["Services"]:
                             if j < len(arg_types) - 1:  # Not the last one
                                 continue
                             else:
+                                if ignorable:
+                                    should_ignore = True
+                                    break
                                 raise RuntimeError("cannot find " + a + " in request options")
                         arg += "." + t
                         arg_type = arg_def.member_type[arg_def.member.index(t)]
@@ -368,7 +376,8 @@ for config_resource in config["Services"]:
                     arg = "\"{}\"".format(a)
                     args.append(arg)
                     kwargs[arg + ".type"] = "std::string"
-            method_to_call(*args, **kwargs)
+            if not should_ignore:
+                method_to_call(*args, **kwargs)
 
         code_template.gen_resource_send_request(return_type, http_status_code)
 
