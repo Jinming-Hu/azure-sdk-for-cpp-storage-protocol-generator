@@ -52,9 +52,9 @@ response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE
 
 request_conditional_headers_package: &REQUEST_CONDITIONAL_HEADER_PACKAGE
   - [add_header_code, "If-Modified-Since", IfModifiedSince]
-  - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
-  - [add_header_code, "If-Match", IfMatch]
-  - [add_header_code, "If-None-Match", IfNoneMatch]
+  - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince, ignorable]
+  - [add_header_code, "If-Match", IfMatch, ignorable]
+  - [add_header_code, "If-None-Match", IfNoneMatch, ignorable]
 
 request_source_conditional_headers_package: &REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
   - [add_header_code, "x-ms-source-if-modified-since", SourceIfModifiedSince]
@@ -218,8 +218,7 @@ Services:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
-          - [add_header_code, "If-Modified-Since", IfModifiedSince]
-          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action: {}
 
     - GetProperties:
@@ -261,7 +260,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-lease-id", LeaseId]
-          - [add_header_code, "If-Modified-Since", IfModifiedSince]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
@@ -381,8 +380,7 @@ Services:
           - [add_query_code, "comp", "acl"]
           - [add_header_code, "x-ms-blob-public-access", AccessType]
           - [add_header_code, "x-ms-lease-id", LeaseId]
-          - [add_header_code, "If-Modified-Since", IfModifiedSince]
-          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - [add_xml_body_code]
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
@@ -404,8 +402,7 @@ Services:
           - [add_header_code, "x-ms-lease-action", "acquire"]
           - [add_header_code, "x-ms-lease-duration", LeaseDuration]
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
-          - [add_header_code, "If-Modified-Since", IfModifiedSince]
-          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
@@ -425,8 +422,7 @@ Services:
           - [add_query_code, "comp", "lease"]
           - [add_header_code, "x-ms-lease-action", "renew"]
           - [add_header_code, "x-ms-lease-id", LeaseId]
-          - [add_header_code, "If-Modified-Since", IfModifiedSince]
-          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
@@ -448,8 +444,7 @@ Services:
           - [add_header_code, "x-ms-lease-action", "change"]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
-          - [add_header_code, "If-Modified-Since", IfModifiedSince]
-          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
@@ -469,8 +464,7 @@ Services:
           - [add_query_code, "comp", "lease"]
           - [add_header_code, "x-ms-lease-action", "release"]
           - [add_header_code, "x-ms-lease-id", LeaseId]
-          - [add_header_code, "If-Modified-Since", IfModifiedSince]
-          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
@@ -493,8 +487,7 @@ Services:
           - [add_query_code, "comp", "lease"]
           - [add_header_code, "x-ms-lease-action", "break"]
           - [add_header_code, "x-ms-lease-break-period", BreakPeriod]
-          - [add_header_code, "If-Modified-Since", IfModifiedSince]
-          - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-time", LeaseTime]
