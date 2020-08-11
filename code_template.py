@@ -602,7 +602,7 @@ def gen_function_option_definition(service_name, function_name, class_def):
 
 
 def gen_resource_function_begin(function_name, return_type, request_body_type, response_body_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}(Azure::Core::Context context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::Http::BodyStream* requestBody,"
     content += "const {function_name}Options& options) {{ unused(options);".format(function_name=function_name)
