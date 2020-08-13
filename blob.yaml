@@ -70,7 +70,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          ListContainersSegment:
+          ListContainersSegmentResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Prefix: std::string
@@ -103,7 +103,9 @@ Services:
     - GetUserDelegationKey:
         http_method: Post
         http_status_code: 200
-        return_type: UserDelegationKey
+        return_type:
+          GetUserDelegationKeyResult:
+            - UserDelegationKey: inline
         options:
           - BasicRequestOptions: inline
           - StartsOn: std::string
@@ -123,7 +125,9 @@ Services:
     - GetProperties:
         http_method: Get
         http_status_code: 200
-        return_type: BlobServiceProperties
+        return_type:
+          GetServicePropertiesResult:
+            - BlobServiceProperties: inline
         options:
           - BasicRequestOptions: inline
         request_action:
@@ -137,7 +141,7 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          SetServicePropertiesInfo:
+          SetServicePropertiesResult:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -156,7 +160,7 @@ Services:
         http_method: Head
         http_status_code: 200
         return_type:
-          AccountInfo:
+          GetAccountInfoResult:
             - SkuName: SkuName = SkuName::Unknown
             - AccountKind: AccountKind = AccountKind::Unknown
         options:
@@ -173,7 +177,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          BlobServiceStatistics:
+          GetServiceStatisticsResult:
             - GeoReplication: BlobGeoReplication
             - from_xml: [
               [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
@@ -192,7 +196,9 @@ Services:
     - Create:
         http_method: Put
         http_status_code: 201
-        return_type: BlobContainerInfo
+        return_type:
+          CreateContainerResult:
+            - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
           - AccessType: PublicAccessType, nullable
@@ -213,7 +219,7 @@ Services:
         http_method: Delete
         http_status_code: 202
         return_type:
-          DeleteContainerInfo:
+          DeleteContainerResult:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -231,7 +237,7 @@ Services:
         http_method: Head
         http_status_code: 200
         return_type:
-          BlobContainerProperties:
+          GetContainerPropertiesResult:
             - BasicResponse: inline
             - BlobContainerItemWithoutName: inline
         options:
@@ -252,7 +258,9 @@ Services:
     - SetMetadata:
         http_method: Put
         http_status_code: 200
-        return_type: BlobContainerInfo
+        return_type:
+          SetContainerMetadataResult:
+            - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
@@ -272,7 +280,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          BlobsFlatSegment:
+          ListBlobsFlatSegmentResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Container: std::string
@@ -309,7 +317,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          BlobsHierarchySegment:
+          ListBlobsByHierarchySegmentResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Container: std::string
@@ -351,7 +359,9 @@ Services:
     - GetAccessPolicy:
         http_method: Get
         http_status_code: 200
-        return_type: BlobContainerAccessPolicy
+        return_type:
+          GetContainerAccessPolicyResult:
+            - BlobContainerAccessPolicy: inline
         options:
           - BasicRequestOptions: inline
           - LeaseId: std::string, nullable
@@ -367,7 +377,9 @@ Services:
     - SetAccessPolicy:
         http_method: Put
         http_status_code: 200
-        return_type: BlobContainerInfo
+        return_type:
+          SetContainerAccessPolicyResult:
+            - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
           - AccessType: PublicAccessType, nullable
@@ -392,7 +404,9 @@ Services:
     - AcquireLease:
         http_method: Put
         http_status_code: 201
-        return_type: BlobLease
+        return_type:
+          AcquireContainerLeaseResult:
+            - BlobLease: inline
         options:
           - BasicRequestOptions: inline
           - LeaseDuration: int32_t = -1
@@ -414,7 +428,9 @@ Services:
     - RenewLease:
         http_method: Put
         http_status_code: 200
-        return_type: BlobLease
+        return_type:
+          RenewContainerLeaseResult:
+            - BlobLease: inline
         options:
           - BasicRequestOptions: inline
           - LeaseId: std::string
@@ -434,7 +450,9 @@ Services:
     - ChangeLease:
         http_method: Put
         http_status_code: 200
-        return_type: BlobLease
+        return_type:
+          ChangeContainerLeaseResult:
+            - BlobLease: inline
         options:
           - BasicRequestOptions: inline
           - LeaseId: std::string
@@ -456,7 +474,9 @@ Services:
     - ReleaseLease:
         http_method: Put
         http_status_code: 200
-        return_type: BlobContainerInfo
+        return_type:
+          ReleaseContainerLeaseResult:
+            - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
           - LeaseId: std::string
@@ -476,7 +496,7 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          BrokenLease:
+          BreakContainerLeaseResult:
             - ETag: std::string
             - LastModified: std::string
             - LeaseTime: int32_t = 0
@@ -501,7 +521,9 @@ Services:
     - Download:
         http_method: Get
         http_status_code: [200, 206]
-        return_type: BlobDownloadResponse
+        return_type:
+          DownloadBlobResult:
+            - BlobDownloadResponse: inline
         options:
           - BasicRequestOptions: inline
           - Range: std::pair<int64_t, int64_t>, nullable
@@ -531,7 +553,7 @@ Services:
         http_method: Delete
         http_status_code: 202
         return_type:
-          DeleteBlobInfo:
+          DeleteBlobResult:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -549,7 +571,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          UndeleteBlobInfo:
+          UndeleteBlobResult:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -561,7 +583,9 @@ Services:
     - GetProperties:
         http_method: Head
         http_status_code: 200
-        return_type: BlobProperties
+        return_type:
+          GetBlobPropertiesResult:
+            - BlobProperties: inline
         options:
           - BasicRequestOptions: inline
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
@@ -596,7 +620,9 @@ Services:
     - SetHttpHeaders:
         http_method: Put
         http_status_code: 200
-        return_type: BlobInfo
+        return_type:
+          SetBlobHttpHeadersResult:
+            - BlobInfo: inline
         options:
           - BasicRequestOptions: inline
           - HttpHeaders: BlobHttpHeaders
@@ -615,7 +641,9 @@ Services:
     - SetMetadata:
         http_method: Put
         http_status_code: 200
-        return_type: BlobInfo
+        return_type:
+          SetBlobMetadataResult:
+            - BlobInfo: inline
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
@@ -637,7 +665,7 @@ Services:
         http_method: Put
         http_status_code: [200, 202]
         return_type:
-          SetBlobAccessTierInfo:
+          SetBlobAccessTierResult:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -653,7 +681,9 @@ Services:
     - StartCopyFromUri:
         http_method: Put
         http_status_code: 202
-        return_type: BlobCopyInfo
+        return_type:
+          StartCopyBlobFromUriResult:
+            - BlobCopyInfo: inline
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
@@ -684,7 +714,7 @@ Services:
         http_method: Put
         http_status_code: 204
         return_type:
-          AbortCopyBlobInfo:
+          AbortCopyBlobFromUriResult:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -701,7 +731,9 @@ Services:
     - CreateSnapshot:
         http_method: Put
         http_status_code: 201
-        return_type: BlobSnapshotInfo
+        return_type:
+          CreateBlobSnapshotResult:
+            - BlobSnapshotInfo: inline
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
@@ -725,7 +757,9 @@ Services:
     - AcquireLease:
         http_method: Put
         http_status_code: 201
-        return_type: BlobLease
+        return_type:
+          AcquireBlobLeaseResult:
+            - BlobLease: inline
         options:
           - BasicRequestOptions: inline
           - LeaseDuration: int32_t = -1
@@ -745,7 +779,9 @@ Services:
     - RenewLease:
         http_method: Put
         http_status_code: 200
-        return_type: BlobLease
+        return_type:
+          RenewBlobLeaseResult:
+            - BlobLease: inline
         options:
           - BasicRequestOptions: inline
           - LeaseId: std::string
@@ -763,7 +799,9 @@ Services:
     - ChangeLease:
         http_method: Put
         http_status_code: 200
-        return_type: BlobLease
+        return_type:
+          ChangeBlobLeaseResult:
+            - BlobLease: inline
         options:
           - BasicRequestOptions: inline
           - LeaseId: std::string
@@ -783,7 +821,9 @@ Services:
     - ReleaseLease:
         http_method: Put
         http_status_code: 200
-        return_type: BlobInfo
+        return_type:
+          ReleaseBlobLeaseResult:
+            - BlobInfo: inline
         options:
           - BasicRequestOptions: inline
           - LeaseId: std::string
@@ -802,7 +842,7 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          BrokenLease:
+          BreakBlobLeaseResult:
             - BasicResponse: inline
             - ETag: std::string
             - LastModified: std::string
@@ -826,7 +866,9 @@ Services:
     - Upload:
         http_method: Put
         http_status_code: 201
-        return_type: BlobContentInfo
+        return_type:
+          UploadBlockBlobResult:
+            - BlobContentInfo: inline
         options:
           - BodiedRequestOptions: inline
           - ContentMd5: std::string, nullable
@@ -858,7 +900,9 @@ Services:
     - StageBlock:
         http_method: Put
         http_status_code: 201
-        return_type: BlockInfo
+        return_type:
+          StageBlockResult:
+            - BlockInfo: inline
         options:
           - BodiedRequestOptions: inline
           - BlockId: std::string
@@ -882,7 +926,9 @@ Services:
     - StageBlockFromUri:
         http_method: Put
         http_status_code: 201
-        return_type: BlockInfo
+        return_type:
+          StageBlockFromUriResult:
+            - BlockInfo: inline
         options:
           - BasicRequestOptions: inline
           - BlockId: std::string
@@ -912,7 +958,9 @@ Services:
     - CommitBlockList:
         http_method: Put
         http_status_code: 201
-        return_type: BlobContentInfo
+        return_type:
+          CommitBlobBlockListResult:
+            - BlobContentInfo: inline
         options:
           - BasicRequestOptions: inline
           - BlockList: std::vector<std::pair<BlockType, std::string>>
@@ -949,7 +997,7 @@ Services:
             - ListType: BlockListTypeOption, nullable
             - LeaseId: std::string, nullable
         return_type:
-          BlobBlockListInfo:
+          GetBlobBlockListResult:
             - BasicResponse: inline
             - ETag: std::string
             - LastModified: std::string
@@ -976,7 +1024,9 @@ Services:
     - Create:
         http_method: Put
         http_status_code: 201
-        return_type: BlobContentInfo
+        return_type:
+          CreatePageBlobResult:
+            - BlobContentInfo: inline
         options:
           - BasicRequestOptions: inline
           - BlobContentLength: int64_t = -1
@@ -1020,7 +1070,9 @@ Services:
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
-        return_type: PageInfo
+        return_type:
+          UploadPageBlobPagesResult:
+            - PageInfo: inline
         request_action:
           - [add_body_code]
           - [add_query_code, "comp", "page"]
@@ -1057,7 +1109,9 @@ Services:
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
-        return_type: PageInfo
+        return_type:
+          UploadPageBlobPagesFromUriResult:
+            - PageInfo: inline
         request_action:
           - [add_query_code, "comp", "page"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1092,7 +1146,9 @@ Services:
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - BlobRequestEncryptionScopeOptions: inline
           - BlobRequestConditionalHeaders: inline
-        return_type: PageInfo
+        return_type:
+          ClearPageBlobPagesResult:
+            - PageInfo: inline
         request_action:
           - [add_query_code, "comp", "page"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1112,7 +1168,9 @@ Services:
     - Resize:
         http_method: Put
         http_status_code: 200
-        return_type: PageBlobInfo
+        return_type:
+          ResizePageBlobResult:
+            - PageBlobInfo: inline
         options:
           - BasicRequestOptions: inline
           - BlobContentLength: int64_t = -1
@@ -1140,7 +1198,18 @@ Services:
     - GetPageRanges:
         http_method: Get
         http_status_code: 200
-        return_type: PageRangesInfoInternal
+        return_type:
+          GetPageBlobPageRangesResultInternal:
+            - BasicResponse: inline
+            - ETag: std::string
+            - LastModified: std::string
+            - BlobContentLength: int64_t = 0
+            - PageRanges: std::vector<std::pair<int64_t, int64_t>>
+            - ClearRanges: std::vector<std::pair<int64_t, int64_t>>
+            - from_xml: [
+              [start_tag, PageList.PageRange, PageRanges],
+              [start_tag, PageList.ClearRange, ClearRanges],
+            ]
         options:
           - BasicRequestOptions: inline
           - PreviousSnapshot: std::string, nullable
@@ -1161,10 +1230,12 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-content-length", BlobContentLength]
 
-    - CopyIncremental:
+    - StartCopyIncremental:
         http_method: Put
         http_status_code: 202
-        return_type: BlobCopyInfo
+        return_type:
+          StartCopyPageBlobIncrementalResult:
+            - BlobCopyInfo: inline
         options:
           - BasicRequestOptions: inline
           - CopySource: std::string
@@ -1184,7 +1255,9 @@ Services:
     - Create:
         http_method: Put
         http_status_code: 201
-        return_type: BlobContentInfo
+        return_type:
+          CreateAppendBlobResult:
+            - BlobContentInfo: inline
         options:
           - BasicRequestOptions: inline
           - HttpHeaders: BlobHttpHeaders
@@ -1210,7 +1283,9 @@ Services:
     - AppendBlock:
         http_method: Put
         http_status_code: 201
-        return_type: BlobAppendInfo
+        return_type:
+          AppendBlockResult:
+            - BlobAppendInfo: inline
         options:
           - BodiedRequestOptions: inline
           - ContentMd5: std::string, nullable
@@ -1241,7 +1316,9 @@ Services:
     - AppendBlockFromUri:
         http_method: Put
         http_status_code: 201
-        return_type: BlobAppendInfo
+        return_type:
+          AppendBlockFromUriResult:
+            - BlobAppendInfo: inline
         options:
           - BasicRequestOptions: inline
           - SourceUri: std::string
@@ -1733,17 +1810,6 @@ Models:
     - ETag: std::string
     - LastModified: std::string
     - SequenceNumber: int64_t = 0
-  PageRangesInfoInternal:
-    - BasicResponse: inline
-    - ETag: std::string
-    - LastModified: std::string
-    - BlobContentLength: int64_t = 0
-    - PageRanges: std::vector<std::pair<int64_t, int64_t>>
-    - ClearRanges: std::vector<std::pair<int64_t, int64_t>>
-    - from_xml: [
-      [start_tag, PageList.PageRange, PageRanges],
-      [start_tag, PageList.ClearRange, ClearRanges],
-    ]
   BlobAppendInfo:
     - BasicResponse: inline
     - ETag: std::string

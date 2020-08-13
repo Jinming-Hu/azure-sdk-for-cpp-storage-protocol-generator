@@ -29,6 +29,17 @@ class class_definition:
         self.fromxml_actions = None
         self.toxml_actions = None
 
+
+    def __eq__(self, other):
+        if not isinstance(other, class_definition):
+            return NotImplemented
+        return (self.name == other.name and self.type == other.type and self.noexport == other.noexport and
+               self.member == other.member and self.member_type == other.member_type and
+               self.member_default_value == other.member_default_value and self.member_nullable == other.member_nullable and
+               self.member_literal == other.member_literal and self.member_comment == other.member_comment and
+               self.dependency == other.dependency and self.fromxml_actions == other.fromxml_actions and
+               self.toxml_actions == other.toxml_actions)
+
     def add_dependency(self, type_name):
         if type_name is None:
             return
@@ -68,6 +79,14 @@ class class_definition:
         self.member_literal.extend(other.member_literal)
         self.member_comment.extend(other.member_comment)
         self.dependency |= other.dependency
+        if self.fromxml_actions is None:
+            self.fromxml_actions = other.fromxml_actions
+        elif other.fromxml_actions is not None:
+            self.fromxml_actions.extend(other.fromxml_actions)
+        if self.toxml_actions is None:
+            self.toxml_actions = other.toxml_actions
+        elif other.toxml_actions is not None:
+            self.toxml_actions = other.toxml_actions
 
 
 try:
@@ -118,7 +137,7 @@ def splitq(s, sep):
 
 
 def get_class_definition(class_name, config_class_def=None):
-    if class_name in models_cache:
+    if config_class_def is None and class_name in models_cache:
         return models_cache[class_name]
 
     if config_class_def is None and class_name in config["Models"]:
@@ -209,6 +228,9 @@ def get_class_definition(class_name, config_class_def=None):
             member_name = m
             class_def.add_member(member_name, member_comment=member_comment)
 
+    if class_name in models_cache and models_cache[class_name] != class_def:
+        raise RuntimeError("duplicate definition of " + class_name)
+
     models_cache[class_name] = class_def
     return class_def
 
@@ -246,8 +268,16 @@ for config_resource in config["Services"]:
             return_type_def = get_class_definition(return_type)
         add_export_model(return_type)
 
+        if return_type.endswith("Result"):
+            option_type = return_type[:-6]
+        elif return_type.endswith("ResultInternal"):
+            option_type = return_type[:-14]
+        else:
+            raise RuntimeError("Cannot deduce option name from return name " + return_type)
+        option_type += "Options"
+
         config_option_def = config_function_def["options"]
-        option_def = class_definition(function_name + "Options", "struct")
+        option_def = class_definition(option_type, "struct")
         for m in config_option_def:
             member_name, member_desc = next(iter(m.items()))
 
@@ -276,7 +306,7 @@ for config_resource in config["Services"]:
             else:
                 option_def.add_member(member_name, member_type=member_type, member_default_value=member_default_value, member_nullable=member_nullable)
 
-        code_template.gen_function_option_definition(service_name, function_name, option_def)
+        code_template.gen_function_option_definition(service_name, option_type, option_def)
         for d in option_def.dependency:
             add_export_model(d)
 
@@ -321,11 +351,11 @@ for config_resource in config["Services"]:
                 del config_response_action[i]
                 config_response_action.insert(0, action)
 
-        code_template.gen_resource_function_begin(function_name, return_type, request_body_type, response_body_type)
+        code_template.gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type)
         for action in config_request_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
-            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "option_type": function_name + "Options", "request_body_type": request_body_type, "response_body_type": response_body_type, "http_method": http_method}
+            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "option_type": option_type, "request_body_type": request_body_type, "response_body_type": response_body_type, "http_method": http_method}
 
             should_ignore = False
             ignorable = "ignorable" in action[1:]

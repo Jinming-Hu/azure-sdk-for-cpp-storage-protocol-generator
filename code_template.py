@@ -571,8 +571,7 @@ def gen_resource_helper_functions():
     toxml_classes.clear()
 
 
-def gen_function_option_definition(service_name, function_name, class_def):
-    class_name = function_name + "Options"
+def gen_function_option_definition(service_name, class_name, class_def):
     content = "struct {} {{".format(class_name)
     for i in range(len(class_def.member)):
         if class_def.member_type[i] == class_def.member[i]:
@@ -601,11 +600,11 @@ def gen_function_option_definition(service_name, function_name, class_def):
     main_body += content
 
 
-def gen_resource_function_begin(function_name, return_type, request_body_type, response_body_type):
+def gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type):
     content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::Http::BodyStream* requestBody,"
-    content += "const {function_name}Options& options) {{ unused(options);".format(function_name=function_name)
+    content += "const {option_type}& options) {{ unused(options);".format(option_type=option_type)
 
     global main_body
     main_body += content
