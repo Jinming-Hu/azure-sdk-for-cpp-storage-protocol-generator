@@ -959,7 +959,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          CommitBlobBlockListResult:
+          CommitBlockListResult:
             - BlobContentInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -997,7 +997,7 @@ Services:
             - ListType: BlockListTypeOption, nullable
             - LeaseId: std::string, nullable
         return_type:
-          GetBlobBlockListResult:
+          GetBlockListResult:
             - BasicResponse: inline
             - ETag: std::string
             - LastModified: std::string
