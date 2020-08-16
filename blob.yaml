@@ -716,6 +716,7 @@ Services:
           - RehydratePriority: RehydratePriority, nullable
           - BlobRequestConditionalHeaders: inline
           - BlobRequestSourceConditionalHeaders: inline
+          - ShouldSealDestination: bool, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
@@ -724,6 +725,7 @@ Services:
           - [add_header_code, "x-ms-source-lease-id", SourceLeaseId]
           - [add_header_code, "x-ms-access-tier", Tier]
           - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
+          - [add_header_code, "x-ms-seal-blob", ShouldSealDestination]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
         response_action:
