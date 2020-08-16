@@ -619,7 +619,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "x-ms-creation-time", CreationTime]
+          - [get_header_code, "x-ms-creation-time", CreatedOn]
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - [get_header_code, "x-ms-blob-type", BlobType]
           - *RESPONSE_LEASE_HEADER_PACKAGE
@@ -632,12 +632,12 @@ Services:
           - [get_header_code, "x-ms-access-tier", Tier]
           - [get_header_code, "x-ms-access-tier-inferred", AccessTierInferred]
           - [get_header_code, "x-ms-archive-status", ArchiveStatus]
-          - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangeTime]
+          - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangedOn]
           - [get_header_code, "x-ms-copy-id", CopyId]
           - [get_header_code, "x-ms-copy-source", CopySource]
           - [get_header_code, "x-ms-copy-status", CopyStatus]
           - [get_header_code, "x-ms-copy-progress", CopyProgress]
-          - [get_header_code, "x-ms-copy-completion-time", CopyCompletionTime]
+          - [get_header_code, "x-ms-copy-completion-time", CopyCompletedOn]
 
     - SetHttpHeaders:
         http_method: Put
@@ -1734,7 +1734,7 @@ Models:
     - IsCurrentVersion: bool, nullable
     - HttpHeaders: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
-    - CreationTime: std::string
+    - CreatedOn: std::string
     - LastModified: std::string
     - ETag: std::string
     - ContentLength: int64_t = 0
@@ -1759,7 +1759,7 @@ Models:
       [text, Properties.Content-MD5, HttpHeaders.ContentMd5],
       [text, Properties.Cache-Control, HttpHeaders.CacheControl],
       [text, Properties.Content-Disposition, HttpHeaders.ContentDisposition],
-      [text, Properties.Creation-Time, CreationTime],
+      [text, Properties.Creation-Time, CreatedOn],
       [text, Properties.Last-Modified, LastModified],
       [text, Properties.Etag, ETag],
       [text, Properties.Content-Length, ContentLength],
@@ -1819,7 +1819,7 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - CreationTime: std::string
+    - CreatedOn: std::string
     - Metadata: std::map<std::string, std::string>
     - BlobType: BlobType = BlobType::Unknown
     - LeaseDuration: std::string, nullable
@@ -1834,12 +1834,12 @@ Models:
     - Tier: AccessTier, nullable
     - AccessTierInferred: bool, nullable
     - ArchiveStatus: BlobArchiveStatus, nullable
-    - AccessTierChangeTime: std::string, nullable
+    - AccessTierChangedOn: std::string, nullable
     - CopyId: std::string, nullable
     - CopySource: std::string, nullable
     - CopyStatus: CopyStatus, nullable
     - CopyProgress: std::string, nullable
-    - CopyCompletionTime: std::string, nullable
+    - CopyCompletedOn: std::string, nullable
   BlobInfo:
     - noexport: true
     - BasicResponse: inline
