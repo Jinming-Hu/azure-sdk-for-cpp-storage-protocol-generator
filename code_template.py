@@ -310,6 +310,48 @@ def gen_fromxml_function(class_name):
                     return std::make_pair(start, end);
                 }}
                 """.format(member_name))
+        elif class_type == "std::vector<ObjectReplicationPolicy>":
+            content = inspect.cleandoc(
+                """
+                static std::vector<ObjectReplicationPolicy> {}FromXml(XmlReader& reader) {{
+                    int depth = 0;
+                    std::map<std::string, std::vector<ObjectReplicationRule>> orPropertiesMap;
+                    std::string policyId;
+                    std::string ruleId;
+                    while (true) {{
+                        auto node = reader.Read();
+                        if (node.Type == XmlNodeType::End) {{
+                            break;
+                        }} else if (node.Type == XmlNodeType::StartTag) {{
+                            ++depth;
+                            std::string startTagName = node.Name;
+                            if (startTagName.substr(0, 3) == "or-") {{
+                                auto underscorePos = startTagName.find('_', 3);
+                                policyId = std::string(startTagName.begin() + 3, startTagName.begin() + underscorePos);
+                                ruleId = startTagName.substr(underscorePos + 1);
+                            }}
+                        }} else if (node.Type == XmlNodeType::EndTag) {{
+                            if (depth-- == 0) {{ break; }}
+                        }}
+                        if (depth == 1 && node.Type == XmlNodeType::Text) {{
+                            ObjectReplicationRule rule;
+                            rule.RuleId = std::move(ruleId);
+                            rule.ReplicationStatus = ObjectReplicationStatusFromString(node.Value);
+                            orPropertiesMap[policyId].emplace_back(std::move(rule));
+                        }}
+                    }}
+                    std::vector<ObjectReplicationPolicy> ret;
+                    for (auto& property : orPropertiesMap) {{
+                        ObjectReplicationPolicy policy;
+                        policy.PolicyId = property.first;
+                        policy.Rules = std::move(property.second);
+                        ret.emplace_back(std::move(policy));
+                    }}
+                    return ret;
+                }}
+                """.format(member_name))
+        else:
+            raise RuntimeError(class_type + " from xml not supported")
         main_body += content + "\n\n"
         return
 
@@ -375,7 +417,10 @@ def gen_fromxml_function(class_name):
         content += "){"
 
         member_type = get_member_type(member)
-        if member_type.startswith("std::vector<") and member_type.endswith(">"):
+        if member_type == "std::vector<ObjectReplicationPolicy>":
+            content += "ret.{member_name} = {member_name}FromXml(reader);".format(member_name=member)
+            fromxml_classes.add((member_type, member))
+        elif member_type.startswith("std::vector<") and member_type.endswith(">"):
             inner_type = member_type[len("std::vector<"): -len(">")]
             if inner_type.startswith("std::"):
                 content += "ret.{member_name}.emplace_back({function_name}FromXml(reader));".format(member_name=member, function_name=member)
@@ -823,6 +868,41 @@ def gen_get_metadata_code(*args, **kwargs):
             {2}.emplace(i->first.substr({1}), i->second);
         }}
         """.format(prefix, len(prefix) - 2, value))
+
+    global main_body
+    main_body += content
+
+
+def gen_get_or_code(*args, **kwargs):
+    prefix = args[0]
+    value = args[1]
+
+    content = inspect.cleandoc(
+        """
+        {{
+            std::map<std::string, std::vector<ObjectReplicationRule>> orPropertiesMap;
+            for (auto i = httpResponse.GetHeaders().lower_bound({prefix}); i != httpResponse.GetHeaders().end() && i->first.substr(0, {prefix_len}) == {prefix}; ++i)
+            {{
+                const std::string& header = i->first;
+                auto underscorePos = header.find('_', {prefix_len});
+                if (underscorePos == std::string::npos) {{ continue; }}
+                std::string policyId = std::string(header.begin() + {prefix_len}, header.begin() + underscorePos);
+                std::string ruleId = header.substr(underscorePos + 1);
+
+                ObjectReplicationRule rule;
+                rule.RuleId = std::move(ruleId);
+                rule.ReplicationStatus = ObjectReplicationStatusFromString(i->second);
+                orPropertiesMap[policyId].emplace_back(std::move(rule));
+            }}
+            for (auto& property : orPropertiesMap)
+            {{
+                ObjectReplicationPolicy policy;
+                policy.PolicyId = property.first;
+                policy.Rules = std::move(property.second);
+                {value}.emplace_back(std::move(policy));
+            }}
+        }}
+        """.format(prefix=prefix, prefix_len=len(prefix) - 2, value=value))
 
     global main_body
     main_body += content

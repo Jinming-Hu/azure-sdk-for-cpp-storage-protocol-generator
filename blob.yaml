@@ -568,6 +568,8 @@ Services:
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
           - [get_header_code, "x-ms-blob-sealed", IsSealed]
           - [get_header_code, "x-ms-blob-type", BlobType]
+          - [get_header_code, "x-ms-or-policy-id", ObjectReplicationDestinationPolicyId]
+          - [get_or_code, "x-ms-or-", ObjectReplicationSourceProperties]
           - [get_body_code, BodyStream]
 
     - Delete:
@@ -638,6 +640,8 @@ Services:
           - [get_header_code, "x-ms-copy-status", CopyStatus]
           - [get_header_code, "x-ms-copy-progress", CopyProgress]
           - [get_header_code, "x-ms-copy-completion-time", CopyCompletedOn]
+          - [get_header_code, "x-ms-or-policy-id", ObjectReplicationDestinationPolicyId]
+          - [get_or_code, "x-ms-or-", ObjectReplicationSourceProperties]
 
     - SetHttpHeaders:
         http_method: Put
@@ -1679,6 +1683,8 @@ Models:
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
     - BlobResponseEncryptionOptions: inline
+    - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
+    - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
   BlobContentInfo:
     - noexport: true
     - BasicResponse: inline
@@ -1747,6 +1753,7 @@ Models:
     - BlobResponseEncryptionOptions: inline
     - SequenceNumber: int64_t, nullable # only for page blobd
     - IsSealed: bool, nullable # only for append blob
+    - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
     - from_xml: [
       [text, Name, Name],
       [text, Deleted, Deleted],
@@ -1774,6 +1781,7 @@ Models:
       [text, Properties.Sealed, IsSealed],
       [text, Properties.x-ms-blob-sequence-number, SequenceNumber],
       [start_tag, Metadata, Metadata],
+      [start_tag, OrMetadata, ObjectReplicationSourceProperties],
     ]
   BlobPrefix:
     - Name: std::string
@@ -1814,6 +1822,17 @@ Models:
     - Unknown: ""
     - RehydratePendingToHot: "rehydrate-pending-to-hot"
     - RehydratePendingToCool: "rehydrate-pending-to-cool"
+  ObjectReplicationStatus:
+    - type: enum class
+    - Unknown: ""
+    - Complete: "complete"
+    - Failed: "failed"
+  ObjectReplicationRule:
+    - RuleId: std::string
+    - ReplicationStatus: ObjectReplicationStatus = ObjectReplicationStatus::Unknown
+  ObjectReplicationPolicy:
+    - PolicyId: std::string
+    - Rules: std::vector<ObjectReplicationRule>
   BlobProperties:
     - noexport: true
     - BasicResponse: inline
@@ -1840,6 +1859,8 @@ Models:
     - CopyStatus: CopyStatus, nullable
     - CopyProgress: std::string, nullable
     - CopyCompletedOn: std::string, nullable
+    - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
+    - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
   BlobInfo:
     - noexport: true
     - BasicResponse: inline
