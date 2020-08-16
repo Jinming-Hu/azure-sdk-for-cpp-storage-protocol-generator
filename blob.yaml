@@ -566,6 +566,7 @@ Services:
           - [get_header_code, "Content-Range", ContentRange]
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
+          - [get_header_code, "x-ms-blob-sealed", IsSealed]
           - [get_header_code, "x-ms-blob-type", BlobType]
           - [get_body_code, BodyStream]
 
@@ -626,6 +627,7 @@ Services:
           - *RESPONSE_MIME_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
+          - [get_header_code, "x-ms-blob-sealed", IsSealed]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
           - [get_header_code, "x-ms-access-tier", Tier]
           - [get_header_code, "x-ms-access-tier-inferred", AccessTierInferred]
@@ -1047,6 +1049,7 @@ Services:
         return_type:
           CreatePageBlobResult:
             - BlobContentInfo: inline
+            - SequenceNumber: int64_t, nullable
         options:
           - BasicRequestOptions: inline
           - BlobContentLength: int64_t = -1
@@ -1370,6 +1373,29 @@ Services:
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
+    - Seal:
+        http_method: Put
+        http_status_code: 200
+        return_type:
+          SealAppendBlobResult:
+            - BasicResponse: inline
+            - ETag: std::string
+            - LastModified: std::string
+            - IsSealed: bool = true
+        options:
+          - BasicRequestOptions: inline
+          - LeaseId: std::string, nullable
+          - BlobRequestConditionalHeaders: inline
+          - AppendPosition: int64_t, nullable
+        request_action:
+          - [add_query_code, "comp", "seal"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+          - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition]
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+
 
 Models:
   BasicRequestOptions:
@@ -1631,6 +1657,7 @@ Models:
     - Metadata: std::map<std::string, std::string>
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int64_t, nullable  # only for append blob
+    - IsSealed: bool, nullable # only for append blob
     - BlobType: BlobType = BlobType::Unknown
     - ContentMd5: std::string, nullable  # Md5 for the downloaded range
     - ContentCrc64: std::string, nullable
@@ -1639,14 +1666,13 @@ Models:
     - LeaseStatus: BlobLeaseStatus, nullable
     - BlobResponseEncryptionOptions: inline
   BlobContentInfo:
-    - type: struct
+    - noexport: true
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
     - ContentMd5: std::string, nullable
     - ContentCrc64: std::string, nullable
     - VersionId: std::string, nullable
-    - SequenceNumber: int64_t, nullable
     - BlobResponseEncryptionOptions: inline
   BlobContainerItemWithoutName:
     - noexport: true
@@ -1699,12 +1725,14 @@ Models:
     - ETag: std::string
     - ContentLength: int64_t = 0
     - BlobType: BlobType = BlobType::Unknown
-    - Tier: AccessTier = AccessTier::Unknown
-    - AccessTierInferred: bool = true
+    - Tier: AccessTier, nullable
+    - AccessTierInferred: bool, nullable
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseDuration: std::string, nullable
     - BlobResponseEncryptionOptions: inline
+    - SequenceNumber: int64_t, nullable # only for page blobd
+    - IsSealed: bool, nullable # only for append blob
     - from_xml: [
       [text, Name, Name],
       [text, Deleted, Deleted],
@@ -1729,6 +1757,8 @@ Models:
       [text, Properties.LeaseDuration, LeaseDuration],
       [text, Properties.ServerEncrypted, ServerEncrypted],
       [text, Properties.EncryptionKeySHA256, EncryptionKeySha256],
+      [text, Properties.Sealed, IsSealed],
+      [text, Properties.x-ms-blob-sequence-number, SequenceNumber],
       [start_tag, Metadata, Metadata],
     ]
   BlobPrefix:
@@ -1783,6 +1813,7 @@ Models:
     - HttpHeaders: BlobHttpHeaders
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int32_t, nullable  # only for append blob
+    - IsSealed: bool, nullable # only for append blob
     - BlobResponseEncryptionOptions: inline
     - Tier: AccessTier, nullable
     - AccessTierInferred: bool, nullable
