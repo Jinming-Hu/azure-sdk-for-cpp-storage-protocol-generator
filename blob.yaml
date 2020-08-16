@@ -755,7 +755,12 @@ Services:
         http_status_code: 201
         return_type:
           CreateBlobSnapshotResult:
-            - BlobSnapshotInfo: inline
+            - BasicResponse: inline
+            - Snapshot: std::string
+            - ETag: std::string
+            - LastModified: std::string
+            - VersionId: std::string, nullable
+            - BlobResponseEncryptionOptions: inline
         options:
           - BasicRequestOptions: inline
           - Metadata: std::map<std::string, std::string>
@@ -1193,7 +1198,10 @@ Services:
         http_status_code: 200
         return_type:
           ResizePageBlobResult:
-            - PageBlobInfo: inline
+            - BasicResponse: inline
+            - ETag: std::string
+            - LastModified: std::string
+            - SequenceNumber: int64_t = 0
         options:
           - BasicRequestOptions: inline
           - BlobContentLength: int64_t = -1
@@ -1613,16 +1621,19 @@ Models:
       [tag, StaticWebsite, StaticWebsite],
     ]
   BlobRequestConditionalHeaders:
+    - noexport: true
     - IfModifiedSince: std::string, nullable
     - IfUnmodifiedSince: std::string, nullable
     - IfMatch: std::string, nullable
     - IfNoneMatch: std::string, nullable
   BlobRequestSourceConditionalHeaders:
+    - noexport: true
     - SourceIfModifiedSince: std::string, nullable
     - SourceIfUnmodifiedSince: std::string, nullable
     - SourceIfMatch: std::string, nullable
     - SourceIfNoneMatch: std::string, nullable
   BlockInfo:
+    - noexport: true
     - BasicResponse: inline
     - ContentMd5: std::string, nullable
     - ContentCrc64: std::string, nullable
@@ -1648,6 +1659,7 @@ Models:
     - EncryptionKeySha256: std::string, nullable
     - EncryptionScope: std::string, nullable
   BlobDownloadResponse:
+    - noexport: true
     - type: struct
     - BodiedResponse: inline
     - ETag: std::string
@@ -1776,6 +1788,7 @@ Models:
     - Versions: "versions"
     - UncomittedBlobs: "uncommittedblobs"
   BlobContainerInfo:
+    - noexport: true
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
@@ -1800,6 +1813,7 @@ Models:
     - RehydratePendingToHot: "rehydrate-pending-to-hot"
     - RehydratePendingToCool: "rehydrate-pending-to-cool"
   BlobProperties:
+    - noexport: true
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
@@ -1825,25 +1839,21 @@ Models:
     - CopyProgress: std::string, nullable
     - CopyCompletionTime: std::string, nullable
   BlobInfo:
+    - noexport: true
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
     - SequenceNumber: int64_t, nullable
   BlobCopyInfo:
+    - noexport: true
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
     - CopyId: std::string
     - CopyStatus: CopyStatus = CopyStatus::Unknown
     - VersionId: std::string, nullable
-  BlobSnapshotInfo:
-    - BasicResponse: inline
-    - Snapshot: std::string
-    - ETag: std::string
-    - LastModified: std::string
-    - VersionId: std::string, nullable
-    - BlobResponseEncryptionOptions: inline
   UserDelegationKey:
+    - noexport: true
     - BasicResponse: inline
     - SignedObjectId: std::string
     - SignedTenantId: std::string
@@ -1862,6 +1872,7 @@ Models:
       [text, UserDelegationKey.Value, Value],
     ]
   PageInfo:
+    - noexport: true
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
@@ -1869,12 +1880,8 @@ Models:
     - ContentCrc64: std::string, nullable
     - SequenceNumber: int64_t = 0
     - BlobResponseEncryptionOptions: inline
-  PageBlobInfo:
-    - BasicResponse: inline
-    - ETag: std::string
-    - LastModified: std::string
-    - SequenceNumber: int64_t = 0
   BlobAppendInfo:
+    - noexport: true
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
@@ -1914,6 +1921,7 @@ Models:
       [tag, SignedIdentifier.AccessPolicy.Permission, Permissions],
     ]
   BlobContainerAccessPolicy:
+    - noexport: true
     - AccessType: PublicAccessType = PublicAccessType::Private
     - ETag: std::string
     - LastModified: std::string
@@ -1922,6 +1930,7 @@ Models:
       [start_tag, SignedIdentifiers.SignedIdentifier, SignedIdentifiers],
     ]
   BlobLease:
+    - noexport: true
     - ETag: std::string
     - LastModified: std::string
     - LeaseId: std::string
