@@ -621,7 +621,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "x-ms-creation-time", CreatedOn]
+          - [get_header_code, "x-ms-creation-time", CreationTime]
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - [get_header_code, "x-ms-blob-type", BlobType]
           - *RESPONSE_LEASE_HEADER_PACKAGE
@@ -634,12 +634,12 @@ Services:
           - [get_header_code, "x-ms-access-tier", Tier]
           - [get_header_code, "x-ms-access-tier-inferred", AccessTierInferred]
           - [get_header_code, "x-ms-archive-status", ArchiveStatus]
-          - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangedOn]
+          - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangeTime]
           - [get_header_code, "x-ms-copy-id", CopyId]
           - [get_header_code, "x-ms-copy-source", CopySource]
           - [get_header_code, "x-ms-copy-status", CopyStatus]
           - [get_header_code, "x-ms-copy-progress", CopyProgress]
-          - [get_header_code, "x-ms-copy-completion-time", CopyCompletedOn]
+          - [get_header_code, "x-ms-copy-completion-time", CopyCompletionTime]
           - [get_header_code, "x-ms-or-policy-id", ObjectReplicationDestinationPolicyId]
           - [get_or_code, "x-ms-or-", ObjectReplicationSourceProperties]
 
@@ -1712,7 +1712,7 @@ Models:
     - BlobContainerItemWithoutName: inline
     - IsDeleted: bool = false
     - VersionId: std::string, nullable
-    - DeletedOn: std::string, nullable
+    - DeletedTime: std::string, nullable
     - RemainingRetentionDays: int32_t, nullable
     - from_xml: [
       [text, Name, Name],
@@ -1729,7 +1729,7 @@ Models:
       [start_tag, Metadata, Metadata],
       [text, Deleted, IsDeleted],
       [text, Version, VersionId],
-      [text, Properties.DeletedTime, DeletedOn],
+      [text, Properties.DeletedTime, DeletedTime],
       [text, Properties.RemainingRetentionDays, RemainingRetentionDays],
     ]
   BlobItem:
@@ -1740,7 +1740,7 @@ Models:
     - IsCurrentVersion: bool, nullable
     - HttpHeaders: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
-    - CreatedOn: std::string
+    - CreationTime: std::string
     - LastModified: std::string
     - ETag: std::string
     - ContentLength: int64_t = 0
@@ -1766,7 +1766,7 @@ Models:
       [text, Properties.Content-MD5, HttpHeaders.ContentMd5],
       [text, Properties.Cache-Control, HttpHeaders.CacheControl],
       [text, Properties.Content-Disposition, HttpHeaders.ContentDisposition],
-      [text, Properties.Creation-Time, CreatedOn],
+      [text, Properties.Creation-Time, CreationTime],
       [text, Properties.Last-Modified, LastModified],
       [text, Properties.Etag, ETag],
       [text, Properties.Content-Length, ContentLength],
@@ -1838,7 +1838,7 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - CreatedOn: std::string
+    - CreationTime: std::string
     - Metadata: std::map<std::string, std::string>
     - BlobType: BlobType = BlobType::Unknown
     - LeaseDuration: std::string, nullable
@@ -1853,12 +1853,12 @@ Models:
     - Tier: AccessTier, nullable
     - AccessTierInferred: bool, nullable
     - ArchiveStatus: BlobArchiveStatus, nullable
-    - AccessTierChangedOn: std::string, nullable
+    - AccessTierChangeTime: std::string, nullable
     - CopyId: std::string, nullable
     - CopySource: std::string, nullable
     - CopyStatus: CopyStatus, nullable
     - CopyProgress: std::string, nullable
-    - CopyCompletedOn: std::string, nullable
+    - CopyCompletionTime: std::string, nullable
     - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
     - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
   BlobInfo:
@@ -1921,10 +1921,10 @@ Models:
     - Unavailable: "unavailable"
   BlobGeoReplication:
     - Status: BlobGeoReplicationStatus = BlobGeoReplicationStatus::Unknown
-    - LastSyncedOn: std::string, nullable
+    - LastSyncTime: std::string, nullable
     - from_xml: [
       [text, Status, Status],
-      [text, LastSyncTime, LastSyncedOn],
+      [text, LastSyncTime, LastSyncTime],
     ]
   BlobSignedIdentifier:
     - Id: std::string
