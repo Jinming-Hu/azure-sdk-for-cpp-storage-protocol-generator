@@ -902,6 +902,8 @@ Services:
         return_type:
           UploadBlockBlobResult:
             - BlobContentInfo: inline
+            - ContentMd5: std::string, nullable
+            - ContentCrc64: std::string, nullable
         options:
           - BodiedRequestOptions: inline
           - ContentMd5: std::string, nullable
@@ -994,6 +996,8 @@ Services:
         return_type:
           CommitBlockListResult:
             - BlobContentInfo: inline
+            - ContentMd5: std::string, nullable
+            - ContentCrc64: std::string, nullable
         options:
           - BasicRequestOptions: inline
           - BlockList: std::vector<std::pair<BlockType, std::string>>
@@ -1085,7 +1089,6 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
@@ -1313,7 +1316,6 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
 
@@ -1690,8 +1692,6 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - ContentMd5: std::string, nullable
-    - ContentCrc64: std::string, nullable
     - VersionId: std::string, nullable
     - BlobResponseEncryptionOptions: inline
   BlobContainerItemWithoutName:
