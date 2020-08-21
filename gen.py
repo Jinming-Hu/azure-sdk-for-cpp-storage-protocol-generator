@@ -253,6 +253,7 @@ for config_resource in config["Services"]:
         function_name = next(iter(config_function))
         print("Processing:", resource_name, function_name)
         config_function_def = config_function[function_name]
+        separate_functions = config_function_def.get("separate_functions", False)
         http_method = config_function_def["http_method"]
         http_status_code = config_function_def["http_status_code"]
         if type(http_status_code) is ruamel.yaml.comments.CommentedSeq:
@@ -351,7 +352,12 @@ for config_resource in config["Services"]:
                 del config_response_action[i]
                 config_response_action.insert(0, action)
 
-        code_template.gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type)
+        if separate_functions:
+            if request_body_type in [HttpBodyType.Xml, HttpBodyType.Json]:
+                raise RuntimeError("separate functions for xml or json body is not supported")
+            code_template.gen_resource_create_message_function_begin(function_name, option_type, request_body_type)
+        else:
+            code_template.gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type)
         for action in config_request_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
@@ -409,7 +415,12 @@ for config_resource in config["Services"]:
             if not should_ignore:
                 method_to_call(*args, **kwargs)
 
-        code_template.gen_resource_send_request(return_type, http_status_code)
+        if separate_functions:
+            code_template.gen_resource_create_message_function_end()
+            code_template.gen_resource_create_response_function_begin(function_name, return_type)
+            code_template.gen_resource_create_response_function_check_status_code(return_type, http_status_code)
+        else:
+            code_template.gen_resource_send_request(return_type, http_status_code)
 
         for action in config_response_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
@@ -450,7 +461,12 @@ for config_resource in config["Services"]:
                     kwargs[arg + ".type"] = "std::string"
             method_to_call(*args, **kwargs)
 
-        code_template.gen_resource_function_end(return_type)
+        if separate_functions:
+            code_template.gen_resource_create_response_function_end(return_type)
+            code_template.gen_resource_function_glue_function(function_name, option_type, return_type, request_body_type)
+        else:
+            code_template.gen_resource_function_end(return_type)
+
 
     code_template.gen_resource_helper_functions()
     code_template.gen_resource_end(resource_name)

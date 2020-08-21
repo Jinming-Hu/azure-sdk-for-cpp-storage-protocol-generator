@@ -645,8 +645,8 @@ def gen_function_option_definition(service_name, class_name, class_def):
     main_body += content
 
 
-def gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
+def gen_resource_create_message_function_begin(function_name, option_type, request_body_type):
+    content = "static Azure::Core::Http::Request {function_name}CreateMessage(const std::string& url,".format(function_name=function_name)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::Http::BodyStream* requestBody,"
     content += "const {option_type}& options) {{ unused(options);".format(option_type=option_type)
@@ -655,13 +655,26 @@ def gen_resource_function_begin(function_name, option_type, return_type, request
     main_body += content
 
 
-def gen_resource_send_request(return_type, http_status_code):
+def gen_resource_create_message_function_end():
+    content = "return request; }\n\n"
+
+    global main_body
+    main_body += content
+
+
+def gen_resource_create_response_function_begin(function_name, return_type):
+    content = "static Azure::Core::Response<{return_type}> {function_name}CreateResponse(const Azure::Core::Context& context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse) {{".format(function_name=function_name, return_type=return_type)
+
+    global main_body
+    main_body += content
+
+
+def gen_resource_create_response_function_check_status_code(return_type, http_status_code):
     content = inspect.cleandoc(
         """
-        auto pHttpResponse = pipeline.Send(context, request);
         Azure::Core::Http::RawResponse& httpResponse = *pHttpResponse;
         {return_type} response;
-        auto http_status_code = static_cast<std::underlying_type<Azure::Core::Http::HttpStatusCode>::type>( httpResponse.GetStatusCode());
+        auto http_status_code = static_cast<std::underlying_type<Azure::Core::Http::HttpStatusCode>::type>(httpResponse.GetStatusCode());
         if (!(
         """.format(return_type=return_type))
     for i, code in enumerate(http_status_code):
@@ -679,6 +692,53 @@ def gen_resource_send_request(return_type, http_status_code):
 
     global main_body
     main_body += content
+
+
+def gen_resource_create_response_function_end(return_type):
+    content = "return Azure::Core::Response<{return_type}>(std::move(response), std::move(pHttpResponse));}}\n\n".format(return_type=return_type)
+
+    global main_body
+    main_body += content
+
+
+def gen_resource_function_glue_function(function_name, option_type, return_type, request_body_type):
+    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
+    if request_body_type == HttpBodyType.PassOn:
+        content += "Azure::Core::Http::BodyStream* requestBody,"
+    content += "const {option_type}& options) {{".format(option_type=option_type)
+    content += "auto request = {function_name}CreateMessage(url,".format(function_name=function_name, option_type=option_type)
+    if request_body_type == HttpBodyType.PassOn:
+        content += "requestBody,"
+    content += "options);"
+    content += inspect.cleandoc(
+        """
+        auto pHttpResponse = pipeline.Send(context, request);
+        return {function_name}CreateResponse(context, std::move(pHttpResponse));
+        }}
+        """.format(function_name=function_name))
+    content += "\n\n"
+
+    global main_body
+    main_body += content
+
+
+def gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type):
+    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
+    if request_body_type == HttpBodyType.PassOn:
+        content += "Azure::Core::Http::BodyStream* requestBody,"
+    content += "const {option_type}& options) {{ unused(options);".format(option_type=option_type)
+
+    global main_body
+    main_body += content
+
+
+def gen_resource_send_request(return_type, http_status_code):
+    content = "auto pHttpResponse = pipeline.Send(context, request);"
+
+    global main_body
+    main_body += content
+
+    gen_resource_create_response_function_check_status_code(return_type, http_status_code)
 
 
 def gen_resource_function_end(return_type):

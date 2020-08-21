@@ -573,6 +573,7 @@ Services:
           - [get_body_code, BodyStream]
 
     - Delete:
+        separate_functions: true
         http_method: Delete
         http_status_code: 202
         return_type:
@@ -688,6 +689,7 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - SetAccessTier:
+        separate_functions: true
         http_method: Put
         http_status_code: [200, 202]
         return_type:
@@ -1411,6 +1413,25 @@ Services:
           - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition]
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+
+  - BlobBatch:
+    - SubmitBatch:
+        http_method: Post
+        http_status_code: 202
+        return_type:
+          SubmitBlobBatchResultInternal:
+            - BasicResponse: inline
+            - ContentType: std::string
+        options:
+          - BodiedRequestOptions: inline
+          - ContentType: std::string
+        request_action:
+          - [add_body_code]
+          - [add_query_code, "comp", "batch"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_header_code, "Content-Type", ContentType]
+        response_action:
+          - [get_header_code, "Content-Type", ContentType]
 
 
 Models:
