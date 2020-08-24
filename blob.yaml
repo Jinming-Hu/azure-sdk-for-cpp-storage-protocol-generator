@@ -15,6 +15,11 @@ request_encryption_package: &REQUEST_ENCRYPTION_HEADER_PACKAGE
   - [add_header_code, "x-ms-encryption-scope", EncryptionScope, ignorable]
 
 response_encryption_package: &RESPONSE_ENCRYPTION_HEADER_PACKAGE
+  - [get_header_code, "x-ms-server-encrypted", ServerEncrypted]
+  - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySha256]
+  - [get_header_code, "x-ms-encryption-scope", EncryptionScope]
+
+response_request_encryption_package: &RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
   - [get_header_code, "x-ms-request-server-encrypted", ServerEncrypted]
   - [get_header_code, "x-ms-encryption-key-sha256", EncryptionKeySha256]
   - [get_header_code, "x-ms-encryption-scope", EncryptionScope]
@@ -785,7 +790,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [get_header_code, "x-ms-snapshot", Snapshot]
           - [get_header_code, "x-ms-version-id", VersionId]
 
@@ -932,7 +937,7 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - StageBlock:
         http_method: Put
@@ -958,7 +963,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
         response_action:
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - StageBlockFromUri:
         http_method: Put
@@ -990,7 +995,7 @@ Services:
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - CommitBlockList:
         http_method: Put
@@ -1026,7 +1031,7 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - GetBlockList:
         http_method: Get
@@ -1092,7 +1097,7 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - UploadPages:
         http_method: Put
@@ -1129,7 +1134,7 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - UploadPagesFromUri:
         http_method: Put
@@ -1170,7 +1175,7 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - ClearPages:
         http_method: Put
@@ -1202,7 +1207,7 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - Resize:
         http_method: Put
@@ -1319,7 +1324,7 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - AppendBlock:
         http_method: Put
@@ -1352,7 +1357,7 @@ Services:
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-append-offset", AppendOffset]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - AppendBlockFromUri:
         http_method: Put
@@ -1389,7 +1394,7 @@ Services:
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-append-offset", AppendOffset]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - Seal:
         http_method: Put
