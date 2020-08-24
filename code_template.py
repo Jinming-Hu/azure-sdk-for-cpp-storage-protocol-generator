@@ -673,7 +673,7 @@ def gen_resource_send_request(return_type, http_status_code):
         """
         ))
         {
-            throw StorageError::CreateFromResponse(context, std::move(pHttpResponse));
+            throw StorageError::CreateFromResponse(std::move(pHttpResponse));
         }
         """)
 
