@@ -29,14 +29,14 @@ include_headers = """
 #include <stdexcept>
 #include <limits>
 
-#include "nullable.hpp"
-#include "context.hpp"
-#include "response.hpp"
-#include "http/http.hpp"
-#include "http/pipeline.hpp"
-#include "common/xml_wrapper.hpp"
-#include "common/storage_common.hpp"
-#include "common/storage_error.hpp"
+#include "azure/core/nullable.hpp"
+#include "azure/core/context.hpp"
+#include "azure/core/response.hpp"
+#include "azure/core/http/http.hpp"
+#include "azure/core/http/pipeline.hpp"
+#include "azure/storage/common/xml_wrapper.hpp"
+#include "azure/storage/common/storage_common.hpp"
+#include "azure/storage/common/storage_error.hpp"
 
 """
 
@@ -663,7 +663,7 @@ def gen_resource_create_message_function_end():
 
 
 def gen_resource_create_response_function_begin(function_name, return_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}CreateResponse(const Azure::Core::Context& context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse) {{".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Core::Response<{return_type}> {function_name}CreateResponse(const Azure::Core::Context& context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse) {{ unused(context);".format(function_name=function_name, return_type=return_type)
 
     global main_body
     main_body += content
