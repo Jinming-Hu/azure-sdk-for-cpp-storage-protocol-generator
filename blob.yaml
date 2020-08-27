@@ -50,6 +50,7 @@ response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
   - [get_header_code, "Content-Language", HttpHeaders.ContentLanguage, optional]
   - [get_header_code, "Cache-Control", HttpHeaders.CacheControl, optional]
   - [get_header_code, "Content-MD5", HttpHeaders.ContentMd5, optional]
+  - [get_header_code, "x-ms-blob-content-md5", HttpHeaders.ContentMd5, optional]
   - [get_header_code, "Content-Disposition", HttpHeaders.ContentDisposition, optional]
 
 response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE

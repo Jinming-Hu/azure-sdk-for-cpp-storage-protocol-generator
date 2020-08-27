@@ -1082,7 +1082,10 @@ def gen_get_header_code(*args, **kwargs):
                 """.format(target, target_str_name, target_type.name, enum_v, enum_literal))
 
     if optional or target_nullable:
-        ite_name = get_snake_case_name(target) + "_iterator"
+        if key == "\"x-ms-blob-content-md5\"" and target.endswith("HttpHeaders.ContentMd5"):
+            ite_name = get_snake_case_name("x_ms_blob_content_md5") + "_iterator"
+        else:
+            ite_name = get_snake_case_name(target) + "_iterator"
         content = inspect.cleandoc(
             """
             auto {1} = httpResponse.GetHeaders().find({0});
