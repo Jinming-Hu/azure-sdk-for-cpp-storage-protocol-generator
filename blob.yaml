@@ -1192,7 +1192,11 @@ Services:
           - BlobRequestConditionalHeaders: inline
         return_type:
           ClearPageBlobPagesResult:
-            - PageInfo: inline
+            - BasicResponse: inline
+            - ETag: std::string
+            - LastModified: std::string
+            - SequenceNumber: int64_t = 0
+            - BlobResponseEncryptionOptions: inline
         request_action:
           - [add_query_code, "comp", "page"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
