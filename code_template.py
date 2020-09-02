@@ -646,7 +646,7 @@ def gen_function_option_definition(service_name, class_name, class_def):
 
 
 def gen_resource_create_message_function_begin(function_name, option_type, request_body_type):
-    content = "static Azure::Core::Http::Request {function_name}CreateMessage(const std::string& url,".format(function_name=function_name)
+    content = "static Azure::Core::Http::Request {function_name}CreateMessage(const Azure::Core::Http::Url& url,".format(function_name=function_name)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::Http::BodyStream* requestBody,"
     content += "const {option_type}& options) {{ unused(options);".format(option_type=option_type)
@@ -702,7 +702,7 @@ def gen_resource_create_response_function_end(return_type):
 
 
 def gen_resource_function_glue_function(function_name, option_type, return_type, request_body_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::Http::BodyStream* requestBody,"
     content += "const {option_type}& options) {{".format(option_type=option_type)
@@ -723,7 +723,7 @@ def gen_resource_function_glue_function(function_name, option_type, return_type,
 
 
 def gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const std::string& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::Http::BodyStream* requestBody,"
     content += "const {option_type}& options) {{ unused(options);".format(option_type=option_type)
@@ -784,9 +784,9 @@ def gen_add_query_code(*args, **kwargs):
             value = snake_case_name
 
     if value_type == "int32_t" or value_type == "int64_t":
-        content += "request.AddQueryParameter({}, std::to_string({}));".format(key, value)
+        content += "request.GetUrl().AppendQuery({}, std::to_string({}));".format(key, value)
     else:
-        content += "request.AddQueryParameter({}, {});".format(key, value)
+        content += "request.GetUrl().AppendQuery({}, {});".format(key, value)
 
     if optional:
         content += "}"
