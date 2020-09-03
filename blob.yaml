@@ -63,6 +63,7 @@ request_conditional_headers_package: &REQUEST_CONDITIONAL_HEADER_PACKAGE
   - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince, ignorable]
   - [add_header_code, "If-Match", IfMatch, ignorable]
   - [add_header_code, "If-None-Match", IfNoneMatch, ignorable]
+  - [add_header_code, "x-ms-if-tags", IfTags, ignorable]
 
 request_source_conditional_headers_package: &REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
   - [add_header_code, "x-ms-source-if-modified-since", SourceIfModifiedSince]
@@ -194,6 +195,36 @@ Services:
           - [add_query_code, "restype", "service"]
           - [add_query_code, "comp", "stats"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action:
+          - [get_xml_body_code]
+
+    - FilterBlobs:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+          FilterBlobsSegmentResult:
+            - BasicResponse: inline
+            - ServiceEndpoint: std::string
+            - Where: std::string
+            - NextMarker: std::string
+            - Items: std::vector<FilterBlobItem>
+            - from_xml: [
+              [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
+              [text, EnumerationResults.Where, Where],
+              [text, EnumerationResults.NextMarker, NextMarker],
+              [start_tag, EnumerationResults.Blobs.Blob, Items],
+            ]
+        options:
+          - BasicRequestOptions: inline
+          - Where: std::string
+          - Marker: std::string, nullable
+          - MaxResults: int32_t, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "blobs"]
+          - [add_query_code, "where", Where]
+          - [add_query_code, "marker", Marker]
+          - [add_query_code, "maxresults", MaxResults]
         response_action:
           - [get_xml_body_code]
 
@@ -705,11 +736,13 @@ Services:
           - BasicRequestOptions: inline
           - Tier: AccessTier = AccessTier::Unknown
           - RehydratePriority: RehydratePriority, nullable
+          - IfTags: std::string, nullable
         request_action:
           - [add_query_code, "comp", "tier"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-access-tier", Tier]
           - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
+          - [add_header_code, "x-ms-if-tags", IfTags]
         response_action: {}
 
     - StartCopyFromUri:
@@ -728,6 +761,7 @@ Services:
           - RehydratePriority: RehydratePriority, nullable
           - BlobRequestConditionalHeaders: inline
           - BlobRequestSourceConditionalHeaders: inline
+          - SourceIfTags: std::string, nullable
           - ShouldSealDestination: bool, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -740,6 +774,7 @@ Services:
           - [add_header_code, "x-ms-seal-blob", ShouldSealDestination]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
+          - [add_header_code, "x-ms-source-if-tags", SourceIfTags]
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-copy-id", CopyId]
@@ -794,6 +829,46 @@ Services:
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [get_header_code, "x-ms-snapshot", Snapshot]
           - [get_header_code, "x-ms-version-id", VersionId]
+
+    - GetTags:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+            GetBlobTagsResult:
+              - Tags: std::map<std::string, std::string>
+              - from_xml: [
+                [start_tag, Tags.TagSet, Tags],
+              ]
+        options:
+          - BasicRequestOptions: inline
+          - IfTags: std::string, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "tags"]
+          - [add_header_code, "x-ms-if-tags", IfTags]
+        response_action:
+          - [get_xml_body_code]
+
+    - SetTags:
+        http_method: Put
+        http_status_code: 204
+        return_type:
+            SetBlobTagsResult:
+              - BasicResponse: inline
+        options:
+          - BasicRequestOptions: inline
+          - Tags: std::map<std::string, std::string>
+          - IfTags: std::string, nullable
+          - to_xml: [
+            [tag, Tags.TagSet, Tags],
+          ]
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "tags"]
+          - [add_header_code, "Content-Type", "application/xml; charset=UTF-8"]
+          - [add_header_code, "x-ms-if-tags", IfTags]
+          - [add_xml_body_code]
+        response_action: {}
 
     - AcquireLease:
         http_method: Put
@@ -1665,6 +1740,7 @@ Models:
     - IfUnmodifiedSince: std::string, nullable
     - IfMatch: std::string, nullable
     - IfNoneMatch: std::string, nullable
+    - IfTags: std::string, nullable
   BlobRequestSourceConditionalHeaders:
     - noexport: true
     - SourceIfModifiedSince: std::string, nullable
@@ -1988,3 +2064,12 @@ Models:
     - ETag: std::string
     - LastModified: std::string
     - LeaseId: std::string
+  FilterBlobItem:
+    - BlobName: std::string
+    - ContainerName: std::string
+    - TagValue: std::string
+    - from_xml: [
+      [text, Name, BlobName],
+      [text, ContainerName, ContainerName],
+      [text, TagValue, TagValue],
+    ]

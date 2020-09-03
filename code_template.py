@@ -256,7 +256,7 @@ def gen_fromxml_function(class_name):
     if type(class_name) is tuple:
         class_type = class_name[0]
         member_name = class_name[1]
-        if class_type == "std::map<std::string, std::string>":
+        if class_type == "std::map<std::string, std::string>" and member_name == "Metadata":
             content = inspect.cleandoc(
                 """
                 static std::map<std::string, std::string> {}FromXml(XmlReader& reader) {{
@@ -273,6 +273,34 @@ def gen_fromxml_function(class_name):
                             if (depth-- == 0) {{ break; }}
                         }} else if (depth == 1 && node.Type == XmlNodeType::Text) {{
                             ret.emplace(std::move(key), std::string(node.Value));
+                        }}
+                    }}
+                    return ret;
+                }}
+                """.format(member_name))
+        elif class_type == "std::map<std::string, std::string>" and member_name == "Tags":
+            content = inspect.cleandoc(
+                """
+                static std::map<std::string, std::string> {}FromXml(XmlReader& reader) {{
+                    std::map<std::string, std::string> ret;
+                    int depth = 0;
+                    std::string key;
+                    bool is_key = false;
+                    bool is_value = false;
+                    while (true) {{
+                        auto node = reader.Read();
+                        if (node.Type == XmlNodeType::End) {{
+                            break;
+                        }} else if (node.Type == XmlNodeType::StartTag) {{
+                            ++depth;
+                            if (strcmp(node.Name, "Key") == 0) {{ is_key = true; }}
+                            else if (strcmp(node.Name, "Value") == 0) {{ is_value = true; }}
+                        }} else if (node.Type == XmlNodeType::EndTag) {{
+                            if (depth-- == 0) {{ break; }}
+                        }}
+                        if (depth == 2 && node.Type == XmlNodeType::Text) {{
+                            if (is_key) {{ key = node.Value; is_key = false; }}
+                            else if (is_value) {{ ret.emplace(std::move(key), node.Value); is_value = false; }}
                         }}
                     }}
                     return ret;
@@ -479,7 +507,18 @@ def gen_fromxml_function(class_name):
 
 def gen_toxml_function(class_name):
     def toxml_content(member_name, member_type):
-        if member_type.startswith("std::vector<") and member_type.endswith(">"):
+        if member_name.endswith(".Tags") and member_type == "std::map<std::string, std::string>":
+            content = "for (const auto& i : {}) {{".format(member_name)
+            content += "writer.Write(XmlNode{XmlNodeType::StartTag, \"Tag\"});"
+            content += "writer.Write(XmlNode{XmlNodeType::StartTag, \"Key\"});"
+            content += toxml_content("i.first", "std::string")
+            content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+            content += "writer.Write(XmlNode{XmlNodeType::StartTag, \"Value\"});"
+            content += toxml_content("i.second", "std::string")
+            content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+            content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+            content += "}"
+        elif member_type.startswith("std::vector<") and member_type.endswith(">"):
             inner_type = member_type[len("std::vector<"): -len(">")]
             content = "for (const auto& i : {}) {{".format(member_name)
             content += toxml_content("i", inner_type)
