@@ -1116,6 +1116,7 @@ Services:
             - BasicRequestOptions: inline
             - ListType: BlockListTypeOption, nullable
             - LeaseId: std::string, nullable
+            - IfTags: std::string, nullable
         return_type:
           GetBlockListResult:
             - BasicResponse: inline
@@ -1134,6 +1135,7 @@ Services:
             - [add_query_code, "blocklisttype", ListType]
             - *REQUEST_VERSION_TIMEOUT_PACKAGE
             - [add_header_code, "x-ms-lease-id", LeaseId]
+            - [add_header_code, "x-ms-if-tags", IfTags]
         response_action:
             - [get_xml_body_code]
             - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
