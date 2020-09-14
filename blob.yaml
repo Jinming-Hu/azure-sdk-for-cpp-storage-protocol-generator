@@ -602,6 +602,7 @@ Services:
           - *RESPONSE_LEASE_HEADER_PACKAGE
           - [get_header_code, "x-ms-creation-time", CreationTime]
           - [get_header_code, "x-ms-expiry-time", ExpiryTime]
+          - [get_header_code, "x-ms-last-access-time", LastAccessTime]
           - [get_header_code, "Content-Range", ContentRange]
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
@@ -680,6 +681,7 @@ Services:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-creation-time", CreationTime]
           - [get_header_code, "x-ms-expiry-time", ExpiryTime]
+          - [get_header_code, "x-ms-last-access-time", LastAccessTime]
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - [get_header_code, "x-ms-blob-type", BlobType]
           - *RESPONSE_LEASE_HEADER_PACKAGE
@@ -1803,6 +1805,7 @@ Models:
     - LastModified: std::string
     - CreationTime: std::string
     - ExpiryTime: std::string, nullable
+    - LastAccessTime: std::string, nullable
     - ContentRange: std::string, nullable
     - HttpHeaders: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
@@ -1873,6 +1876,7 @@ Models:
     - Metadata: std::map<std::string, std::string>
     - CreationTime: std::string
     - ExpiryTime: std::string, nullable
+    - LastAccessTime: std::string, nullable
     - LastModified: std::string
     - ETag: std::string
     - ContentLength: int64_t = 0
@@ -1900,6 +1904,7 @@ Models:
       [text, Properties.Content-Disposition, HttpHeaders.ContentDisposition],
       [text, Properties.Creation-Time, CreationTime],
       [text, Properties.Expiry-Time, ExpiryTime],
+      [text, Properties.LastAccessTime, LastAccessTime],
       [text, Properties.Last-Modified, LastModified],
       [text, Properties.Etag, ETag],
       [text, Properties.Content-Length, ContentLength],
@@ -1973,6 +1978,7 @@ Models:
     - LastModified: std::string
     - CreationTime: std::string
     - ExpiryTime: std::string, nullable
+    - LastAccessTime: std::string, nullable
     - Metadata: std::map<std::string, std::string>
     - BlobType: BlobType = BlobType::Unknown
     - LeaseDuration: std::string, nullable
