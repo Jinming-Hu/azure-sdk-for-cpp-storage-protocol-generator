@@ -2,7 +2,7 @@ service_name: Blobs
 output: generated/blob_rest_client.hpp
 
 Constants:
-  c_ApiVersion: "2019-12-12"
+  c_ApiVersion: "2020-02-10"
 
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
   - [add_header_code, "x-ms-version", c_ApiVersion]
