@@ -600,6 +600,8 @@ Services:
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
           - *RESPONSE_LEASE_HEADER_PACKAGE
+          - [get_header_code, "x-ms-creation-time", CreationTime]
+          - [get_header_code, "x-ms-expiry-time", ExpiryTime]
           - [get_header_code, "Content-Range", ContentRange]
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
@@ -626,6 +628,23 @@ Services:
           - [add_header_code, "x-ms-delete-snapshots", DeleteSnapshots]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+        response_action: {}
+
+    - ScheduleDeletion:
+        http_method: Put
+        http_status_code: 200
+        return_type:
+          SetBlobExpiryResult:
+            - BasicResponse: inline
+        options:
+          - BasicRequestOptions: inline
+          - ExpiryOrigin: ScheduleBlobExpiryOriginType
+          - ExpiryTime: std::string, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "expiry"]
+          - [add_header_code, "x-ms-expiry-option", ExpiryOrigin]
+          - [add_header_code, "x-ms-expiry-time", ExpiryTime]
         response_action: {}
 
     - Undelete:
@@ -660,6 +679,7 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-creation-time", CreationTime]
+          - [get_header_code, "x-ms-expiry-time", ExpiryTime]
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - [get_header_code, "x-ms-blob-type", BlobType]
           - *RESPONSE_LEASE_HEADER_PACKAGE
@@ -1781,6 +1801,8 @@ Models:
     - BodiedResponse: inline
     - ETag: std::string
     - LastModified: std::string
+    - CreationTime: std::string
+    - ExpiryTime: std::string, nullable
     - ContentRange: std::string, nullable
     - HttpHeaders: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
@@ -1850,6 +1872,7 @@ Models:
     - HttpHeaders: BlobHttpHeaders
     - Metadata: std::map<std::string, std::string>
     - CreationTime: std::string
+    - ExpiryTime: std::string, nullable
     - LastModified: std::string
     - ETag: std::string
     - ContentLength: int64_t = 0
@@ -1876,6 +1899,7 @@ Models:
       [text, Properties.Cache-Control, HttpHeaders.CacheControl],
       [text, Properties.Content-Disposition, HttpHeaders.ContentDisposition],
       [text, Properties.Creation-Time, CreationTime],
+      [text, Properties.Expiry-Time, ExpiryTime],
       [text, Properties.Last-Modified, LastModified],
       [text, Properties.Etag, ETag],
       [text, Properties.Content-Length, ContentLength],
@@ -1948,6 +1972,7 @@ Models:
     - ETag: std::string
     - LastModified: std::string
     - CreationTime: std::string
+    - ExpiryTime: std::string, nullable
     - Metadata: std::map<std::string, std::string>
     - BlobType: BlobType = BlobType::Unknown
     - LeaseDuration: std::string, nullable
@@ -2075,3 +2100,10 @@ Models:
       [text, ContainerName, ContainerName],
       [text, TagValue, TagValue],
     ]
+  ScheduleBlobExpiryOriginType:
+    - type: enum class
+    - Unknown: ""
+    - NeverExpire: "NeverExpire"
+    - RelativeToCreation: "RelativeToCreation"
+    - RelativeToNow: "RelativeToNow"
+    - Absolute: "Absolute"
