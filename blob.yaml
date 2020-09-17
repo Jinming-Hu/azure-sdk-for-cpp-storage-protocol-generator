@@ -611,6 +611,7 @@ Services:
           - [get_header_code, "x-ms-or-policy-id", ObjectReplicationDestinationPolicyId]
           - [get_or_code, "x-ms-or-", ObjectReplicationSourceProperties]
           - [get_body_code, BodyStream]
+          - [get_header_code, "x-ms-tag-count", TagCount]
 
     - Delete:
         separate_functions: true
@@ -702,6 +703,7 @@ Services:
           - [get_header_code, "x-ms-copy-completion-time", CopyCompletionTime]
           - [get_header_code, "x-ms-or-policy-id", ObjectReplicationDestinationPolicyId]
           - [get_or_code, "x-ms-or-", ObjectReplicationSourceProperties]
+          - [get_header_code, "x-ms-tag-count", TagCount]
 
     - SetHttpHeaders:
         http_method: Put
@@ -1821,6 +1823,7 @@ Models:
     - BlobResponseEncryptionOptions: inline
     - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
     - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
+    - TagCount: int32_t, nullable
   BlobContentInfo:
     - noexport: true
     - BasicResponse: inline
@@ -2001,6 +2004,7 @@ Models:
     - CopyCompletionTime: std::string, nullable
     - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
     - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
+    - TagCount: int32_t, nullable
   BlobInfo:
     - noexport: true
     - BasicResponse: inline
