@@ -34,6 +34,7 @@ include_headers = """
 #include "azure/core/response.hpp"
 #include "azure/core/http/http.hpp"
 #include "azure/core/http/pipeline.hpp"
+#include "azure/storage/common/crypt.hpp"
 #include "azure/storage/common/xml_wrapper.hpp"
 #include "azure/storage/common/storage_common.hpp"
 #include "azure/storage/common/storage_error.hpp"
@@ -799,6 +800,15 @@ def gen_add_query_code(*args, **kwargs):
         content += "if ({}.HasValue()) {{".format(value)
         value += ".GetValue()"
 
+    need_encoding = True
+    if value_type == "std::string" and value.startswith("\"") and value.endswith("\""):
+        string_literal = value[1:-1]
+        unreserved = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~"
+        subdelimiters = "!$&'()*+,;="
+        no_encode_table = (set(unreserved) | set(subdelimiters) | set("%/:@?")) - set("%+=")
+        if all(c in no_encode_table for c in string_literal):
+            need_encoding = False
+
     if optional:
         if value_type == "std::string":
             content += "if (!{}.empty()) {{".format(value)
@@ -823,9 +833,11 @@ def gen_add_query_code(*args, **kwargs):
             value = snake_case_name
 
     if value_type == "int32_t" or value_type == "int64_t":
-        content += "request.GetUrl().AppendQuery({}, std::to_string({}));".format(key, value)
+        content += "request.GetUrl().AppendQueryParameter({}, std::to_string({}));".format(key, value)
+    elif not need_encoding:
+        content += "request.GetUrl().AppendQueryParameter({}, {});".format(key, value)
     else:
-        content += "request.GetUrl().AppendQuery({}, {});".format(key, value)
+        content += "request.GetUrl().AppendQueryParameter({}, Details::UrlEncodeQueryParameter({}));".format(key, value)
 
     if optional:
         content += "}"
