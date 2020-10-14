@@ -81,27 +81,27 @@ Services:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Prefix: std::string
-            - Marker: std::string
-            - NextMarker: std::string
+            - PreviousContinuationToken: std::string
+            - ContinuationToken: std::string
             - Items: std::vector<BlobContainerItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
               [text, EnumerationResults.Prefix, Prefix],
-              [text, EnumerationResults.Marker, Marker],
-              [text, EnumerationResults.NextMarker, NextMarker],
+              [text, EnumerationResults.Marker, PreviousContinuationToken],
+              [text, EnumerationResults.NextMarker, ContinuationToken],
               [start_tag, EnumerationResults.Containers.Container, Items],
             ]
         options:
           - BasicRequestOptions: inline
           - Prefix: std::string, nullable
-          - Marker: std::string, nullable
+          - ContinuationToken: std::string, nullable
           - MaxResults: int32_t, nullable
           - Include: ListBlobContainersIncludeItem = ListBlobContainersIncludeItem::None
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "list"]
           - [add_query_code, "prefix", Prefix]
-          - [add_query_code, "marker", Marker]
+          - [add_query_code, "marker", ContinuationToken]
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
@@ -206,24 +206,24 @@ Services:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Where: std::string
-            - NextMarker: std::string
+            - ContinuationToken: std::string
             - Items: std::vector<FilterBlobItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
               [text, EnumerationResults.Where, Where],
-              [text, EnumerationResults.NextMarker, NextMarker],
+              [text, EnumerationResults.NextMarker, ContinuationToken],
               [start_tag, EnumerationResults.Blobs.Blob, Items],
             ]
         options:
           - BasicRequestOptions: inline
           - Where: std::string
-          - Marker: std::string, nullable
+          - ContinuationToken: std::string, nullable
           - MaxResults: int32_t, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "blobs"]
           - [add_query_code, "where", Where]
-          - [add_query_code, "marker", Marker]
+          - [add_query_code, "marker", ContinuationToken]
           - [add_query_code, "maxresults", MaxResults]
         response_action:
           - [get_xml_body_code]
@@ -342,21 +342,21 @@ Services:
             - ServiceEndpoint: std::string
             - Container: std::string
             - Prefix: std::string
-            - Marker: std::string
-            - NextMarker: std::string
+            - PreviousContinuationToken: std::string
+            - ContinuationToken: std::string
             - Items: std::vector<BlobItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
               [attribute, EnumerationResults, ContainerName, Container],
               [text, EnumerationResults.Prefix, Prefix],
-              [text, EnumerationResults.Marker, Marker],
-              [text, EnumerationResults.NextMarker, NextMarker],
+              [text, EnumerationResults.Marker, PreviousContinuationToken],
+              [text, EnumerationResults.NextMarker, ContinuationToken],
               [start_tag, EnumerationResults.Blobs.Blob, Items],
             ]
         options:
           - BasicRequestOptions: inline
           - Prefix: std::string, nullable
-          - Marker: std::string, nullable
+          - ContinuationToken: std::string, nullable
           - MaxResults: int32_t, nullable
           - Include: ListBlobsIncludeItem = ListBlobsIncludeItem::None
         request_action:
@@ -364,7 +364,7 @@ Services:
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "list"]
           - [add_query_code, "prefix", Prefix]
-          - [add_query_code, "marker", Marker]
+          - [add_query_code, "marker", ContinuationToken]
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
@@ -380,8 +380,8 @@ Services:
             - Container: std::string
             - Prefix: std::string
             - Delimiter: std::string
-            - Marker: std::string
-            - NextMarker: std::string
+            - PreviousContinuationToken: std::string
+            - ContinuationToken: std::string
             - Items: std::vector<BlobItem>
             - BlobPrefixes: std::vector<BlobPrefix>
             - from_xml: [
@@ -389,8 +389,8 @@ Services:
               [attribute, EnumerationResults, ContainerName, Container],
               [text, EnumerationResults.Prefix, Prefix],
               [text, EnumerationResults.Delimiter, Delimiter],
-              [text, EnumerationResults.Marker, Marker],
-              [text, EnumerationResults.NextMarker, NextMarker],
+              [text, EnumerationResults.Marker, PreviousContinuationToken],
+              [text, EnumerationResults.NextMarker, ContinuationToken],
               [start_tag, EnumerationResults.Blobs.Blob, Items],
               [start_tag, EnumerationResults.Blobs.BlobPrefix, BlobPrefixes]
             ]
@@ -398,7 +398,7 @@ Services:
           - BasicRequestOptions: inline
           - Prefix: std::string, nullable
           - Delimiter: std::string, nullable
-          - Marker: std::string, nullable
+          - ContinuationToken: std::string, nullable
           - MaxResults: int32_t, nullable
           - Include: ListBlobsIncludeItem = ListBlobsIncludeItem::None
         request_action:
@@ -407,7 +407,7 @@ Services:
           - [add_query_code, "comp", "list"]
           - [add_query_code, "prefix", Prefix]
           - [add_query_code, "delimiter", Delimiter]
-          - [add_query_code, "marker", Marker]
+          - [add_query_code, "marker", ContinuationToken]
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
