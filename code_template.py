@@ -29,6 +29,7 @@ include_headers = """
 #include <stdexcept>
 #include <limits>
 
+#include "azure/core/azure.hpp"
 #include "azure/core/nullable.hpp"
 #include "azure/core/context.hpp"
 #include "azure/core/response.hpp"
@@ -954,9 +955,7 @@ def gen_add_metadata_code(*args, **kwargs):
         std::set<std::string> metadataKeys;
         for (const auto& pair : {1})
         {{
-            std::string key = pair.first;
-            std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c) {{ return static_cast<char>(std::tolower(c)); }});
-            if (metadataKeys.insert(key).second == false) {{
+            if (metadataKeys.insert(Azure::Core::Details::ToLower(pair.first)).second == false) {{
                 throw std::runtime_error("duplicate keys in metadata");
             }}
             request.AddHeader({0} + pair.first, pair.second);
