@@ -264,19 +264,19 @@ def gen_fromxml_function(class_name):
         if class_type == "std::map<std::string, std::string>" and member_name == "Metadata":
             content = inspect.cleandoc(
                 """
-                static std::map<std::string, std::string> {}FromXml(XmlReader& reader) {{
+                static std::map<std::string, std::string> {}FromXml(Storage::Details::XmlReader& reader) {{
                     std::map<std::string, std::string> ret;
                     int depth = 0;
                     std::string key;
                     while (true) {{
                         auto node = reader.Read();
-                        if (node.Type == XmlNodeType::End) {{
+                        if (node.Type == Storage::Details::XmlNodeType::End) {{
                             break;
-                        }} else if (node.Type == XmlNodeType::StartTag) {{
+                        }} else if (node.Type == Storage::Details::XmlNodeType::StartTag) {{
                             if (depth++ == 0) {{ key = node.Name; }}
-                        }} else if (node.Type == XmlNodeType::EndTag) {{
+                        }} else if (node.Type == Storage::Details::XmlNodeType::EndTag) {{
                             if (depth-- == 0) {{ break; }}
-                        }} else if (depth == 1 && node.Type == XmlNodeType::Text) {{
+                        }} else if (depth == 1 && node.Type == Storage::Details::XmlNodeType::Text) {{
                             ret.emplace(std::move(key), std::string(node.Value));
                         }}
                     }}
@@ -286,7 +286,7 @@ def gen_fromxml_function(class_name):
         elif class_type == "std::map<std::string, std::string>" and member_name == "Tags":
             content = inspect.cleandoc(
                 """
-                static std::map<std::string, std::string> {}FromXml(XmlReader& reader) {{
+                static std::map<std::string, std::string> {}FromXml(Storage::Details::XmlReader& reader) {{
                     std::map<std::string, std::string> ret;
                     int depth = 0;
                     std::string key;
@@ -294,16 +294,16 @@ def gen_fromxml_function(class_name):
                     bool is_value = false;
                     while (true) {{
                         auto node = reader.Read();
-                        if (node.Type == XmlNodeType::End) {{
+                        if (node.Type == Storage::Details::XmlNodeType::End) {{
                             break;
-                        }} else if (node.Type == XmlNodeType::StartTag) {{
+                        }} else if (node.Type == Storage::Details::XmlNodeType::StartTag) {{
                             ++depth;
                             if (strcmp(node.Name, "Key") == 0) {{ is_key = true; }}
                             else if (strcmp(node.Name, "Value") == 0) {{ is_value = true; }}
-                        }} else if (node.Type == XmlNodeType::EndTag) {{
+                        }} else if (node.Type == Storage::Details::XmlNodeType::EndTag) {{
                             if (depth-- == 0) {{ break; }}
                         }}
-                        if (depth == 2 && node.Type == XmlNodeType::Text) {{
+                        if (depth == 2 && node.Type == Storage::Details::XmlNodeType::Text) {{
                             if (is_key) {{ key = node.Value; is_key = false; }}
                             else if (is_value) {{ ret.emplace(std::move(key), node.Value); is_value = false; }}
                         }}
@@ -314,7 +314,7 @@ def gen_fromxml_function(class_name):
         elif class_type == "std::pair<int64_t, int64_t>":
             content = inspect.cleandoc(
                 """
-                static std::pair<int64_t, int64_t> {}FromXml(XmlReader& reader) {{
+                static std::pair<int64_t, int64_t> {}FromXml(Storage::Details::XmlReader& reader) {{
                     int depth = 0;
                     bool is_start = false;
                     bool is_end = false;
@@ -322,20 +322,20 @@ def gen_fromxml_function(class_name):
                     int64_t end = 0;
                     while (true) {{
                         auto node = reader.Read();
-                        if (node.Type == XmlNodeType::End) {{
+                        if (node.Type == Storage::Details::XmlNodeType::End) {{
                             break;
-                        }} else if (node.Type == XmlNodeType::StartTag && strcmp(node.Name, "Start") == 0) {{
+                        }} else if (node.Type == Storage::Details::XmlNodeType::StartTag && strcmp(node.Name, "Start") == 0) {{
                             ++depth;
                             is_start = true;
-                        }} else if (node.Type == XmlNodeType::StartTag && strcmp(node.Name, "End") == 0) {{
+                        }} else if (node.Type == Storage::Details::XmlNodeType::StartTag && strcmp(node.Name, "End") == 0) {{
                             ++depth;
                             is_end = true;
-                        }} else if (node.Type == XmlNodeType::EndTag) {{
+                        }} else if (node.Type == Storage::Details::XmlNodeType::EndTag) {{
                             is_start = false;
                             is_end = false;
                             if (depth-- == 0) {{ break; }}
                         }}
-                        if (depth == 1 && node.Type == XmlNodeType::Text) {{
+                        if (depth == 1 && node.Type == Storage::Details::XmlNodeType::Text) {{
                             if (is_start) {{ start = std::stoll(node.Value); }}
                             else if (is_end) {{ end = std::stoll(node.Value); }}
                         }}
@@ -346,16 +346,16 @@ def gen_fromxml_function(class_name):
         elif class_type == "std::vector<ObjectReplicationPolicy>":
             content = inspect.cleandoc(
                 """
-                static std::vector<ObjectReplicationPolicy> {}FromXml(XmlReader& reader) {{
+                static std::vector<ObjectReplicationPolicy> {}FromXml(Storage::Details::XmlReader& reader) {{
                     int depth = 0;
                     std::map<std::string, std::vector<ObjectReplicationRule>> orPropertiesMap;
                     std::string policyId;
                     std::string ruleId;
                     while (true) {{
                         auto node = reader.Read();
-                        if (node.Type == XmlNodeType::End) {{
+                        if (node.Type == Storage::Details::XmlNodeType::End) {{
                             break;
-                        }} else if (node.Type == XmlNodeType::StartTag) {{
+                        }} else if (node.Type == Storage::Details::XmlNodeType::StartTag) {{
                             ++depth;
                             std::string startTagName = node.Name;
                             if (startTagName.substr(0, 3) == "or-") {{
@@ -363,10 +363,10 @@ def gen_fromxml_function(class_name):
                                 policyId = std::string(startTagName.begin() + 3, startTagName.begin() + underscorePos);
                                 ruleId = startTagName.substr(underscorePos + 1);
                             }}
-                        }} else if (node.Type == XmlNodeType::EndTag) {{
+                        }} else if (node.Type == Storage::Details::XmlNodeType::EndTag) {{
                             if (depth-- == 0) {{ break; }}
                         }}
-                        if (depth == 1 && node.Type == XmlNodeType::Text) {{
+                        if (depth == 1 && node.Type == Storage::Details::XmlNodeType::Text) {{
                             ObjectReplicationRule rule;
                             rule.RuleId = std::move(ruleId);
                             rule.ReplicationStatus = ObjectReplicationStatusFromString(node.Value);
@@ -410,7 +410,7 @@ def gen_fromxml_function(class_name):
 
     content = inspect.cleandoc(
         """
-        static {0} {0}FromXml(XmlReader& reader)
+        static {0} {0}FromXml(Storage::Details::XmlReader& reader)
         {{
             {0} ret;
             enum class XmlTagName {{
@@ -424,12 +424,12 @@ def gen_fromxml_function(class_name):
         std::vector<XmlTagName> path;
         while (true) {
             auto node = reader.Read();
-            if (node.Type == XmlNodeType::End) { break; }
-            else if (node.Type == XmlNodeType::EndTag) {
+            if (node.Type == Storage::Details::XmlNodeType::End) { break; }
+            else if (node.Type == Storage::Details::XmlNodeType::EndTag) {
                 if (path.size() > 0) { path.pop_back(); }
                 else { break; }
             }
-            else if (node.Type == XmlNodeType::StartTag) {
+            else if (node.Type == Storage::Details::XmlNodeType::StartTag) {
         """)
     # start tag
     for i, xml_tag in enumerate(all_xml_tag):
@@ -471,7 +471,7 @@ def gen_fromxml_function(class_name):
 
         content += "}"
     # text
-    content += "} else if (node.Type == XmlNodeType::Text) {"
+    content += "} else if (node.Type == Storage::Details::XmlNodeType::Text) {"
     for i, (path, member) in enumerate([(a[1], a[2]) for a in class_def.fromxml_actions if a[0] == "text"]):
         if i != 0:
             content += "else "
@@ -496,7 +496,7 @@ def gen_fromxml_function(class_name):
     # attribute
     for i, (path, attr_name, member) in enumerate([(a[1], a[2], a[3]) for a in class_def.fromxml_actions if a[0] == "attribute"]):
         if i == 0:
-            content += "} else if (node.Type == XmlNodeType::Attribute) {"
+            content += "} else if (node.Type == Storage::Details::XmlNodeType::Attribute) {"
         if i != 0:
             content += "else "
         content += "if (path.size() == {} &&".format(len(path.split(".")))
@@ -514,14 +514,14 @@ def gen_toxml_function(class_name):
     def toxml_content(member_name, member_type):
         if member_name.endswith(".Tags") and member_type == "std::map<std::string, std::string>":
             content = "for (const auto& i : {}) {{".format(member_name)
-            content += "writer.Write(XmlNode{XmlNodeType::StartTag, \"Tag\"});"
-            content += "writer.Write(XmlNode{XmlNodeType::StartTag, \"Key\"});"
+            content += "writer.Write(Storage::Details::XmlNode{Storage::Details::XmlNodeType::StartTag, \"Tag\"});"
+            content += "writer.Write(Storage::Details::XmlNode{Storage::Details::XmlNodeType::StartTag, \"Key\"});"
             content += toxml_content("i.first", "std::string")
-            content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
-            content += "writer.Write(XmlNode{XmlNodeType::StartTag, \"Value\"});"
+            content += "writer.Write(Storage::Details::XmlNode{Storage::Details::XmlNodeType::EndTag});"
+            content += "writer.Write(Storage::Details::XmlNode{Storage::Details::XmlNodeType::StartTag, \"Value\"});"
             content += toxml_content("i.second", "std::string")
-            content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
-            content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+            content += "writer.Write(Storage::Details::XmlNode{Storage::Details::XmlNodeType::EndTag});"
+            content += "writer.Write(Storage::Details::XmlNode{Storage::Details::XmlNodeType::EndTag});"
             content += "}"
         elif member_type.startswith("std::vector<") and member_type.endswith(">"):
             inner_type = member_type[len("std::vector<"): -len(">")]
@@ -554,13 +554,13 @@ def gen_toxml_function(class_name):
             else:
                 raise RuntimeError("unknown type " + inner_type2)
 
-            content = "writer.Write(XmlNode{{XmlNodeType::StartTag, {0}.data(), {1}.data() }});".format(inner_type1_to_string, inner_type2_to_string)
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::StartTag, {0}.data(), {1}.data() }});".format(inner_type1_to_string, inner_type2_to_string)
         elif member_type == "std::string":
-            content = "writer.Write(XmlNode{{XmlNodeType::Text, nullptr, {}.data()}});".format(member_name)
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.data()}});".format(member_name)
         elif member_type == "bool":
-            content = "writer.Write(XmlNode{{XmlNodeType::Text, nullptr, {} ? \"true\":\"false\"}});".format(member_name)
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {} ? \"true\":\"false\"}});".format(member_name)
         elif member_type in ["int32_t", "int64_t"]:
-            content = "writer.Write(XmlNode{{XmlNodeType::Text, nullptr, std::to_string({}).data()}});".format(member_name)
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, std::to_string({}).data()}});".format(member_name)
         else:
             content = "{}ToXml(writer, {});".format(member_type, member_name)
             toxml_classes.add(member_type)
@@ -572,7 +572,7 @@ def gen_toxml_function(class_name):
 
         content = inspect.cleandoc(
             """
-            static void {0}ToXml(XmlWriter& writer, const {0}& options) {{
+            static void {0}ToXml(Storage::Details::XmlWriter& writer, const {0}& options) {{
             """.format(class_name))
 
         xml_path = []
@@ -586,11 +586,11 @@ def gen_toxml_function(class_name):
             if xml_action_type == "tag":
                 common_prefix = os.path.commonprefix([xml_path, target_xml_path])
                 while len(xml_path) > len(common_prefix):
-                    content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+                    content += "writer.Write(Storage::Details::XmlNode{Storage::Details::XmlNodeType::EndTag});"
                     xml_path.pop()
                 while len(xml_path) < len(target_xml_path) - 1:
                     p = target_xml_path[len(xml_path)]
-                    content += "writer.Write(XmlNode{{XmlNodeType::StartTag, \"{}\"}});".format(p)
+                    content += "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::StartTag, \"{}\"}});".format(p)
                     xml_path.append(p)
                 if member_nullable:
                     content += "if (options.{}.HasValue()) {{".format(member)
@@ -598,19 +598,19 @@ def gen_toxml_function(class_name):
                 last_path_added = False
                 if len(xml_path) < len(target_xml_path):
                     p = target_xml_path[len(xml_path)]
-                    content += "writer.Write(XmlNode{{XmlNodeType::StartTag, \"{}\"}});".format(p)
+                    content += "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::StartTag, \"{}\"}});".format(p)
                     xml_path.append(p)
                     last_path_added = True
                 content += toxml_content("options." + member, member_type)
                 if last_path_added:
-                    content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+                    content += "writer.Write(Storage::Details::XmlNode{Storage::Details::XmlNodeType::EndTag});"
                     xml_path.pop()
                 if member_nullable:
                     content += "}"
             else:
                 raise RuntimeError("unsupported toxml action " + xml_action_type)
         while len(xml_path):
-            content += "writer.Write(XmlNode{XmlNodeType::EndTag});"
+            content += "writer.Write(Storage::Details::XmlNode{Storage::Details::XmlNodeType::EndTag});"
             xml_path.pop()
 
         content += "}\n\n"
@@ -1058,10 +1058,10 @@ def gen_add_xml_body_code(*args, **kwargs):
         """
         std::string xml_body;
         {{
-            XmlWriter writer;
+            Storage::Details::XmlWriter writer;
             {}ToXml(writer, options);
             xml_body = writer.GetDocument();
-            writer.Write(XmlNode{{XmlNodeType::End}});
+            writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::End}});
         }}
         """.format(option_type))
 
@@ -1100,7 +1100,7 @@ def gen_get_xml_body_code(*args, **kwargs):
         """
         {{
             const auto& httpResponseBody = httpResponse.GetBody();
-            XmlReader reader(reinterpret_cast<const char*>(httpResponseBody.data()), httpResponseBody.size());
+            Storage::Details::XmlReader reader(reinterpret_cast<const char*>(httpResponseBody.data()), httpResponseBody.size());
             response = {}FromXml(reader);
         }}
         """.format(return_type))
