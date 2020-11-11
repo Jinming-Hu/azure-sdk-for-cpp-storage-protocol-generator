@@ -38,7 +38,7 @@ include_headers = """
 #include "azure/storage/common/crypt.hpp"
 #include "azure/storage/common/xml_wrapper.hpp"
 #include "azure/storage/common/storage_common.hpp"
-#include "azure/storage/common/storage_error.hpp"
+#include "azure/storage/common/storage_exception.hpp"
 
 """
 
