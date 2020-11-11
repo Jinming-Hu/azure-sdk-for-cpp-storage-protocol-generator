@@ -54,10 +54,39 @@ namespace_end = """
 }  // namspace Azure
 """
 
-constant_string = ""
+constant_string = """
+
+"""
+
+model_definitions_begin = """
+namespace Models
+{
+"""
+
 model_definitions = """
 
 """
+
+details_begin = """
+namespace Details
+{
+
+    using namespace Models;
+
+"""
+
+details = ""
+
+details_end = """
+}  // namespace Details
+
+"""
+
+model_definitions_end = """
+}  // namespace Models
+
+"""
+
 rest_client_begin = ""
 main_body = ""
 rest_client_end = ""
@@ -103,8 +132,8 @@ def gen_constant_definition():
             content += "constexpr static const char* {key} = \"{value}\";".format(key=k, value=v)
     content += "} // namespace Details\n\n"
 
-    global model_definitions
-    model_definitions += content
+    global constant_string
+    constant_string += content
 
 
 def gen_service_namespace(service_name):
@@ -130,9 +159,9 @@ def gen_rest_client(service_name):
     if service_name.endswith("s"):
         service_name = service_name[:-1]
     class_name = service_name + "RestClient"
-    rest_client_begin = "namespace Details {{ class {} {{ public:".format(class_name)
+    rest_client_begin = "class {} {{ public:".format(class_name)
 
-    rest_client_end = "}};  // class {}\n}} // namespace Details\n".format(class_name)
+    rest_client_end = "}};  // class {}\n".format(class_name)
 
 
 def gen_model_definition(service_name, class_name, class_def):
@@ -144,7 +173,7 @@ def gen_model_definition(service_name, class_name, class_def):
         if class_def.member_type[i]:
             # for struct
             if class_def.member_type[i] == class_def.member[i]:
-                ns_prefix = service_name + "::"
+                ns_prefix = service_name + "::Models::"
             else:
                 ns_prefix = ""
             if class_def.member_nullable[i]:
@@ -167,11 +196,14 @@ def gen_model_definition(service_name, class_name, class_def):
             content += "// " + class_def.member_comment[i] + "\n"
     content += "}};  // {} {}\n\n".format(class_def.type, class_name)
 
+    global model_definitions
+    model_definitions += content
+    content = ""
+
     if class_def.type == "enum class":
         snake_case_name = get_snake_case_name(class_def.name)
         # To string converter
-        content += "namespace Details {"
-        content += inspect.cleandoc(
+        content = inspect.cleandoc(
             """
             inline std::string {0}ToString(const {0}& {1})
             {{
@@ -200,11 +232,10 @@ def gen_model_definition(service_name, class_name, class_def):
                 enum_literal = enum_v
             content += "if ({1} == \"{3}\") {{ return {0}::{2}; }}".format(class_def.name, snake_case_name, enum_v, enum_literal)
 
-        content += "throw std::runtime_error(\"cannot convert \" + {1} + \" to {0}\"); }}".format(class_def.name, snake_case_name)
-        content += "} // namespace Details\n\n"
+        content += "throw std::runtime_error(\"cannot convert \" + {1} + \" to {0}\"); }}\n\n".format(class_def.name, snake_case_name)
     elif class_def.type == "bitwise enum":
         # Bitwise or, and
-        content += inspect.cleandoc(
+        content = inspect.cleandoc(
             """
             inline {typename} operator|({typename} lhs, {typename} rhs) {{
                 using type = std::underlying_type_t<{typename}>;
@@ -224,9 +255,11 @@ def gen_model_definition(service_name, class_name, class_def):
             }}
             """.format(typename=class_def.name))
         content += "\n\n"
+        model_definitions += content
+        content = ""
+
         # To string converter
-        content += "namespace Details {"
-        content += "inline std::string {typename}ToString(const {typename}& val) {{".format(typename=class_def.name)
+        content = "inline std::string {typename}ToString(const {typename}& val) {{".format(typename=class_def.name)
         enum_list = class_def.name + " value_list[] = {"
         string_list = "const char* string_list[] = {"
         for i, enum_v in enumerate(class_def.member):
@@ -249,10 +282,10 @@ def gen_model_definition(service_name, class_name, class_def):
             }}
             return ret;}}
             """.format(typename=class_def.name))
-        content += "} // namespace Details\n\n"
+        content += "\n\n"
 
-    global model_definitions
-    model_definitions += content
+    global details
+    details += content
 
 
 def gen_fromxml_function(class_name):
@@ -664,7 +697,7 @@ def gen_function_option_definition(service_name, class_name, class_def):
     content = "struct {} {{".format(class_name)
     for i in range(len(class_def.member)):
         if class_def.member_type[i] == class_def.member[i]:
-            ns_prefix = service_name + "::"
+            ns_prefix = service_name + "::Models::"
         else:
             ns_prefix = ""
         if class_def.member_nullable[i]:
