@@ -730,7 +730,7 @@ def gen_resource_create_response_function_check_status_code(return_type, http_st
         """
         ))
         {
-            throw StorageError::CreateFromResponse(std::move(pHttpResponse));
+            throw StorageException::CreateFromResponse(std::move(pHttpResponse));
         }
         """)
 
