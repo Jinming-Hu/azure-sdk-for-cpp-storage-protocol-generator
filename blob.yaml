@@ -1739,7 +1739,7 @@ Models:
     - HourMetrics: BlobMetrics
     - MinuteMetrics: BlobMetrics
     - Cors: std::vector<BlobCorsRule>
-    - DefaultServiceVersion: std::string
+    - DefaultServiceVersion: std::string, nullable
     - DeleteRetentionPolicy: BlobRetentionPolicy
     - StaticWebsite: BlobStaticWebsite
     - from_xml: [
