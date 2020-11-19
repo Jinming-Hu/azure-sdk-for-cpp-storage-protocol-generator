@@ -377,9 +377,6 @@ for config_resource in config["Services"]:
                     kwargs["optional_value"] = match_res.group(1)
                 elif match_res := re.match("default\\((.*)\\)", a):
                     kwargs["default_value"] = match_res.group(1)
-                elif type(a) is str and a.startswith("c_"):
-                    args.append(a)
-                    kwargs[args[-1] + ".type"] = "std::string"
                 elif type(a) is str:
                     request_options_used = True
                     arg = "options"
