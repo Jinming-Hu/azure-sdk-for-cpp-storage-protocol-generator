@@ -77,7 +77,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          ListContainersSegmentResult:
+          ListBlobContainersSegmentResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Prefix: std::string
@@ -229,12 +229,12 @@ Services:
           - [get_xml_body_code]
 
 
-  - Container:
+  - BlobContainer:
     - Create:
         http_method: Put
         http_status_code: 201
         return_type:
-          CreateContainerResult:
+          CreateBlobContainerResult:
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -256,7 +256,7 @@ Services:
         http_method: Delete
         http_status_code: 202
         return_type:
-          DeleteContainerResult:
+          DeleteBlobContainerResult:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -274,25 +274,25 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          UndeleteContainerResult:
+          UndeleteBlobContainerResult:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
-          - DeletedContainerName: std::string
-          - DeletedContainerVersion: std::string
+          - DeletedBlobContainerName: std::string
+          - DeletedBlobContainerVersion: std::string
         request_action:
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "undelete"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
-          - [add_header_code, "x-ms-deleted-container-name", DeletedContainerName]
-          - [add_header_code, "x-ms-deleted-container-version", DeletedContainerVersion]
+          - [add_header_code, "x-ms-deleted-container-name", DeletedBlobContainerName]
+          - [add_header_code, "x-ms-deleted-container-version", DeletedBlobContainerVersion]
         response_action: {}
 
     - GetProperties:
         http_method: Head
         http_status_code: 200
         return_type:
-          GetContainerPropertiesResult:
+          GetBlobContainerPropertiesResult:
             - BasicResponse: inline
             - BlobContainerItemWithoutName: inline
         options:
@@ -316,7 +316,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          SetContainerMetadataResult:
+          SetBlobContainerMetadataResult:
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -340,14 +340,14 @@ Services:
           ListBlobsFlatSegmentResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
-            - Container: std::string
+            - BlobContainerName: std::string
             - Prefix: std::string
             - PreviousContinuationToken: std::string
             - ContinuationToken: std::string
             - Items: std::vector<BlobItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
-              [attribute, EnumerationResults, ContainerName, Container],
+              [attribute, EnumerationResults, ContainerName, BlobContainerName],
               [text, EnumerationResults.Prefix, Prefix],
               [text, EnumerationResults.Marker, PreviousContinuationToken],
               [text, EnumerationResults.NextMarker, ContinuationToken],
@@ -377,7 +377,7 @@ Services:
           ListBlobsByHierarchySegmentResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
-            - Container: std::string
+            - BlobContainerName: std::string
             - Prefix: std::string
             - Delimiter: std::string
             - PreviousContinuationToken: std::string
@@ -386,7 +386,7 @@ Services:
             - BlobPrefixes: std::vector<BlobPrefix>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
-              [attribute, EnumerationResults, ContainerName, Container],
+              [attribute, EnumerationResults, ContainerName, BlobContainerName],
               [text, EnumerationResults.Prefix, Prefix],
               [text, EnumerationResults.Delimiter, Delimiter],
               [text, EnumerationResults.Marker, PreviousContinuationToken],
@@ -417,7 +417,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          GetContainerAccessPolicyResult:
+          GetBlobContainerAccessPolicyResult:
             - BlobContainerAccessPolicy: inline
         options:
           - BasicRequestOptions: inline
@@ -435,7 +435,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          SetContainerAccessPolicyResult:
+          SetBlobContainerAccessPolicyResult:
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -462,7 +462,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          AcquireContainerLeaseResult:
+          AcquireBlobContainerLeaseResult:
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
@@ -486,7 +486,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          RenewContainerLeaseResult:
+          RenewBlobContainerLeaseResult:
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
@@ -508,7 +508,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          ChangeContainerLeaseResult:
+          ChangeBlobContainerLeaseResult:
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
@@ -532,7 +532,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          ReleaseContainerLeaseResult:
+          ReleaseBlobContainerLeaseResult:
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -553,7 +553,7 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          BreakContainerLeaseResult:
+          BreakBlobContainerLeaseResult:
             - ETag: std::string
             - LastModified: std::string
             - LeaseTime: int32_t = 0
@@ -1564,7 +1564,7 @@ Models:
     - BodyStream: std::unique_ptr<Azure::Core::Http::BodyStream>
   PublicAccessType:
     - type: enum class
-    - Container: "container"
+    - BlobContainer: "container"
     - Blob: "blob"
     - Private: ""
   BlockType:
@@ -2103,11 +2103,11 @@ Models:
     - LeaseId: std::string
   FilterBlobItem:
     - BlobName: std::string
-    - ContainerName: std::string
+    - BlobContainerName: std::string
     - TagValue: std::string
     - from_xml: [
       [text, Name, BlobName],
-      [text, ContainerName, ContainerName],
+      [text, ContainerName, BlobContainerName],
       [text, TagValue, TagValue],
     ]
   ScheduleBlobExpiryOriginType:
