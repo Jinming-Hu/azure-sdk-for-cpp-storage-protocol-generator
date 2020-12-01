@@ -173,7 +173,10 @@ def gen_model_definition(service_name, class_name, class_def):
         if class_def.member_type[i]:
             # for struct
             if class_def.member_type[i] == class_def.member[i]:
-                ns_prefix = service_name + "::Models::"
+                if class_def.member_type[i] == "Metadata":
+                    ns_prefix = "Storage::"
+                else:
+                    ns_prefix = service_name + "::Models::"
             else:
                 ns_prefix = ""
             if class_def.member_nullable[i]:
@@ -291,32 +294,34 @@ def gen_model_definition(service_name, class_name, class_def):
 def gen_fromxml_function(class_name):
     global main_body
 
+    if class_name == "Metadata":
+        content = inspect.cleandoc(
+            """
+            static Metadata MetadataFromXml(Storage::Details::XmlReader& reader) {
+                Metadata ret;
+                int depth = 0;
+                std::string key;
+                while (true) {
+                    auto node = reader.Read();
+                    if (node.Type == Storage::Details::XmlNodeType::End) {
+                        break;
+                    } else if (node.Type == Storage::Details::XmlNodeType::StartTag) {
+                        if (depth++ == 0) { key = node.Name; }
+                    } else if (node.Type == Storage::Details::XmlNodeType::EndTag) {
+                        if (depth-- == 0) { break; }
+                    } else if (depth == 1 && node.Type == Storage::Details::XmlNodeType::Text) {
+                        ret.emplace(std::move(key), std::string(node.Value));
+                    }
+                }
+                return ret;
+            }
+            """)
+        main_body += content + "\n\n"
+        return
     if type(class_name) is tuple:
         class_type = class_name[0]
         member_name = class_name[1]
-        if class_type == "std::map<std::string, std::string>" and member_name == "Metadata":
-            content = inspect.cleandoc(
-                """
-                static std::map<std::string, std::string> {}FromXml(Storage::Details::XmlReader& reader) {{
-                    std::map<std::string, std::string> ret;
-                    int depth = 0;
-                    std::string key;
-                    while (true) {{
-                        auto node = reader.Read();
-                        if (node.Type == Storage::Details::XmlNodeType::End) {{
-                            break;
-                        }} else if (node.Type == Storage::Details::XmlNodeType::StartTag) {{
-                            if (depth++ == 0) {{ key = node.Name; }}
-                        }} else if (node.Type == Storage::Details::XmlNodeType::EndTag) {{
-                            if (depth-- == 0) {{ break; }}
-                        }} else if (depth == 1 && node.Type == Storage::Details::XmlNodeType::Text) {{
-                            ret.emplace(std::move(key), std::string(node.Value));
-                        }}
-                    }}
-                    return ret;
-                }}
-                """.format(member_name))
-        elif class_type == "std::map<std::string, std::string>" and member_name == "Tags":
+        if class_type == "std::map<std::string, std::string>" and member_name == "Tags":
             content = inspect.cleandoc(
                 """
                 static std::map<std::string, std::string> {}FromXml(Storage::Details::XmlReader& reader) {{
@@ -697,7 +702,10 @@ def gen_function_option_definition(service_name, class_name, class_def):
     content = "struct {} {{".format(class_name)
     for i in range(len(class_def.member)):
         if class_def.member_type[i] == class_def.member[i]:
-            ns_prefix = service_name + "::Models::"
+            if class_def.member[i] == "Metadata":
+                ns_prefix = "Storage::"
+            else:
+                ns_prefix = service_name + "::Models::"
         else:
             ns_prefix = ""
         if class_def.member_nullable[i]:
@@ -988,15 +996,10 @@ def gen_add_metadata_code(*args, **kwargs):
     value = args[1]
     content = inspect.cleandoc(
         """
-        std::set<std::string> metadataKeys;
         for (const auto& pair : {1})
         {{
-            if (metadataKeys.insert(Azure::Core::Strings::ToLower(pair.first)).second == false) {{
-                throw std::runtime_error("duplicate keys in metadata");
-            }}
             request.AddHeader({0} + pair.first, pair.second);
         }}
-        metadataKeys.clear();
         """.format(prefix, value))
 
     global main_body

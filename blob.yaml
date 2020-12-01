@@ -239,7 +239,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - AccessType: PublicAccessType, nullable
-          - Metadata: std::map<std::string, std::string>
+          - Metadata: Metadata
           - DefaultEncryptionScope: std::string, nullable
           - PreventEncryptionScopeOverride: bool, nullable
         request_action:
@@ -320,7 +320,7 @@ Services:
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
-          - Metadata: std::map<std::string, std::string>
+          - Metadata: Metadata
           - LeaseId: std::string, nullable
           - IfModifiedSince: std::string, nullable
         request_action:
@@ -734,7 +734,7 @@ Services:
             - BlobInfo: inline
         options:
           - BasicRequestOptions: inline
-          - Metadata: std::map<std::string, std::string>
+          - Metadata: Metadata
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - BlobRequestEncryptionScopeOptions: inline
           - LeaseId: std::string, nullable
@@ -777,7 +777,7 @@ Services:
             - BlobCopyInfo: inline
         options:
           - BasicRequestOptions: inline
-          - Metadata: std::map<std::string, std::string>
+          - Metadata: Metadata
           - SourceUri: std::string
           - LeaseId: std::string, nullable
           - SourceLeaseId: std::string, nullable
@@ -836,7 +836,7 @@ Services:
             - BlobResponseEncryptionOptions: inline
         options:
           - BasicRequestOptions: inline
-          - Metadata: std::map<std::string, std::string>
+          - Metadata: Metadata
           - LeaseId: std::string, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - BlobRequestEncryptionScopeOptions: inline
@@ -1016,7 +1016,7 @@ Services:
           - TransactionalContentMd5: std::string, nullable
           - TransactionalContentCrc64: std::string, nullable
           - HttpHeaders: BlobHttpHeaders
-          - Metadata: std::map<std::string, std::string>
+          - Metadata: Metadata
           - LeaseId: std::string, nullable
           - Tier: AccessTier, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
@@ -1109,7 +1109,7 @@ Services:
           - BasicRequestOptions: inline
           - BlockList: std::vector<std::pair<BlockType, std::string>>
           - HttpHeaders: BlobHttpHeaders
-          - Metadata: std::map<std::string, std::string>
+          - Metadata: Metadata
           - LeaseId: std::string, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - BlobRequestEncryptionScopeOptions: inline
@@ -1179,7 +1179,7 @@ Services:
           - BlobContentLength: int64_t = -1
           - SequenceNumber: int64_t, nullable
           - HttpHeaders: BlobHttpHeaders
-          - Metadata: std::map<std::string, std::string>
+          - Metadata: Metadata
           - LeaseId: std::string, nullable
           - Tier: AccessTier, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
@@ -1414,7 +1414,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - HttpHeaders: BlobHttpHeaders
-          - Metadata: std::map<std::string, std::string>
+          - Metadata: Metadata
           - LeaseId: std::string, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - BlobRequestEncryptionScopeOptions: inline
@@ -1810,7 +1810,7 @@ Models:
     - LastAccessTime: std::string, nullable
     - ContentRange: std::string, nullable
     - HttpHeaders: BlobHttpHeaders
-    - Metadata: std::map<std::string, std::string>
+    - Metadata: Metadata
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int64_t, nullable  # only for append blob
     - IsSealed: bool, nullable # only for append blob
@@ -1835,7 +1835,7 @@ Models:
     - noexport: true
     - ETag: std::string
     - LastModified: std::string
-    - Metadata: std::map<std::string, std::string>
+    - Metadata: Metadata
     - AccessType: PublicAccessType = PublicAccessType::Private
     - HasImmutabilityPolicy: bool = false
     - HasLegalHold: bool = false
@@ -1876,7 +1876,7 @@ Models:
     - VersionId: std::string, nullable
     - IsCurrentVersion: bool, nullable
     - HttpHeaders: BlobHttpHeaders
-    - Metadata: std::map<std::string, std::string>
+    - Metadata: Metadata
     - CreationTime: std::string
     - ExpiryTime: std::string, nullable
     - LastAccessTime: std::string, nullable
@@ -1982,7 +1982,7 @@ Models:
     - CreationTime: std::string
     - ExpiryTime: std::string, nullable
     - LastAccessTime: std::string, nullable
-    - Metadata: std::map<std::string, std::string>
+    - Metadata: Metadata
     - BlobType: BlobType = BlobType::Unknown
     - LeaseDuration: std::string, nullable
     - LeaseState: BlobLeaseState, nullable

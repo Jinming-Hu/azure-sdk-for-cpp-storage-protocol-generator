@@ -54,6 +54,8 @@ class class_definition:
                 continue
             if t.startswith("Azure::Core::"):
                 continue
+            if t in ["Metadata"]:
+                continue
             self.dependency.add(t)
 
     def add_member(self, name, **kwargs):
