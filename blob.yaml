@@ -170,6 +170,7 @@ Services:
           GetAccountInfoResult:
             - SkuName: SkuName = SkuName::Unknown
             - AccountKind: AccountKind = AccountKind::Unknown
+            - IsHierarchicalNamespaceEnabled: bool = false
         options:
             - BasicRequestOptions: inline
         request_action:
@@ -179,6 +180,7 @@ Services:
         response_action:
           - [get_header_code, "x-ms-sku-name", SkuName]
           - [get_header_code, "x-ms-account-kind", AccountKind]
+          - [get_header_code, "x-ms-is-hns-enabled", IsHierarchicalNamespaceEnabled]
 
     - GetStatistics:
         http_method: Get
