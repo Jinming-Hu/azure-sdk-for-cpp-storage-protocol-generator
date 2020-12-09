@@ -54,7 +54,7 @@ class class_definition:
                 continue
             if t.startswith("Azure::Core::"):
                 continue
-            if t in ["Metadata"]:
+            if t in ["Metadata", "ContentHash"]:
                 continue
             self.dependency.add(t)
 

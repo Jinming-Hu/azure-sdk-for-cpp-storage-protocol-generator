@@ -29,12 +29,13 @@ response_etag_last_modified_package: &RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
   - [get_header_code, "Last-Modified", LastModified]
 
 request_checksum_package: &REQUEST_CHECKSUM_HEADER_PACKAGE
-  - [add_header_code, "Content-MD5", TransactionalContentMd5]
-  - [add_header_code, "x-ms-content-crc64", TransactionalContentCrc64]
+  - [add_content_hash_code, TransactionalContentHash]
+
+request_source_checksum_package: &REQUEST_SOURCE_CHECKSUM_HEADER_PACKAGE
+  - [add_source_content_hash_code, TransactionalContentHash]
 
 response_checksum_package: &RESPONSE_CHECKSUM_HEADER_PACKAGE
-  - [get_header_code, "Content-MD5", TransactionalContentMd5]
-  - [get_header_code, "x-ms-content-crc64", TransactionalContentCrc64]
+  - [get_content_hash_code, TransactionalContentHash]
 
 request_mime_package: &REQUEST_MIME_HEADER_PACKAGE
   - [add_header_code, "x-ms-blob-content-type", HttpHeaders.ContentType, optional]
@@ -1011,12 +1012,10 @@ Services:
         return_type:
           UploadBlockBlobResult:
             - BlobContentInfo: inline
-            - TransactionalContentMd5: std::string, nullable
-            - TransactionalContentCrc64: std::string, nullable
+            - TransactionalContentHash: ContentHash, nullable
         options:
           - BodiedRequestOptions: inline
-          - TransactionalContentMd5: std::string, nullable
-          - TransactionalContentCrc64: std::string, nullable
+          - TransactionalContentHash: ContentHash, nullable
           - HttpHeaders: BlobHttpHeaders
           - Metadata: Metadata
           - LeaseId: std::string, nullable
@@ -1050,8 +1049,7 @@ Services:
         options:
           - BodiedRequestOptions: inline
           - BlockId: std::string
-          - TransactionalContentMd5: std::string, nullable
-          - TransactionalContentCrc64: std::string, nullable
+          - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - BlobRequestEncryptionScopeOptions: inline
@@ -1078,8 +1076,7 @@ Services:
           - BlockId: std::string
           - SourceUri: std::string
           - SourceRange: std::pair<int64_t, int64_t>, nullable
-          - TransactionalContentMd5: std::string, nullable
-          - TransactionalContentCrc64: std::string, nullable
+          - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - BlobRequestEncryptionScopeOptions: inline
@@ -1090,8 +1087,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source_range", SourceRange]
-          - [add_header_code, "x-ms-source-content-md5", TransactionalContentMd5]
-          - [add_header_code, "x-ms-source-content-crc64", TransactionalContentCrc64]
+          - *REQUEST_SOURCE_CHECKSUM_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
@@ -1105,8 +1101,7 @@ Services:
         return_type:
           CommitBlockListResult:
             - BlobContentInfo: inline
-            - TransactionalContentMd5: std::string, nullable
-            - TransactionalContentCrc64: std::string, nullable
+            - TransactionalContentHash: ContentHash, nullable
         options:
           - BasicRequestOptions: inline
           - BlockList: std::vector<std::pair<BlockType, std::string>>
@@ -1209,8 +1204,7 @@ Services:
         options:
           - BodiedRequestOptions: inline
           - Range: std::pair<int64_t, int64_t>
-          - TransactionalContentMd5: std::string, nullable
-          - TransactionalContentCrc64: std::string, nullable
+          - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
@@ -1248,8 +1242,7 @@ Services:
           - SourceUri: std::string
           - SourceRange: std::pair<int64_t, int64_t>
           - Range: std::pair<int64_t, int64_t>
-          - TransactionalContentMd5: std::string, nullable
-          - TransactionalContentCrc64: std::string, nullable
+          - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
@@ -1266,8 +1259,7 @@ Services:
           - [add_range_header_code, "x-ms-range", Range]
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source-range", SourceRange]
-          - [add_header_code, "x-ms-source-content-md5", TransactionalContentMd5]
-          - [add_header_code, "x-ms-source-content-crc64", TransactionalContentCrc64]
+          - *REQUEST_SOURCE_CHECKSUM_HEADER_PACKAGE
           - [add_header_code, "x-ms-page-write", "update"]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
@@ -1442,8 +1434,7 @@ Services:
             - BlobAppendInfo: inline
         options:
           - BodiedRequestOptions: inline
-          - TransactionalContentMd5: std::string, nullable
-          - TransactionalContentCrc64: std::string, nullable
+          - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - MaxSize: int64_t, nullable
           - AppendPosition: int64_t, nullable
@@ -1477,8 +1468,7 @@ Services:
           - BasicRequestOptions: inline
           - SourceUri: std::string
           - SourceRange: std::pair<int64_t, int64_t>, nullable
-          - TransactionalContentMd5: std::string, nullable
-          - TransactionalContentCrc64: std::string, nullable
+          - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - MaxSize: int64_t, nullable
           - AppendPosition: int64_t, nullable
@@ -1490,8 +1480,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_range_header_code, "x-ms-source-range", SourceRange]
-          - [add_header_code, "x-ms-source-content-md5", TransactionalContentMd5]
-          - [add_header_code, "x-ms-source-content-crc64", TransactionalContentCrc64]
+          - *REQUEST_SOURCE_CHECKSUM_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-condition-maxsize", MaxSize]
           - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition]
@@ -1778,8 +1767,7 @@ Models:
   BlockInfo:
     - noexport: true
     - BasicResponse: inline
-    - TransactionalContentMd5: std::string, nullable
-    - TransactionalContentCrc64: std::string, nullable
+    - TransactionalContentHash: ContentHash, nullable
     - BlobResponseEncryptionOptions: inline
   BlobHttpHeaders:
     - ContentType: std::string
@@ -1817,8 +1805,7 @@ Models:
     - CommittedBlockCount: int64_t, nullable  # only for append blob
     - IsSealed: bool, nullable # only for append blob
     - BlobType: BlobType = BlobType::Unknown
-    - TransactionalContentMd5: std::string, nullable  # Md5 for the downloaded range
-    - TransactionalContentCrc64: std::string, nullable
+    - TransactionalContentHash: ContentHash, nullable  # hash for the downloaded range
     - LeaseDuration: std::string, nullable
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
@@ -2045,8 +2032,7 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - TransactionalContentMd5: std::string, nullable
-    - TransactionalContentCrc64: std::string, nullable
+    - TransactionalContentHash: ContentHash, nullable
     - SequenceNumber: int64_t = 0
     - BlobResponseEncryptionOptions: inline
   BlobAppendInfo:
@@ -2054,8 +2040,7 @@ Models:
     - BasicResponse: inline
     - ETag: std::string
     - LastModified: std::string
-    - TransactionalContentMd5: std::string, nullable
-    - TransactionalContentCrc64: std::string, nullable
+    - TransactionalContentHash: ContentHash, nullable
     - AppendOffset: int64_t = 0
     - CommittedBlockCount: int64_t = 0
     - BlobResponseEncryptionOptions: inline

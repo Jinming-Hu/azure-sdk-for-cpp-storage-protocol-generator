@@ -1006,6 +1006,86 @@ def gen_add_metadata_code(*args, **kwargs):
     main_body += content
 
 
+def gen_add_content_hash_code(*args, **kwargs):
+    value = args[0]
+    value_nullable = kwargs[value + ".nullable"]
+
+    if value_nullable:
+        content = "if ({var}.HasValue()) {{".format(var=value)
+        value += ".GetValue()"
+    else:
+        content = ""
+
+    content += inspect.cleandoc(
+        """
+        if ({var}.Algorithm == HashAlgorithm::Md5) {{
+            request.AddHeader("Content-MD5", Base64Encode({var}.Value));
+        }}
+        else if ({var}.Algorithm == HashAlgorithm::Crc64) {{
+            request.AddHeader("x-ms-content-crc64", Base64Encode({var}.Value));
+        }}
+        """.format(var=value))
+
+    if value_nullable:
+        content += "}"
+
+    global main_body
+    main_body += content
+
+
+def gen_add_source_content_hash_code(*args, **kwargs):
+    value = args[0]
+    value_nullable = kwargs[value + ".nullable"]
+
+    if value_nullable:
+        content = "if ({var}.HasValue()) {{".format(var=value)
+        value += ".GetValue()"
+    else:
+        content = ""
+    content += inspect.cleandoc(
+        """
+        if ({var}.Algorithm == HashAlgorithm::Md5) {{
+            request.AddHeader("x-ms-source-content-md5", Base64Encode({var}.Value));
+        }}
+        else if ({var}.Algorithm == HashAlgorithm::Crc64) {{
+            request.AddHeader("x-ms-source-content-crc64", Base64Encode({var}.Value));
+        }}
+        """.format(var=value))
+    if value_nullable:
+        content += "}"
+
+    global main_body
+    main_body += content
+
+
+def gen_get_content_hash_code(*args, **kwargs):
+    value = args[0]
+
+    content = inspect.cleandoc(
+        """
+        {{
+            const auto& headers = httpResponse.GetHeaders();
+            auto content_md5_iterator = headers.find("Content-MD5");
+            if (content_md5_iterator != headers.end()) {{
+                ContentHash hash;
+                hash.Algorithm = HashAlgorithm::Md5;
+                hash.Value = Base64Decode(content_md5_iterator->second);
+                {var} = std::move(hash);
+            }}
+            auto x_ms_content_crc64_iterator = headers.find("x-ms-content-crc64");
+            if (x_ms_content_crc64_iterator != headers.end()) {{
+                ContentHash hash;
+                hash.Algorithm = HashAlgorithm::Crc64;
+                hash.Value = Base64Decode(x_ms_content_crc64_iterator->second);
+                {var} = std::move(hash);
+            }}
+        }}
+        """.format(var=value))
+
+    global main_body
+    main_body += content
+
+
 def gen_get_metadata_code(*args, **kwargs):
     prefix = args[0]
     value = args[1]
