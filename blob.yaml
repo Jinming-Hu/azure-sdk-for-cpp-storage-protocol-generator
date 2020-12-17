@@ -1773,13 +1773,13 @@ Models:
     - ContentType: std::string
     - ContentEncoding: std::string
     - ContentLanguage: std::string
-    - ContentMd5: std::string
+    - ContentMd5: std::vector<uint8_t>
     - CacheControl: std::string
     - ContentDisposition: std::string
   BlobRequestCustomerProvidedKeyEncryptionOptions:
     - noexport: true
     - EncryptionKey: std::string, nullable
-    - EncryptionKeySha256: std::string, nullable
+    - EncryptionKeySha256: std::vector<uint8_t>, nullable
     - EncryptionAlgorithm: EncryptionAlgorithmType, nullable
   BlobRequestEncryptionScopeOptions:
     - noexport: true
@@ -1787,7 +1787,7 @@ Models:
   BlobResponseEncryptionOptions:
     - noexport: true
     - ServerEncrypted: bool, nullable
-    - EncryptionKeySha256: std::string, nullable
+    - EncryptionKeySha256: std::vector<uint8_t>, nullable
     - EncryptionScope: std::string, nullable
   BlobDownloadResponse:
     - noexport: true

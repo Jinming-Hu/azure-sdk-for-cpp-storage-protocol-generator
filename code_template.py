@@ -526,6 +526,8 @@ def gen_fromxml_function(class_name):
             content += "ret.{} = std::stoi(node.Value);".format(member)
         elif member_type == "bool":
             content += "ret.{} = std::strcmp(node.Value,\"true\") == 0;".format(member)
+        elif member_type == "std::vector<uint8_t>":
+            content += "ret.{} = Base64Decode(node.Value);".format(member)
         elif member_type in models_cache and models_cache[member_type].type == "enum class":
             content += "ret.{} = {}FromString(node.Value);".format(member, member_type)
         else:
@@ -911,6 +913,10 @@ def gen_add_header_code(*args, **kwargs):
         content += "if ({}.HasValue()) {{\n".format(value)
         value += ".GetValue()"
 
+    if value_type == "std::vector<uint8_t>":
+        value = "Base64Encode(" + value + ")"
+        value_type = "std::string"
+
     if value_type == "std::string":
         if not optional:
             content += "request.AddHeader({}, {});".format(key, value)
@@ -1268,6 +1274,8 @@ def gen_get_header_code(*args, **kwargs):
             content += "{} = std::stoll({}->second);".format(target, ite_name)
         elif target_type == "std::string":
             content += "{} = {}->second;".format(target, ite_name)
+        elif target_type == "std::vector<uint8_t>":
+            content += "{} = Base64Decode({}->second);".format(target, ite_name)
         elif target_type == "bool":
             content += "{} = {}->second == \"true\";".format(target, ite_name)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
