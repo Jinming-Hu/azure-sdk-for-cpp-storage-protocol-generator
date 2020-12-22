@@ -74,11 +74,11 @@ request_source_conditional_headers_package: &REQUEST_SOURCE_CONDITIONAL_HEADER_P
 
 Services:
   - Service:
-    - ListBlobContainers:
+    - ListBlobContainersSinglePage:
         http_method: Get
         http_status_code: 200
         return_type:
-          ListBlobContainersSegmentResult:
+          ListBlobContainersSinglePageResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Prefix: std::string
@@ -201,11 +201,11 @@ Services:
         response_action:
           - [get_xml_body_code]
 
-    - FilterBlobs:
+    - FindBlobsByTagsSinglePage:
         http_method: Get
         http_status_code: 200
         return_type:
-          FilterBlobsSegmentResult:
+          FindBlobsByTagsSinglePageResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Where: std::string
@@ -336,11 +336,11 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
-    - ListBlobsFlat:
+    - ListBlobsSinglePage:
         http_method: Get
         http_status_code: 200
         return_type:
-          ListBlobsFlatSegmentResult:
+          ListBlobsSinglePageResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - BlobContainerName: std::string
@@ -373,11 +373,11 @@ Services:
         response_action:
           - [get_xml_body_code]
 
-    - ListBlobsByHierarchy:
+    - ListBlobsByHierarchySinglePage:
         http_method: Get
         http_status_code: 200
         return_type:
-          ListBlobsByHierarchySegmentResult:
+          ListBlobsByHierarchySinglePageResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - BlobContainerName: std::string
