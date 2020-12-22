@@ -42,7 +42,7 @@ request_mime_package: &REQUEST_MIME_HEADER_PACKAGE
   - [add_header_code, "x-ms-blob-content-encoding", HttpHeaders.ContentEncoding, optional]
   - [add_header_code, "x-ms-blob-content-language", HttpHeaders.ContentLanguage, optional]
   - [add_header_code, "x-ms-blob-cache-control", HttpHeaders.CacheControl, optional]
-  - [add_header_code, "x-ms-blob-content-md5", HttpHeaders.ContentMd5, optional]
+  - [add_header_code, "x-ms-blob-content-md5", HttpHeaders.ContentHash.Value, optional]
   - [add_header_code, "x-ms-blob-content-disposition", HttpHeaders.ContentDisposition, optional]
 
 response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
@@ -50,8 +50,8 @@ response_mime_package: &RESPONSE_MIME_HEADER_PACKAGE
   - [get_header_code, "Content-Encoding", HttpHeaders.ContentEncoding, optional]
   - [get_header_code, "Content-Language", HttpHeaders.ContentLanguage, optional]
   - [get_header_code, "Cache-Control", HttpHeaders.CacheControl, optional]
-  - [get_header_code, "Content-MD5", HttpHeaders.ContentMd5, optional]
-  - [get_header_code, "x-ms-blob-content-md5", HttpHeaders.ContentMd5, optional]
+  - [get_header_code, "Content-MD5", HttpHeaders.ContentHash.Value, optional]
+  - [get_header_code, "x-ms-blob-content-md5", HttpHeaders.ContentHash.Value, optional]
   - [get_header_code, "Content-Disposition", HttpHeaders.ContentDisposition, optional]
 
 response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE
@@ -1535,6 +1535,15 @@ Services:
 
 
 Models:
+  HashAlgorithm:
+    - external: true
+    - type: enum class
+    - Md5
+    - Crc64
+  ContentHash:
+    - external: true
+    - Value: std::vector<uint8_t>
+    - Algorithm: HashAlgorithm
   BasicRequestOptions:
     - noexport: true
     - type: struct
@@ -1771,7 +1780,7 @@ Models:
     - ContentType: std::string
     - ContentEncoding: std::string
     - ContentLanguage: std::string
-    - ContentMd5: std::vector<uint8_t>
+    - ContentHash: ContentHash
     - CacheControl: std::string
     - ContentDisposition: std::string
   BlobRequestCustomerProvidedKeyEncryptionOptions:
@@ -1889,7 +1898,7 @@ Models:
       [text, Properties.Content-Type, HttpHeaders.ContentType],
       [text, Properties.Content-Encoding, HttpHeaders.ContentEncoding],
       [text, Properties.Content-Language, HttpHeaders.ContentLanguage],
-      [text, Properties.Content-MD5, HttpHeaders.ContentMd5],
+      [text, Properties.Content-MD5, HttpHeaders.ContentHash.Value],
       [text, Properties.Cache-Control, HttpHeaders.CacheControl],
       [text, Properties.Content-Disposition, HttpHeaders.ContentDisposition],
       [text, Properties.Creation-Time, CreationTime],

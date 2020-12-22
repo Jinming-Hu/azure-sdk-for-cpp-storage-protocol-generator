@@ -173,10 +173,10 @@ def gen_model_definition(service_name, class_name, class_def):
         if class_def.member_type[i]:
             # for struct
             if class_def.member_type[i] == class_def.member[i]:
-                if class_def.member_type[i] == "Metadata":
+                if class_def.member_type[i] == "Metadata" or class_def.member_type[i] == "ContentHash":
                     ns_prefix = "Storage::"
                 else:
-                    ns_prefix = service_name + "::Models::"
+                    ns_prefix = "Models::"
             else:
                 ns_prefix = ""
             if class_def.member_nullable[i]:
@@ -704,10 +704,10 @@ def gen_function_option_definition(service_name, class_name, class_def):
     content = "struct {} {{".format(class_name)
     for i in range(len(class_def.member)):
         if class_def.member_type[i] == class_def.member[i]:
-            if class_def.member[i] == "Metadata":
+            if class_def.member[i] == "Metadata" or class_def.member[i] == "ContentHash":
                 ns_prefix = "Storage::"
             else:
-                ns_prefix = service_name + "::Models::"
+                ns_prefix = "Models::"
         else:
             ns_prefix = ""
         if class_def.member_nullable[i]:
@@ -1257,10 +1257,7 @@ def gen_get_header_code(*args, **kwargs):
                 """.format(target, target_str_name, target_type.name, enum_v, enum_literal))
 
     if optional or target_nullable:
-        if key == "\"x-ms-blob-content-md5\"" and target.endswith("HttpHeaders.ContentMd5"):
-            ite_name = get_snake_case_name("x_ms_blob_content_md5") + "_iterator"
-        else:
-            ite_name = get_snake_case_name(target) + "_iterator"
+        ite_name = get_snake_case_name(key) + "_iterator"
         content = inspect.cleandoc(
             """
             auto {1} = httpResponse.GetHeaders().find({0});

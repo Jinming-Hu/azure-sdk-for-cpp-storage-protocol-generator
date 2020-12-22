@@ -16,6 +16,7 @@ class class_definition:
         self.name = class_name
         self.type = class_type
         self.noexport = False
+        self.external = False
         self.member = []
         # only for struct
         self.member_type = []
@@ -54,7 +55,7 @@ class class_definition:
                 continue
             if t.startswith("Azure::Core::"):
                 continue
-            if t in ["Metadata", "ContentHash"]:
+            if t in ["Metadata"]:
                 continue
             self.dependency.add(t)
 
@@ -156,6 +157,17 @@ def get_class_definition(class_name, config_class_def=None):
     else:
         raise RuntimeError("multiple types of class " + class_name)
 
+    # Find external
+    external_index = [i for i, v in enumerate(config_class_def) if next(iter(v)) == "external"]
+    if len(external_index) == 0:
+        external = False
+    elif len(external_index) == 1:
+        index = external_index[0]
+        external = True
+        del config_class_def[index]
+    else:
+        raise RuntimeError("multiple external")
+
     # Find noexport
     noexport_index = [i for i, v in enumerate(config_class_def) if next(iter(v)) == "noexport"]
     if len(noexport_index) == 0:
@@ -194,6 +206,8 @@ def get_class_definition(class_name, config_class_def=None):
     class_def.toxml_actions = toxml_actions
     if noexport:
         class_def.noexport = True
+    if external:
+        class_def.external = True
     for i, m in enumerate(config_class_def):
         if type(m) is ruamel.yaml.comments.CommentedMap:
             member_name, member_desc = next(iter(m.items()))
@@ -473,6 +487,8 @@ for config_resource in config["Services"]:
 
 code_template.gen_constant_definition()
 for class_name in toposort.toposort_flatten(export_models):
+    if models_cache[class_name].external:
+        continue
     if models_cache[class_name].noexport:
         raise RuntimeError("Trying to export a non-export class " + class_name)
     code_template.gen_model_definition(service_name, class_name, models_cache[class_name])
