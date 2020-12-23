@@ -29,16 +29,16 @@ include_headers = """
 #include <stdexcept>
 #include <limits>
 
-#include "azure/core/strings.hpp"
-#include "azure/core/nullable.hpp"
-#include "azure/core/context.hpp"
-#include "azure/core/response.hpp"
-#include "azure/core/http/http.hpp"
-#include "azure/core/http/pipeline.hpp"
-#include "azure/storage/common/crypt.hpp"
-#include "azure/storage/common/xml_wrapper.hpp"
-#include "azure/storage/common/storage_common.hpp"
-#include "azure/storage/common/storage_exception.hpp"
+#include <azure/core/strings.hpp>
+#include <azure/core/nullable.hpp>
+#include <azure/core/context.hpp>
+#include <azure/core/response.hpp>
+#include <azure/core/http/http.hpp>
+#include <azure/core/http/pipeline.hpp>
+#include <azure/storage/common/crypt.hpp>
+#include <azure/storage/common/xml_wrapper.hpp>
+#include <azure/storage/common/storage_common.hpp>
+#include <azure/storage/common/storage_exception.hpp>
 
 """
 
