@@ -29,6 +29,7 @@ include_headers = """
 #include <stdexcept>
 #include <limits>
 
+#include <azure/core/datetime.hpp>
 #include <azure/core/strings.hpp>
 #include <azure/core/nullable.hpp>
 #include <azure/core/context.hpp>
@@ -179,10 +180,13 @@ def gen_model_definition(service_name, class_name, class_def):
                     ns_prefix = "Models::"
             else:
                 ns_prefix = ""
-            if class_def.member_nullable[i]:
-                real_member_type = "Azure::Core::Nullable<" + ns_prefix + class_def.member_type[i] + ">"
+            if class_def.member_type[i].endswith("(ISO8601)") or class_def.member_type[i].endswith("(RFC1123)"):
+                real_member_type = class_def.member_type[i][:-9]
             else:
-                real_member_type = ns_prefix + class_def.member_type[i]
+                real_member_type = class_def.member_type[i]
+            real_member_type = ns_prefix + real_member_type
+            if class_def.member_nullable[i]:
+                real_member_type = "Azure::Core::Nullable<" + real_member_type + ">"
             content += real_member_type + " " + class_def.member[i]
             if class_def.member_default_value[i]:
                 if class_def.member_default_value[i].startswith(class_def.member[i] + "::"):
@@ -530,6 +534,10 @@ def gen_fromxml_function(class_name):
             content += "ret.{} = Base64Decode(node.Value);".format(member)
         elif member_type in models_cache and models_cache[member_type].type == "enum class":
             content += "ret.{} = {}FromString(node.Value);".format(member, member_type)
+        elif member_type == "Azure::Core::DateTime(ISO8601)":
+            content += "ret.{} = Azure::Core::DateTime::Parse(node.Value, Azure::Core::DateTime::DateFormat::Rfc3339);".format(member)
+        elif member_type == "Azure::Core::DateTime(RFC1123)":
+            content += "ret.{} = Azure::Core::DateTime::Parse(node.Value, Azure::Core::DateTime::DateFormat::Rfc1123);".format(member)
         else:
             content += "ret.{} = node.Value;".format(member)
         content += "}"
@@ -599,6 +607,10 @@ def gen_toxml_function(class_name):
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.data()}});".format(member_name)
         elif member_type == "bool":
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {} ? \"true\":\"false\"}});".format(member_name)
+        elif member_type == "Azure::Core::DateTime(ISO8601)":
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.GetRfc3339String(Azure::Core::DateTime::TimeFractionFormat::AllDigits).data()}});".format(member_name)
+        elif member_type == "Azure::Core::DateTime(RFC1123)":
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.GetString(Azure::Core::DateTime::DateFormat::Rfc1123).data()}});".format(member_name)
         elif member_type in ["int32_t", "int64_t"]:
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, std::to_string({}).data()}});".format(member_name)
         else:
@@ -710,10 +722,13 @@ def gen_function_option_definition(service_name, class_name, class_def):
                 ns_prefix = "Models::"
         else:
             ns_prefix = ""
-        if class_def.member_nullable[i]:
-            real_member_type = "Azure::Core::Nullable<" + ns_prefix + class_def.member_type[i] + ">"
+        if class_def.member_type[i].endswith("(ISO8601)") or class_def.member_type[i].endswith("(RFC1123)"):
+            real_member_type = class_def.member_type[i][:-9]
         else:
-            real_member_type = ns_prefix + class_def.member_type[i]
+            real_member_type = class_def.member_type[i]
+        real_member_type = ns_prefix + real_member_type
+        if class_def.member_nullable[i]:
+            real_member_type = "Azure::Core::Nullable<" + real_member_type + ">"
         content += real_member_type + " " + class_def.member[i]
         if class_def.member_default_value[i]:
             if class_def.member_default_value[i].startswith(class_def.member[i] + "::"):
@@ -946,6 +961,8 @@ def gen_add_header_code(*args, **kwargs):
                 }}""".format(member_name=value, member_optional_value=optional_value, header_name=key))
     elif value_type == "bool":
         content += "request.AddHeader({}, {} ? \"true\":\"false\");".format(key, value)
+    elif value_type == "Azure::Core::DateTime(RFC1123)":
+        content += "request.AddHeader({}, {}.GetString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
             content += "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
@@ -1275,6 +1292,10 @@ def gen_get_header_code(*args, **kwargs):
             content += "{} = Base64Decode({}->second);".format(target, ite_name)
         elif target_type == "bool":
             content += "{} = {}->second == \"true\";".format(target, ite_name)
+        elif target_type == "Azure::Core::DateTime(ISO8601)":
+            content += "{} = Azure::Core::DateTime::Parse({}->second, Azure::Core::DateTime::DateFormat::Rfc3339);".format(target, ite_name)
+        elif target_type == "Azure::Core::DateTime(RFC1123)":
+            content += "{} = Azure::Core::DateTime::Parse({}->second, Azure::Core::DateTime::DateFormat::Rfc1123);".format(target, ite_name)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
             content += "{target} = {typename}FromString({ite}->second);".format(target=target, ite=ite_name, typename=target_type.name)
         else:
@@ -1290,6 +1311,10 @@ def gen_get_header_code(*args, **kwargs):
             content = "{1} = httpResponse.GetHeaders().at({0});".format(key.lower(), target)
         elif target_type == "bool":
             content = "{1} = httpResponse.GetHeaders().at({0}) == \"true\";".format(key.lower(), target)
+        elif target_type == "Azure::Core::DateTime(ISO8601)":
+            content = "{1} = Azure::Core::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::Core::DateTime::DateFormat::Rfc3339);".format(key.lower(), target)
+        elif target_type == "Azure::Core::DateTime(RFC1123)":
+            content = "{1} = Azure::Core::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::Core::DateTime::DateFormat::Rfc1123);".format(key.lower(), target)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
             content = "{target} = {typename}FromString(httpResponse.GetHeaders().at({key}));".format(key=key.lower(), target=target, typename=target_type.name)
         else:
