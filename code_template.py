@@ -182,6 +182,8 @@ def gen_model_definition(service_name, class_name, class_def):
                 ns_prefix = ""
             if class_def.member_type[i].endswith("(ISO8601)") or class_def.member_type[i].endswith("(RFC1123)"):
                 real_member_type = class_def.member_type[i][:-9]
+            elif class_def.member_type[i].endswith("(ISO8601t)"):
+                real_member_type = class_def.member_type[i][:-10]
             else:
                 real_member_type = class_def.member_type[i]
             real_member_type = ns_prefix + real_member_type
@@ -609,6 +611,8 @@ def gen_toxml_function(class_name):
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {} ? \"true\":\"false\"}});".format(member_name)
         elif member_type == "Azure::Core::DateTime(ISO8601)":
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.GetRfc3339String(Azure::Core::DateTime::TimeFractionFormat::AllDigits).data()}});".format(member_name)
+        elif member_type == "Azure::Core::DateTime(ISO8601t)":
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.GetRfc3339String(Azure::Core::DateTime::TimeFractionFormat::Truncate).data()}});".format(member_name)
         elif member_type == "Azure::Core::DateTime(RFC1123)":
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.GetString(Azure::Core::DateTime::DateFormat::Rfc1123).data()}});".format(member_name)
         elif member_type in ["int32_t", "int64_t"]:
@@ -724,6 +728,8 @@ def gen_function_option_definition(service_name, class_name, class_def):
             ns_prefix = ""
         if class_def.member_type[i].endswith("(ISO8601)") or class_def.member_type[i].endswith("(RFC1123)"):
             real_member_type = class_def.member_type[i][:-9]
+        elif class_def.member_type[i].endswith("(ISO8601t)"):
+            real_member_type = class_def.member_type[i][:-10]
         else:
             real_member_type = class_def.member_type[i]
         real_member_type = ns_prefix + real_member_type

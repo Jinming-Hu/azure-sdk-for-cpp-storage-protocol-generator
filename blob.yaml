@@ -116,8 +116,8 @@ Services:
             - UserDelegationKey: inline
         options:
           - BasicRequestOptions: inline
-          - StartsOn: Azure::Core::DateTime(ISO8601)
-          - ExpiresOn: Azure::Core::DateTime(ISO8601)
+          - StartsOn: Azure::Core::DateTime(ISO8601t)
+          - ExpiresOn: Azure::Core::DateTime(ISO8601t)
           - to_xml: [
             [tag, KeyInfo.Start, StartsOn],
             [tag, KeyInfo.Expiry, ExpiresOn],
