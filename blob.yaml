@@ -586,7 +586,7 @@ Services:
             - BlobDownloadResponse: inline
         options:
           - BasicRequestOptions: inline
-          - Range: std::pair<int64_t, int64_t>, nullable
+          - Range: Azure::Core::Http::Range, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
@@ -1075,7 +1075,7 @@ Services:
           - BasicRequestOptions: inline
           - BlockId: std::string
           - SourceUri: std::string
-          - SourceRange: std::pair<int64_t, int64_t>, nullable
+          - SourceRange: Azure::Core::Http::Range, nullable
           - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
@@ -1203,7 +1203,7 @@ Services:
         http_status_code: 201
         options:
           - BodiedRequestOptions: inline
-          - Range: std::pair<int64_t, int64_t>
+          - Range: Azure::Core::Http::Range
           - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
@@ -1240,8 +1240,8 @@ Services:
         options:
           - BasicRequestOptions: inline
           - SourceUri: std::string
-          - SourceRange: std::pair<int64_t, int64_t>
-          - Range: std::pair<int64_t, int64_t>
+          - SourceRange: Azure::Core::Http::Range
+          - Range: Azure::Core::Http::Range
           - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
@@ -1278,7 +1278,7 @@ Services:
         http_status_code: 201
         options:
           - BasicRequestOptions: inline
-          - Range: std::pair<int64_t, int64_t>
+          - Range: Azure::Core::Http::Range
           - LeaseId: std::string, nullable
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
@@ -1344,13 +1344,13 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          GetPageBlobPageRangesResultInternal:
+          GetPageBlobPageRangesResult:
             - BasicResponse: inline
             - ETag: std::string
             - LastModified: Azure::Core::DateTime(RFC1123)
             - BlobContentLength: int64_t = 0
-            - PageRanges: std::vector<std::pair<int64_t, int64_t>>
-            - ClearRanges: std::vector<std::pair<int64_t, int64_t>>
+            - PageRanges: std::vector<Azure::Core::Http::Range>
+            - ClearRanges: std::vector<Azure::Core::Http::Range>
             - from_xml: [
               [start_tag, PageList.PageRange, PageRanges],
               [start_tag, PageList.ClearRange, ClearRanges],
@@ -1359,7 +1359,7 @@ Services:
           - BasicRequestOptions: inline
           - PreviousSnapshot: std::string, nullable
           - PreviousSnapshotUrl: std::string, nullable
-          - Range: std::pair<int64_t, int64_t>, nullable
+          - Range: Azure::Core::Http::Range, nullable
           - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -1465,7 +1465,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - SourceUri: std::string
-          - SourceRange: std::pair<int64_t, int64_t>, nullable
+          - SourceRange: Azure::Core::Http::Range, nullable
           - TransactionalContentHash: ContentHash, nullable
           - LeaseId: std::string, nullable
           - MaxSize: int64_t, nullable

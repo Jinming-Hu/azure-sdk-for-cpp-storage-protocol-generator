@@ -324,6 +324,7 @@ def gen_fromxml_function(class_name):
             """)
         main_body += content + "\n\n"
         return
+
     if type(class_name) is tuple:
         class_type = class_name[0]
         member_name = class_name[1]
@@ -355,10 +356,10 @@ def gen_fromxml_function(class_name):
                     return ret;
                 }}
                 """.format(member_name))
-        elif class_type == "std::pair<int64_t, int64_t>":
+        elif class_type == "Azure::Core::Http::Range":
             content = inspect.cleandoc(
                 """
-                static std::pair<int64_t, int64_t> {}FromXml(Storage::Details::XmlReader& reader) {{
+                static Azure::Core::Http::Range {}FromXml(Storage::Details::XmlReader& reader) {{
                     int depth = 0;
                     bool is_start = false;
                     bool is_end = false;
@@ -384,7 +385,10 @@ def gen_fromxml_function(class_name):
                             else if (is_end) {{ end = std::stoll(node.Value); }}
                         }}
                     }}
-                    return std::make_pair(start, end);
+                    Azure::Core::Http::Range ret;
+                    ret.Offset = start;
+                    ret.Length = end - start + 1;
+                    return ret;
                 }}
                 """.format(member_name))
         elif class_type == "std::vector<ObjectReplicationPolicy>":
@@ -499,8 +503,8 @@ def gen_fromxml_function(class_name):
             fromxml_classes.add((member_type, member))
         elif member_type.startswith("std::vector<") and member_type.endswith(">"):
             inner_type = member_type[len("std::vector<"): -len(">")]
-            if inner_type.startswith("std::"):
-                content += "ret.{member_name}.emplace_back({function_name}FromXml(reader));".format(member_name=member, function_name=member)
+            if inner_type == "Azure::Core::Http::Range":
+                content += "ret.{member_name}.emplace_back({member_name}FromXml(reader));".format(member_name=member)
                 fromxml_classes.add((inner_type, member))
             else:
                 content += "ret.{member_name}.emplace_back({inner_type}FromXml(reader));".format(member_name=member, inner_type=inner_type)
@@ -997,24 +1001,24 @@ def gen_add_range_header_code(*args, **kwargs):
     value = args[1]
     value_type = kwargs[value + ".type"]
     value_nullable = kwargs[value + ".nullable"]
-    assert value_type == "std::pair<int64_t, int64_t>"
+    assert value_type == "Azure::Core::Http::Range"
 
-    if (value_nullable):
-        content = inspect.cleandoc(
-            """
-            if ({var}.HasValue()) {{
-                auto startOffset = {var}.GetValue().first;
-                auto endOffset = {var}.GetValue().second;
-                if (endOffset != std::numeric_limits<decltype(endOffset)>::max()) {{
-                    request.AddHeader({key}, \"bytes=\" + std::to_string(startOffset) + \"-\" + std::to_string(endOffset));
-                }}
-                else {{
-                    request.AddHeader({key}, \"bytes=\" + std::to_string(startOffset) + \"-\");
-                }}
-            }}
-            """.format(key=key, var=value))
+    if value_nullable:
+        content = "if ({}.HasValue())".format(value)
+        value += ".GetValue()"
     else:
-        content = "request.AddHeader({key}, \"bytes=\" + std::to_string({var}.first) + \"-\" + std::to_string({var}.second));".format(key=key, var=value)
+        content = ""
+
+    content += inspect.cleandoc(
+        """
+        {{
+            std::string headerValue = \"bytes=\" + std::to_string({var}.Offset) + "-";
+            if ({var}.Length.HasValue()) {{
+                headerValue += std::to_string({var}.Offset + {var}.Length.GetValue() - 1);
+            }}
+            request.AddHeader({key}, std::move(headerValue));
+        }}
+        """.format(key=key, var=value))
 
     global main_body
     main_body += content
