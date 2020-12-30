@@ -15,7 +15,9 @@ models_cache = {}
 global_header = """
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
+"""
 
+pragma_once = """
 #pragma once
 """
 
@@ -85,6 +87,10 @@ details_end = """
 
 model_definitions_end = """
 }  // namespace Models
+
+"""
+
+source_model_definitions = """
 
 """
 
@@ -166,10 +172,22 @@ def gen_rest_client(service_name):
 
 
 def gen_model_definition(service_name, class_name, class_def):
-    if class_def.type == "enum class" or class_def.type == "struct":
+    if class_def.type == "struct":
         content = "{} {} {{".format(class_def.type, class_name)
+    elif class_def.type == "enum class":
+        content = inspect.cleandoc(
+            """
+            class {class_name} {{
+            public:
+                {class_name}() = default;
+                explicit {class_name}(std::string value) : m_value(std::move(value)) {{}}
+                bool operator==(const {class_name}& other) const {{ return m_value == other.m_value; }}
+                bool operator!=(const {class_name}& other) const {{ return !(*this == other); }}
+                const std::string& Get() const {{ return m_value; }}
+            """.format(class_name=class_name))
     elif class_def.type == "bitwise enum":
         content = "enum class {} {{".format(class_name)
+    source_content = ""
     for i in range(len(class_def.member)):
         if class_def.member_type[i]:
             # for struct
@@ -200,49 +218,28 @@ def gen_model_definition(service_name, class_name, class_def):
             content += class_def.member[i] + "=" + str(2**i // 2) + ","
         else:
             # for enum
-            content += class_def.member[i] + ","
+            literal = member_value=class_def.member_literal[i]
+            if not literal:
+                literal = class_def.member[i]
+            content += "const static {class_name} {member_name};".format(class_name=class_name, member_name=class_def.member[i])
+            source_content += "const {class_name} {class_name}::{member_name}(\"{member_value}\");".format(class_name=class_name, member_name=class_def.member[i], member_value=literal)
         if class_def.member_comment[i]:
             content += "// " + class_def.member_comment[i] + "\n"
-    content += "}};  // {} {}\n\n".format(class_def.type, class_name)
+    if class_def.type == "enum class":
+        content += "private: std::string m_value;}};  // extensible enum {}".format(class_name)
+    else:
+        content += "}};  // {} {}".format(class_def.type, class_name)
+    content += "\n\n"
+    source_content += "\n\n"
 
     global model_definitions
     model_definitions += content
     content = ""
 
-    if class_def.type == "enum class":
-        snake_case_name = get_snake_case_name(class_def.name)
-        # To string converter
-        content = inspect.cleandoc(
-            """
-            inline std::string {0}ToString(const {0}& {1})
-            {{
-                switch ({1})
-                {{
-            """.format(class_def.name, snake_case_name))
+    global source_model_definitions
+    source_model_definitions += source_content
 
-        for i, enum_v in enumerate(class_def.member):
-            enum_literal = class_def.member_literal[i]
-            if enum_literal is None:
-                enum_literal = enum_v
-            content += "case {0}::{1}: return \"{2}\";".format(class_def.name, enum_v, enum_literal)
-
-        content += "default: return std::string(); }}\n\n"
-
-        # From string converter
-        content += inspect.cleandoc(
-            """
-            inline {0} {0}FromString(const std::string& {1})
-            {{
-            """.format(class_def.name, snake_case_name))
-
-        for i, enum_v in enumerate(class_def.member):
-            enum_literal = class_def.member_literal[i]
-            if enum_literal is None:
-                enum_literal = enum_v
-            content += "if ({1} == \"{3}\") {{ return {0}::{2}; }}".format(class_def.name, snake_case_name, enum_v, enum_literal)
-
-        content += "throw std::runtime_error(\"cannot convert \" + {1} + \" to {0}\"); }}\n\n".format(class_def.name, snake_case_name)
-    elif class_def.type == "bitwise enum":
+    if class_def.type == "bitwise enum":
         # Bitwise or, and
         content = inspect.cleandoc(
             """
@@ -417,7 +414,7 @@ def gen_fromxml_function(class_name):
                         if (depth == 1 && node.Type == Storage::Details::XmlNodeType::Text) {{
                             ObjectReplicationRule rule;
                             rule.RuleId = std::move(ruleId);
-                            rule.ReplicationStatus = ObjectReplicationStatusFromString(node.Value);
+                            rule.ReplicationStatus = ObjectReplicationStatus(node.Value);
                             orPropertiesMap[policyId].emplace_back(std::move(rule));
                         }}
                     }}
@@ -539,7 +536,7 @@ def gen_fromxml_function(class_name):
         elif member_type == "std::vector<uint8_t>":
             content += "ret.{} = Base64Decode(node.Value);".format(member)
         elif member_type in models_cache and models_cache[member_type].type == "enum class":
-            content += "ret.{} = {}FromString(node.Value);".format(member, member_type)
+            content += "ret.{} = {}(node.Value);".format(member, member_type)
         elif member_type == "Azure::Core::DateTime(ISO8601)":
             content += "ret.{} = Azure::Core::DateTime::Parse(node.Value, Azure::Core::DateTime::DateFormat::Rfc3339);".format(member)
         elif member_type == "Azure::Core::DateTime(RFC1123)":
@@ -594,17 +591,13 @@ def gen_toxml_function(class_name):
                 pass
             elif inner_type1 == "int32_t" or inner_type1 == "int64_t":
                 inner_type1_to_string = "std::to_string(" + inner_type1_to_string + ")"
-            elif inner_type1 in models_cache:
-                inner_type1_to_string = inner_type1 + "ToString(" + inner_type1_to_string + ")"
+            elif inner_type1 in models_cache and models_cache[inner_type1].type == "enum class":
+                inner_type1_to_string += ".Get()"
             else:
                 raise RuntimeError("unknown type " + inner_type1)
 
             if inner_type2 == "std::string":
                 pass
-            elif inner_type2 == "int32_t" or inner_type2 == "int64_t":
-                inner_type2_to_string = "std::to_string(" + inner_type2_to_string + ")"
-            elif inner_type1 in models_cache:
-                inner_type2_to_string = inner_type2 + "ToString(" + inner_type2_to_string + ")"
             else:
                 raise RuntimeError("unknown type " + inner_type2)
 
@@ -887,7 +880,7 @@ def gen_add_query_code(*args, **kwargs):
         elif value_type == "int32_t" or value_type == "int64_t":
             optional_value = kwargs["optional_value"]
             content += "if ({} != {}) {{".format(value, optional_value)
-        elif hasattr(value_type, "type") and (value_type.type == "enum class" or value_type.type == "bitwise enum"):
+        elif hasattr(value_type, "type") and value_type.type == "bitwise enum":
             snake_case_name = get_snake_case_name(value_type.name)
             content += inspect.cleandoc(
                 """
@@ -900,9 +893,7 @@ def gen_add_query_code(*args, **kwargs):
             raise RuntimeError("unknown type " + value_type.type + " " + value_type.name if hasattr(value_type, "type") else value_type)
     else:
         if hasattr(value_type, "type") and value_type.type == "enum class":
-            snake_case_name = get_snake_case_name(value_type.name)
-            content += "std::string {var_name} = {typename}ToString({var});".format(var=value, var_name=snake_case_name, typename=value_type.name)
-            value = snake_case_name
+            value += ".Get()"
 
     if value_type == "int32_t" or value_type == "int64_t":
         content += "request.GetUrl().AppendQueryParameter({}, std::to_string({}));".format(key, value)
@@ -974,18 +965,7 @@ def gen_add_header_code(*args, **kwargs):
     elif value_type == "Azure::Core::DateTime(RFC1123)":
         content += "request.AddHeader({}, {}.GetString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
     elif hasattr(value_type, "type") and value_type.type == "enum class":
-        if not optional:
-            content += "request.AddHeader({key}, {typename}ToString({value}));".format(key=key, value=value, typename=value_type.name)
-        else:
-            str_name = value.replace(".", "_").lower() + "_str"
-            content += inspect.cleandoc(
-                """
-                auto {var_str} = {typename}ToString({value});
-                if (!{var_str}.empty())
-                {{
-                    request.AddHeader({key}, {var_str});
-                }}
-                """.format(key=key, value=value, var_str=str_name, typename=value_type.name))
+        content += "request.AddHeader({key}, {value}.Get());".format(key=key, value=value)
     else:
         raise RuntimeError("unknown type " + value_type.type if hasattr(value_type, "type") else value_type)
 
@@ -1153,7 +1133,7 @@ def gen_get_or_code(*args, **kwargs):
 
                 ObjectReplicationRule rule;
                 rule.RuleId = std::move(ruleId);
-                rule.ReplicationStatus = ObjectReplicationStatusFromString(i->second);
+                rule.ReplicationStatus = ObjectReplicationStatus(i->second);
                 orPropertiesMap[policyId].emplace_back(std::move(rule));
             }}
             for (auto& property : orPropertiesMap)
@@ -1267,22 +1247,6 @@ def gen_get_header_code(*args, **kwargs):
     target_str_name = target.replace(".", "_").lower() + "_str"
     optional = kwargs["optional"]
 
-    if hasattr(target_type, "type") and target_type.type == "enum class":
-        enum_class_if_blocks = ""
-        for i, enum_v in enumerate(target_type.member):
-            enum_literal = target_type.member_literal[i]
-            if enum_literal is None:
-                enum_literal = enum_v
-            if i != 0:
-                enum_class_if_blocks += "else "
-            enum_class_if_blocks += inspect.cleandoc(
-                """
-                if ({1} == \"{4}\")
-                {{
-                    {0} = {2}::{3};
-                }}
-                """.format(target, target_str_name, target_type.name, enum_v, enum_literal))
-
     if optional or target_nullable:
         ite_name = get_snake_case_name(key) + "_iterator"
         content = inspect.cleandoc(
@@ -1307,7 +1271,7 @@ def gen_get_header_code(*args, **kwargs):
         elif target_type == "Azure::Core::DateTime(RFC1123)":
             content += "{} = Azure::Core::DateTime::Parse({}->second, Azure::Core::DateTime::DateFormat::Rfc1123);".format(target, ite_name)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
-            content += "{target} = {typename}FromString({ite}->second);".format(target=target, ite=ite_name, typename=target_type.name)
+            content += "{target} = {target_type}({ite}->second);".format(target=target, ite=ite_name, target_type=target_type.name)
         else:
             raise RuntimeError("unknown type " + target_type.type if hasattr(target_type, "type") else target_type)
 
@@ -1326,7 +1290,7 @@ def gen_get_header_code(*args, **kwargs):
         elif target_type == "Azure::Core::DateTime(RFC1123)":
             content = "{1} = Azure::Core::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::Core::DateTime::DateFormat::Rfc1123);".format(key.lower(), target)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
-            content = "{target} = {typename}FromString(httpResponse.GetHeaders().at({key}));".format(key=key.lower(), target=target, typename=target_type.name)
+            content = "{target} = {target_type}(httpResponse.GetHeaders().at({key}));".format(key=key.lower(), target=target, target_type=target_type.name)
         else:
             raise RuntimeError("unknown type " + target_type.type if hasattr(target_type, "type") else target_type)
 

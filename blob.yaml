@@ -1,5 +1,6 @@
 service_name: Blobs
-output: generated/blob_rest_client.hpp
+output_hpp: azure/storage/blobs/protocol/blob_rest_client.hpp
+output_cpp: blob_rest_client.cpp
 
 Constants:
   ApiVersion: &ApiVersion "2020-02-10"
@@ -169,8 +170,8 @@ Services:
         http_status_code: 200
         return_type:
           GetAccountInfoResult:
-            - SkuName: SkuName = SkuName::Unknown
-            - AccountKind: AccountKind = AccountKind::Unknown
+            - SkuName: SkuName
+            - AccountKind: AccountKind
             - IsHierarchicalNamespaceEnabled: bool = false
         options:
             - BasicRequestOptions: inline
@@ -761,7 +762,7 @@ Services:
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
-          - Tier: AccessTier = AccessTier::Unknown
+          - Tier: AccessTier
           - RehydratePriority: RehydratePriority, nullable
           - IfTags: std::string, nullable
         request_action:
@@ -1572,7 +1573,6 @@ Models:
     - Latest
   BlobType:
     - type: enum class
-    - Unknown: ""
     - BlockBlob
     - PageBlob
     - AppendBlob
@@ -1589,7 +1589,6 @@ Models:
     - Unlocked: "unlocked"
   AccessTier:
     - type: enum class
-    - Unknown: ""
     - P1
     - P2
     - P3
@@ -1609,17 +1608,14 @@ Models:
     - Archive
   RehydratePriority:
     - type: enum class
-    - Unknown: ""
     - High: "High"
     - Standard: "Standard"
   CopyStatus:
     - type: enum class
-    - Unknown: ""
     - Success: "success"
     - Pending: "pending"
   SkuName:
     - type: enum class
-    - Unknown: ""
     - StandardLrs: "Standard_LRS"
     - StandardGrs: "Standard_GRS"
     - StandardRagrs: "Standard_RAGRS"
@@ -1630,7 +1626,6 @@ Models:
     - StandardRagzrs: "Standard_RAGZRS"
   AccountKind:
     - type: enum class
-    - Unknown: ""
     - Storage: "Storage"
     - BlobStorage: "BlobStorage"
     - StorageV2: "StorageV2"
@@ -1638,7 +1633,6 @@ Models:
     - BlockBlobStorage: "BlockBlobStorage"
   EncryptionAlgorithmType:
     - type: enum class
-    - Unknown: ""
     - Aes256: "AES256"
   BlobBlock:
     - Name: std::string
@@ -1811,7 +1805,7 @@ Models:
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int64_t, nullable  # only for append blob
     - IsSealed: bool, nullable # only for append blob
-    - BlobType: BlobType = BlobType::Unknown
+    - BlobType: BlobType
     - TransactionalContentHash: ContentHash, nullable  # hash for the downloaded range
     - LeaseDuration: std::string, nullable
     - LeaseState: BlobLeaseState, nullable
@@ -1879,7 +1873,7 @@ Models:
     - LastModified: Azure::Core::DateTime(RFC1123)
     - ETag: std::string
     - ContentLength: int64_t = 0
-    - BlobType: BlobType = BlobType::Unknown
+    - BlobType: BlobType
     - Tier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
@@ -1951,22 +1945,19 @@ Models:
     - All: "all"
   DeleteSnapshotsOption:
     - type: enum class
-    - None: ""
     - IncludeSnapshots: "include"
     - Only: "only"
   BlobArchiveStatus:
     - type: enum class
-    - Unknown: ""
     - RehydratePendingToHot: "rehydrate-pending-to-hot"
     - RehydratePendingToCool: "rehydrate-pending-to-cool"
   ObjectReplicationStatus:
     - type: enum class
-    - Unknown: ""
     - Complete: "complete"
     - Failed: "failed"
   ObjectReplicationRule:
     - RuleId: std::string
-    - ReplicationStatus: ObjectReplicationStatus = ObjectReplicationStatus::Unknown
+    - ReplicationStatus: ObjectReplicationStatus
   ObjectReplicationPolicy:
     - PolicyId: std::string
     - Rules: std::vector<ObjectReplicationRule>
@@ -1979,7 +1970,7 @@ Models:
     - ExpiriesOn: Azure::Core::DateTime(RFC1123), nullable
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
     - Metadata: Metadata
-    - BlobType: BlobType = BlobType::Unknown
+    - BlobType: BlobType
     - LeaseDuration: std::string, nullable
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
@@ -2013,7 +2004,7 @@ Models:
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CopyId: std::string
-    - CopyStatus: CopyStatus = CopyStatus::Unknown
+    - CopyStatus: CopyStatus
     - VersionId: std::string, nullable
   UserDelegationKey:
     - noexport: true
@@ -2053,12 +2044,11 @@ Models:
     - BlobResponseEncryptionOptions: inline
   BlobGeoReplicationStatus:
     - type: enum class
-    - Unknown: ""
     - Live: "live"
     - Bootstrap: "bootstrap"
     - Unavailable: "unavailable"
   BlobGeoReplication:
-    - Status: BlobGeoReplicationStatus = BlobGeoReplicationStatus::Unknown
+    - Status: BlobGeoReplicationStatus
     - LastSyncedOn: Azure::Core::DateTime(RFC1123), nullable
     - from_xml: [
       [text, Status, Status],
@@ -2106,7 +2096,6 @@ Models:
     ]
   ScheduleBlobExpiryOriginType:
     - type: enum class
-    - Unknown: ""
     - NeverExpire: "NeverExpire"
     - RelativeToCreation: "RelativeToCreation"
     - RelativeToNow: "RelativeToNow"

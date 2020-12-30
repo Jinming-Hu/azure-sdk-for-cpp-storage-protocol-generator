@@ -493,10 +493,12 @@ for class_name in toposort.toposort_flatten(export_models):
         raise RuntimeError("Trying to export a non-export class " + class_name)
     code_template.gen_model_definition(service_name, class_name, models_cache[class_name])
 
-output_path = pathlib.Path(config["output"])
+generated_dir = pathlib.Path("generated")
+output_path = generated_dir / pathlib.Path(config["output_hpp"]).name
 output_path.parents[0].mkdir(parents=True, exist_ok=True)
 with open(output_path, "w") as f:
     f.write(code_template.global_header.lstrip())
+    f.write(code_template.pragma_once)
     f.write(code_template.include_headers)
     f.write(code_template.namespace_begin)
     f.write(code_template.constant_string)
@@ -509,5 +511,16 @@ with open(output_path, "w") as f:
     f.write(code_template.main_body)
     f.write(code_template.rest_client_end)
     f.write(code_template.details_end)
+    f.write(code_template.namespace_end)
+subprocess.call(["clang-format", "-style=file", "-i", output_path])
+
+output_path = generated_dir / pathlib.Path(config["output_cpp"]).name
+with open(output_path, "w") as f:
+    f.write(code_template.global_header.lstrip())
+    f.write("\n#include \"" + config["output_hpp"] + "\"\n")
+    f.write(code_template.namespace_begin)
+    f.write(code_template.model_definitions_begin)
+    f.write(code_template.source_model_definitions)
+    f.write(code_template.model_definitions_end)
     f.write(code_template.namespace_end)
 subprocess.call(["clang-format", "-style=file", "-i", output_path])
