@@ -83,8 +83,8 @@ Services:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Prefix: std::string
-            - PreviousContinuationToken: std::string
-            - ContinuationToken: std::string
+            - PreviousContinuationToken: std::string, nullable
+            - ContinuationToken: std::string, nullable
             - Items: std::vector<BlobContainerItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
@@ -210,7 +210,7 @@ Services:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Where: std::string
-            - ContinuationToken: std::string
+            - ContinuationToken: std::string, nullable
             - Items: std::vector<FilterBlobItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
@@ -346,8 +346,8 @@ Services:
             - ServiceEndpoint: std::string
             - BlobContainerName: std::string
             - Prefix: std::string
-            - PreviousContinuationToken: std::string
-            - ContinuationToken: std::string
+            - PreviousContinuationToken: std::string, nullable
+            - ContinuationToken: std::string, nullable
             - Items: std::vector<BlobItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
@@ -384,8 +384,8 @@ Services:
             - BlobContainerName: std::string
             - Prefix: std::string
             - Delimiter: std::string
-            - PreviousContinuationToken: std::string
-            - ContinuationToken: std::string
+            - PreviousContinuationToken: std::string, nullable
+            - ContinuationToken: std::string, nullable
             - Items: std::vector<BlobItem>
             - BlobPrefixes: std::vector<BlobPrefix>
             - from_xml: [
