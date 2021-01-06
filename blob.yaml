@@ -1946,7 +1946,7 @@ Models:
   DeleteSnapshotsOption:
     - type: enum class
     - IncludeSnapshots: "include"
-    - Only: "only"
+    - OnlySnapshots: "only"
   BlobArchiveStatus:
     - type: enum class
     - RehydratePendingToHot: "rehydrate-pending-to-hot"
