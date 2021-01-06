@@ -218,8 +218,8 @@ def gen_model_definition(service_name, class_name, class_def):
             content += class_def.member[i] + "=" + str(2**i // 2) + ","
         else:
             # for enum
-            literal = member_value=class_def.member_literal[i]
-            if not literal:
+            literal = class_def.member_literal[i]
+            if literal is None:
                 literal = class_def.member[i]
             content += "const static {class_name} {member_name};".format(class_name=class_name, member_name=class_def.member[i])
             source_content += "const {class_name} {class_name}::{member_name}(\"{member_value}\");".format(class_name=class_name, member_name=class_def.member[i], member_value=literal)
