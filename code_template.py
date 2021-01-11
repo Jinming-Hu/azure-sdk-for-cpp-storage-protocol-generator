@@ -534,7 +534,7 @@ def gen_fromxml_function(class_name):
         elif member_type == "bool":
             content += "ret.{} = std::strcmp(node.Value,\"true\") == 0;".format(member)
         elif member_type == "std::vector<uint8_t>":
-            content += "ret.{} = Base64Decode(node.Value);".format(member)
+            content += "ret.{} = Azure::Core::Base64Decode(node.Value);".format(member)
         elif member_type in models_cache and models_cache[member_type].type == "enum class":
             content += "ret.{} = {}(node.Value);".format(member, member_type)
         elif member_type == "Azure::Core::DateTime(ISO8601)":
@@ -930,7 +930,7 @@ def gen_add_header_code(*args, **kwargs):
         value += ".GetValue()"
 
     if value_type == "std::vector<uint8_t>":
-        value = "Base64Encode(" + value + ")"
+        value = "Azure::Core::Base64Encode(" + value + ")"
         value_type = "std::string"
 
     if value_type == "std::string":
@@ -1032,10 +1032,10 @@ def gen_add_content_hash_code(*args, **kwargs):
     content += inspect.cleandoc(
         """
         if ({var}.Algorithm == HashAlgorithm::Md5) {{
-            request.AddHeader("Content-MD5", Base64Encode({var}.Value));
+            request.AddHeader("Content-MD5", Azure::Core::Base64Encode({var}.Value));
         }}
         else if ({var}.Algorithm == HashAlgorithm::Crc64) {{
-            request.AddHeader("x-ms-content-crc64", Base64Encode({var}.Value));
+            request.AddHeader("x-ms-content-crc64", Azure::Core::Base64Encode({var}.Value));
         }}
         """.format(var=value))
 
@@ -1058,10 +1058,10 @@ def gen_add_source_content_hash_code(*args, **kwargs):
     content += inspect.cleandoc(
         """
         if ({var}.Algorithm == HashAlgorithm::Md5) {{
-            request.AddHeader("x-ms-source-content-md5", Base64Encode({var}.Value));
+            request.AddHeader("x-ms-source-content-md5", Azure::Core::Base64Encode({var}.Value));
         }}
         else if ({var}.Algorithm == HashAlgorithm::Crc64) {{
-            request.AddHeader("x-ms-source-content-crc64", Base64Encode({var}.Value));
+            request.AddHeader("x-ms-source-content-crc64", Azure::Core::Base64Encode({var}.Value));
         }}
         """.format(var=value))
     if value_nullable:
@@ -1082,14 +1082,14 @@ def gen_get_content_hash_code(*args, **kwargs):
             if (content_md5_iterator != headers.end()) {{
                 ContentHash hash;
                 hash.Algorithm = HashAlgorithm::Md5;
-                hash.Value = Base64Decode(content_md5_iterator->second);
+                hash.Value = Azure::Core::Base64Decode(content_md5_iterator->second);
                 {var} = std::move(hash);
             }}
             auto x_ms_content_crc64_iterator = headers.find("x-ms-content-crc64");
             if (x_ms_content_crc64_iterator != headers.end()) {{
                 ContentHash hash;
                 hash.Algorithm = HashAlgorithm::Crc64;
-                hash.Value = Base64Decode(x_ms_content_crc64_iterator->second);
+                hash.Value = Azure::Core::Base64Decode(x_ms_content_crc64_iterator->second);
                 {var} = std::move(hash);
             }}
         }}
@@ -1263,7 +1263,7 @@ def gen_get_header_code(*args, **kwargs):
         elif target_type == "std::string":
             content += "{} = {}->second;".format(target, ite_name)
         elif target_type == "std::vector<uint8_t>":
-            content += "{} = Base64Decode({}->second);".format(target, ite_name)
+            content += "{} = Azure::Core::Base64Decode({}->second);".format(target, ite_name)
         elif target_type == "bool":
             content += "{} = {}->second == \"true\";".format(target, ite_name)
         elif target_type == "Azure::Core::DateTime(ISO8601)":
