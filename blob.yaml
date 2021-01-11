@@ -239,6 +239,7 @@ Services:
         http_status_code: 201
         return_type:
           CreateBlobContainerResult:
+            - Created: bool = true
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -261,6 +262,7 @@ Services:
         http_status_code: 202
         return_type:
           DeleteBlobContainerResult:
+            - Deleted: bool = true
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -623,6 +625,7 @@ Services:
         http_status_code: 202
         return_type:
           DeleteBlobResult:
+            - Deleted: bool = true
             - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
@@ -1170,6 +1173,7 @@ Services:
         http_status_code: 201
         return_type:
           CreatePageBlobResult:
+            - Created: bool = true
             - BlobContentInfo: inline
             - SequenceNumber: int64_t, nullable
         options:
@@ -1403,6 +1407,7 @@ Services:
         http_status_code: 201
         return_type:
           CreateAppendBlobResult:
+            - Created: bool = true
             - BlobContentInfo: inline
         options:
           - BasicRequestOptions: inline
