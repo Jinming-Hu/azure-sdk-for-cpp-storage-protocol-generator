@@ -1099,6 +1099,49 @@ def gen_get_content_hash_code(*args, **kwargs):
     main_body += content
 
 
+def gen_get_content_range_code(*args, **kwargs):
+    key = args[0]
+    target = args[1]
+    target_type = kwargs[target + ".type"]
+    target_nullable = kwargs[target + ".nullable"]
+
+    key2 = "\"Content-Length\""
+
+    if target_type == "Azure::Core::Http::Range":
+        content = inspect.cleandoc(
+        """
+        auto content_range_iterator = httpResponse.GetHeaders().find({key});
+        if (content_range_iterator != httpResponse.GetHeaders().end()) {{
+            const std::string& content_range = content_range_iterator->second;
+            auto bytes_pos = content_range.find("bytes ");
+            auto dash_pos = content_range.find("-", bytes_pos + 6);
+            auto slash_pos = content_range.find("/", dash_pos + 1);
+            int64_t range_start_offset = std::stoll(std::string(content_range.begin() + bytes_pos + 6, content_range.begin() + dash_pos));
+            int64_t range_end_offset = std::stoll(std::string(content_range.begin() + dash_pos + 1, content_range.begin() + slash_pos));
+            {target} = Azure::Core::Http::Range{{range_start_offset, range_end_offset - range_start_offset + 1}};
+        }}
+        else {{
+            {target} = Azure::Core::Http::Range{{0, std::stoll(httpResponse.GetHeaders().at({key2}))}};
+        }}
+        """.format(key=key.lower(), key2=key2.lower(), target=target))
+    elif target_type == "int64_t":
+        content = inspect.cleandoc(
+        """
+        if (content_range_iterator != httpResponse.GetHeaders().end()) {{
+            const std::string& content_range = content_range_iterator->second;
+            auto slash_pos = content_range.find("/");
+            {target} = std::stoll(content_range.substr(slash_pos + 1));
+        }}
+        else {{
+            {target} = std::stoll(httpResponse.GetHeaders().at({key2}));
+        }}
+        """.format(key=key.lower(), key2=key2.lower(), target=target))
+    else:
+        raise RuntimeError("Cannot parse Content-Range to " + target_type)
+
+    global main_body
+    main_body += content
+
 def gen_get_metadata_code(*args, **kwargs):
     prefix = args[0]
     value = args[1]

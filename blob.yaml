@@ -609,7 +609,8 @@ Services:
           - [get_header_code, "x-ms-creation-time", CreatedOn]
           - [get_header_code, "x-ms-expiry-time", ExpiriesOn]
           - [get_header_code, "x-ms-last-access-time", LastAccessedOn]
-          - [get_header_code, "Content-Range", ContentRange]
+          - [get_content_range_code, "Content-Range", ContentRange]
+          - [get_content_range_code, "Content-Range", BlobSize]
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
           - [get_header_code, "x-ms-blob-sealed", IsSealed]
@@ -1804,7 +1805,8 @@ Models:
     - CreatedOn: Azure::Core::DateTime(RFC1123)
     - ExpiriesOn: Azure::Core::DateTime(RFC1123), nullable
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
-    - ContentRange: std::string, nullable
+    - ContentRange: Azure::Core::Http::Range
+    - BlobSize: int64_t = 0
     - HttpHeaders: BlobHttpHeaders
     - Metadata: Metadata
     - SequenceNumber: int64_t, nullable  # only for page blob
