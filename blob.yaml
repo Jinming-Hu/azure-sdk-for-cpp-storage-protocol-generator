@@ -1705,29 +1705,29 @@ Models:
       [tag, CorsRule.MaxAgeInSeconds, MaxAgeInSeconds],
     ]
   BlobRetentionPolicy:
-    - Enabled: bool = false
+    - IsEnabled: bool = false
     - Days: int32_t, nullable
     - from_xml: [
-      [text, Enabled, Enabled],
+      [text, Enabled, IsEnabled],
       [text, Days, Days],
     ]
     - to_xml: [
-      [tag, Enabled, Enabled],
+      [tag, Enabled, IsEnabled],
       [tag, Days, Days],
     ]
   BlobStaticWebsite:
-    - Enabled: bool = false
+    - IsEnabled: bool = false
     - IndexDocument: std::string, nullable
     - DefaultIndexDocumentPath: std::string, nullable
     - ErrorDocument404Path: std::string, nullable
     - from_xml: [
-      [text, Enabled, Enabled],
+      [text, Enabled, IsEnabled],
       [text, IndexDocument, IndexDocument],
       [text, DefaultIndexDocumentPath, DefaultIndexDocumentPath],
       [text, ErrorDocument404Path, ErrorDocument404Path],
     ]
     - to_xml: [
-      [tag, Enabled, Enabled],
+      [tag, Enabled, IsEnabled],
       [tag, IndexDocument, IndexDocument],
       [tag, DefaultIndexDocumentPath, DefaultIndexDocumentPath],
       [tag, ErrorDocument404Path, ErrorDocument404Path],
