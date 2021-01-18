@@ -261,7 +261,7 @@ Services:
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
-          - AccessType: PublicAccessType, nullable
+          - AccessType: PublicAccessType = PublicAccessType::Private
           - Metadata: Metadata
           - DefaultEncryptionScope: std::string, nullable
           - PreventEncryptionScopeOverride: bool, nullable
@@ -474,7 +474,7 @@ Services:
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
-          - AccessType: PublicAccessType, nullable
+          - AccessType: PublicAccessType = PublicAccessType::Private
           - LeaseId: std::string, nullable
           - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
           - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
@@ -1215,7 +1215,7 @@ Services:
         http_status_code: 200
         options:
             - BasicRequestOptions: inline
-            - ListType: BlockListTypeOption, nullable
+            - ListType: BlockListTypeOption = BlockListTypeOption::Committed
             - LeaseId: std::string, nullable
             - IfTags: std::string, nullable
         return_type:
