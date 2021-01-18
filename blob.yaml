@@ -5,6 +5,9 @@ output_cpp: blob_rest_client.cpp
 Constants:
   ApiVersion: &ApiVersion "2020-02-10"
 
+response_request_id_package: &RESPONSE_REQUEST_ID_PACKAGE
+  - [get_header_code, "x-ms-request-id", RequestId]
+
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
   - [add_header_code, "x-ms-version", *ApiVersion]
   - [add_query_code, "timeout", Timeout]
@@ -107,6 +110,7 @@ Services:
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - GetUserDelegationKey:
@@ -114,7 +118,11 @@ Services:
         http_status_code: 200
         return_type:
           GetUserDelegationKeyResult:
-            - UserDelegationKey: inline
+            - BasicResponse: inline
+            - Key: UserDelegationKey
+            - from_xml: [
+              [start_tag, UserDelegationKey, Key]
+            ]
         options:
           - BasicRequestOptions: inline
           - StartsOn: Azure::Core::DateTime(ISO8601t)
@@ -129,6 +137,7 @@ Services:
           - [add_query_code, "comp", "userdelegationkey"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - GetProperties:
@@ -136,6 +145,7 @@ Services:
         http_status_code: 200
         return_type:
           GetServicePropertiesResult:
+            - BasicResponse: inline
             - BlobServiceProperties: inline
         options:
           - BasicRequestOptions: inline
@@ -144,6 +154,7 @@ Services:
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - SetProperties:
@@ -163,13 +174,15 @@ Services:
           - [add_query_code, "restype", "service"]
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
-        response_action: {}
+        response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
 
     - GetAccountInfo:
         http_method: Head
         http_status_code: 200
         return_type:
           GetAccountInfoResult:
+            - BasicResponse: inline
             - SkuName: SkuName
             - AccountKind: AccountKind
             - IsHierarchicalNamespaceEnabled: bool = false
@@ -180,6 +193,7 @@ Services:
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_header_code, "x-ms-sku-name", SkuName]
           - [get_header_code, "x-ms-account-kind", AccountKind]
           - [get_header_code, "x-ms-is-hns-enabled", IsHierarchicalNamespaceEnabled]
@@ -189,6 +203,7 @@ Services:
         http_status_code: 200
         return_type:
           GetServiceStatisticsResult:
+            - BasicResponse: inline
             - GeoReplication: BlobGeoReplication
             - from_xml: [
               [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
@@ -200,6 +215,7 @@ Services:
           - [add_query_code, "comp", "stats"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - FindBlobsByTagsSinglePage:
@@ -230,6 +246,7 @@ Services:
           - [add_query_code, "marker", ContinuationToken]
           - [add_query_code, "maxresults", MaxResults]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
 
@@ -239,6 +256,7 @@ Services:
         http_status_code: 201
         return_type:
           CreateBlobContainerResult:
+            - BasicResponse: inline
             - Created: bool = true
             - BlobContainerInfo: inline
         options:
@@ -255,6 +273,7 @@ Services:
           - [add_header_code, "x-ms-default-encryption-scope", DefaultEncryptionScope]
           - [add_header_code, "x-ms-deny-encryption-scope-override", PreventEncryptionScopeOverride]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - Delete:
@@ -262,8 +281,8 @@ Services:
         http_status_code: 202
         return_type:
           DeleteBlobContainerResult:
-            - Deleted: bool = true
             - BasicResponse: inline
+            - Deleted: bool = true
         options:
           - BasicRequestOptions: inline
           - LeaseId: std::string, nullable
@@ -274,7 +293,8 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
-        response_action: {}
+        response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
 
     - Undelete:
         http_method: Put
@@ -292,7 +312,8 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-deleted-container-name", DeletedBlobContainerName]
           - [add_header_code, "x-ms-deleted-container-version", DeletedBlobContainerVersion]
-        response_action: {}
+        response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
 
     - GetProperties:
         http_method: Head
@@ -309,6 +330,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - [get_header_code, "x-ms-blob-public-access", AccessType, optional]
@@ -323,6 +345,7 @@ Services:
         http_status_code: 200
         return_type:
           SetBlobContainerMetadataResult:
+            - BasicResponse: inline
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -337,6 +360,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - ListBlobsSinglePage:
@@ -374,6 +398,7 @@ Services:
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - ListBlobsByHierarchySinglePage:
@@ -417,6 +442,7 @@ Services:
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - GetAccessPolicy:
@@ -424,6 +450,7 @@ Services:
         http_status_code: 200
         return_type:
           GetBlobContainerAccessPolicyResult:
+            - BasicResponse: inline
             - BlobContainerAccessPolicy: inline
         options:
           - BasicRequestOptions: inline
@@ -433,6 +460,7 @@ Services:
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "acl"]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-public-access", AccessType]
           - [get_xml_body_code]
@@ -442,6 +470,7 @@ Services:
         http_status_code: 200
         return_type:
           SetBlobContainerAccessPolicyResult:
+            - BasicResponse: inline
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -462,6 +491,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - [add_xml_body_code]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - AcquireLease:
@@ -469,6 +499,7 @@ Services:
         http_status_code: 201
         return_type:
           AcquireBlobContainerLeaseResult:
+            - BasicResponse: inline
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
@@ -485,6 +516,7 @@ Services:
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -493,6 +525,7 @@ Services:
         http_status_code: 200
         return_type:
           RenewBlobContainerLeaseResult:
+            - BasicResponse: inline
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
@@ -507,6 +540,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -515,6 +549,7 @@ Services:
         http_status_code: 200
         return_type:
           ChangeBlobContainerLeaseResult:
+            - BasicResponse: inline
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
@@ -531,6 +566,7 @@ Services:
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -539,6 +575,7 @@ Services:
         http_status_code: 200
         return_type:
           ReleaseBlobContainerLeaseResult:
+            - BasicResponse: inline
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -553,6 +590,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - BreakLease:
@@ -560,6 +598,7 @@ Services:
         http_status_code: 202
         return_type:
           BreakBlobContainerLeaseResult:
+            - BasicResponse: inline
             - ETag: std::string
             - LastModified: Azure::Core::DateTime(RFC1123)
             - LeaseTime: int32_t = 0
@@ -576,6 +615,7 @@ Services:
           - [add_header_code, "x-ms-lease-break-period", BreakPeriod]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-time", LeaseTime]
 
@@ -600,6 +640,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - *RESPONSE_MIME_HEADER_PACKAGE
@@ -626,8 +667,8 @@ Services:
         http_status_code: 202
         return_type:
           DeleteBlobResult:
-            - Deleted: bool = true
             - BasicResponse: inline
+            - Deleted: bool = true
         options:
           - BasicRequestOptions: inline
           - DeleteSnapshots: DeleteSnapshotsOption, nullable
@@ -638,7 +679,8 @@ Services:
           - [add_header_code, "x-ms-delete-snapshots", DeleteSnapshots]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
-        response_action: {}
+        response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
 
     - ScheduleDeletion:
         http_method: Put
@@ -655,7 +697,8 @@ Services:
           - [add_query_code, "comp", "expiry"]
           - [add_header_code, "x-ms-expiry-option", ExpiryOrigin]
           - [add_header_code, "x-ms-expiry-time", ExpiryTime]
-        response_action: {}
+        response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
 
     - Undelete:
         http_method: Put
@@ -668,13 +711,15 @@ Services:
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "undelete"]
-        response_action: {}
+        response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
 
     - GetProperties:
         http_method: Head
         http_status_code: 200
         return_type:
           GetBlobPropertiesResult:
+            - BasicResponse: inline
             - BlobProperties: inline
         options:
           - BasicRequestOptions: inline
@@ -687,6 +732,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-creation-time", CreatedOn]
           - [get_header_code, "x-ms-expiry-time", ExpiriesOn]
@@ -718,6 +764,7 @@ Services:
         http_status_code: 200
         return_type:
           SetBlobHttpHeadersResult:
+            - BasicResponse: inline
             - BlobInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -731,6 +778,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
@@ -739,6 +787,7 @@ Services:
         http_status_code: 200
         return_type:
           SetBlobMetadataResult:
+            - BasicResponse: inline
             - BlobInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -755,6 +804,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - SetAccessTier:
@@ -775,13 +825,15 @@ Services:
           - [add_header_code, "x-ms-access-tier", Tier]
           - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
           - [add_header_code, "x-ms-if-tags", IfTags]
-        response_action: {}
+        response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
 
     - StartCopyFromUri:
         http_method: Put
         http_status_code: 202
         return_type:
           StartCopyBlobFromUriResult:
+            - BasicResponse: inline
             - BlobCopyInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -808,6 +860,7 @@ Services:
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
           - [add_header_code, "x-ms-source-if-tags", SourceIfTags]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-copy-id", CopyId]
           - [get_header_code, "x-ms-copy-status", CopyStatus]
@@ -829,7 +882,8 @@ Services:
           - [add_query_code, "copyid", CopyId]
           - [add_header_code, "x-ms-copy-action", "abort"]
           - [add_header_code, "x-ms-lease-id", LeaseId]
-        response_action: {}
+        response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
 
     - CreateSnapshot:
         http_method: Put
@@ -857,6 +911,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [get_header_code, "x-ms-snapshot", Snapshot]
@@ -866,11 +921,12 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-            GetBlobTagsResult:
-              - Tags: std::map<std::string, std::string>
-              - from_xml: [
-                [start_tag, Tags.TagSet, Tags],
-              ]
+          GetBlobTagsResult:
+            - BasicResponse: inline
+            - Tags: std::map<std::string, std::string>
+            - from_xml: [
+              [start_tag, Tags.TagSet, Tags],
+            ]
         options:
           - BasicRequestOptions: inline
           - IfTags: std::string, nullable
@@ -879,14 +935,15 @@ Services:
           - [add_query_code, "comp", "tags"]
           - [add_header_code, "x-ms-if-tags", IfTags]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - SetTags:
         http_method: Put
         http_status_code: 204
         return_type:
-            SetBlobTagsResult:
-              - BasicResponse: inline
+          SetBlobTagsResult:
+            - BasicResponse: inline
         options:
           - BasicRequestOptions: inline
           - Tags: std::map<std::string, std::string>
@@ -900,13 +957,15 @@ Services:
           - [add_header_code, "Content-Type", "application/xml; charset=UTF-8"]
           - [add_header_code, "x-ms-if-tags", IfTags]
           - [add_xml_body_code]
-        response_action: {}
+        response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
 
     - AcquireLease:
         http_method: Put
         http_status_code: 201
         return_type:
           AcquireBlobLeaseResult:
+            - BasicResponse: inline
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
@@ -921,6 +980,7 @@ Services:
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -929,6 +989,7 @@ Services:
         http_status_code: 200
         return_type:
           RenewBlobLeaseResult:
+            - BasicResponse: inline
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
@@ -941,6 +1002,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -949,6 +1011,7 @@ Services:
         http_status_code: 200
         return_type:
           ChangeBlobLeaseResult:
+            - BasicResponse: inline
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
@@ -963,6 +1026,7 @@ Services:
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -971,6 +1035,7 @@ Services:
         http_status_code: 200
         return_type:
           ReleaseBlobLeaseResult:
+            - BasicResponse: inline
             - BlobInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -983,6 +1048,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
@@ -1006,6 +1072,7 @@ Services:
           - [add_header_code, "x-ms-lease-break-period", BreakPeriod]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-time", LeaseTime]
 
@@ -1016,6 +1083,7 @@ Services:
         http_status_code: 201
         return_type:
           UploadBlockBlobResult:
+            - BasicResponse: inline
             - BlobContentInfo: inline
             - TransactionalContentHash: ContentHash, nullable
         options:
@@ -1040,6 +1108,7 @@ Services:
           - [add_header_code, "x-ms-access-tier", Tier]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
@@ -1050,6 +1119,7 @@ Services:
         http_status_code: 201
         return_type:
           StageBlockResult:
+            - BasicResponse: inline
             - BlockInfo: inline
         options:
           - BodiedRequestOptions: inline
@@ -1067,6 +1137,7 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
@@ -1075,6 +1146,7 @@ Services:
         http_status_code: 201
         return_type:
           StageBlockFromUriResult:
+            - BasicResponse: inline
             - BlockInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -1097,6 +1169,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
@@ -1105,6 +1178,7 @@ Services:
         http_status_code: 201
         return_type:
           CommitBlockListResult:
+            - BasicResponse: inline
             - BlobContentInfo: inline
             - TransactionalContentHash: ContentHash, nullable
         options:
@@ -1131,6 +1205,7 @@ Services:
           - [add_header_code, "x-ms-access-tier", Tier]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
@@ -1157,16 +1232,17 @@ Services:
               [start_tag, BlockList.UncommittedBlocks.Block, UncommittedBlocks],
             ]
         request_action:
-            - [add_query_code, "comp", "blocklist"]
-            - [add_query_code, "blocklisttype", ListType]
-            - *REQUEST_VERSION_TIMEOUT_PACKAGE
-            - [add_header_code, "x-ms-lease-id", LeaseId]
-            - [add_header_code, "x-ms-if-tags", IfTags]
+          - [add_query_code, "comp", "blocklist"]
+          - [add_query_code, "blocklisttype", ListType]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-if-tags", IfTags]
         response_action:
-            - [get_xml_body_code]
-            - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-            - [get_header_code, "Content-Type", ContentType]
-            - [get_header_code, "x-ms-blob-content-length", ContentLength]
+          - *RESPONSE_REQUEST_ID_PACKAGE
+          - [get_xml_body_code]
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "Content-Type", ContentType]
+          - [get_header_code, "x-ms-blob-content-length", ContentLength]
 
   - PageBlob:
     - Create:
@@ -1174,6 +1250,7 @@ Services:
         http_status_code: 201
         return_type:
           CreatePageBlobResult:
+            - BasicResponse: inline
             - Created: bool = true
             - BlobContentInfo: inline
             - SequenceNumber: int64_t, nullable
@@ -1200,6 +1277,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
@@ -1220,6 +1298,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         return_type:
           UploadPageBlobPagesResult:
+            - BasicResponse: inline
             - PageInfo: inline
         request_action:
           - [add_body_code]
@@ -1235,6 +1314,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
@@ -1258,6 +1338,7 @@ Services:
           - BlobRequestConditionalHeaders: inline
         return_type:
           UploadPageBlobPagesFromUriResult:
+            - BasicResponse: inline
             - PageInfo: inline
         request_action:
           - [add_query_code, "comp", "page"]
@@ -1274,6 +1355,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
@@ -1310,6 +1392,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
@@ -1343,6 +1426,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
@@ -1377,6 +1461,7 @@ Services:
           - [add_header_code, "x-ms-previous-snapshot-url", PreviousSnapshotUrl]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-content-length", BlobContentLength]
@@ -1386,6 +1471,7 @@ Services:
         http_status_code: 202
         return_type:
           StartCopyPageBlobIncrementalResult:
+            - BasicResponse: inline
             - BlobCopyInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -1397,6 +1483,7 @@ Services:
           - [add_header_code, "x-ms-copy-source", CopySource]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-copy-id", CopyId]
           - [get_header_code, "x-ms-copy-status", CopyStatus]
@@ -1408,6 +1495,7 @@ Services:
         http_status_code: 201
         return_type:
           CreateAppendBlobResult:
+            - BasicResponse: inline
             - Created: bool = true
             - BlobContentInfo: inline
         options:
@@ -1427,6 +1515,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
@@ -1436,6 +1525,7 @@ Services:
         http_status_code: 201
         return_type:
           AppendBlockResult:
+            - BasicResponse: inline
             - BlobAppendInfo: inline
         options:
           - BodiedRequestOptions: inline
@@ -1457,6 +1547,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-append-offset", AppendOffset]
@@ -1468,6 +1559,7 @@ Services:
         http_status_code: 201
         return_type:
           AppendBlockFromUriResult:
+            - BasicResponse: inline
             - BlobAppendInfo: inline
         options:
           - BasicRequestOptions: inline
@@ -1492,6 +1584,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-append-offset", AppendOffset]
@@ -1519,6 +1612,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
   - BlobBatch:
@@ -1538,6 +1632,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "Content-Type", ContentType]
         response_action:
+          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_header_code, "Content-Type", ContentType]
 
 
@@ -1562,6 +1657,7 @@ Models:
   BasicResponse:
     - noexport: true
     - type: struct
+    - RequestId: std::string
   BodiedResponse:
     - noexport: true
     - type: struct
@@ -1773,7 +1869,6 @@ Models:
     - SourceIfNoneMatch: std::string, nullable
   BlockInfo:
     - noexport: true
-    - BasicResponse: inline
     - TransactionalContentHash: ContentHash, nullable
     - BlobResponseEncryptionOptions: inline
   BlobHttpHeaders:
@@ -1823,7 +1918,6 @@ Models:
     - TagCount: int32_t, nullable
   BlobContentInfo:
     - noexport: true
-    - BasicResponse: inline
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - VersionId: std::string, nullable
@@ -1937,7 +2031,6 @@ Models:
     - UncomittedBlobs: "uncommittedblobs"
   BlobContainerInfo:
     - noexport: true
-    - BasicResponse: inline
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
   ListBlobContainersIncludeItem:
@@ -1970,7 +2063,6 @@ Models:
     - Rules: std::vector<ObjectReplicationRule>
   BlobProperties:
     - noexport: true
-    - BasicResponse: inline
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CreatedOn: Azure::Core::DateTime(RFC1123)
@@ -2001,21 +2093,17 @@ Models:
     - TagCount: int32_t, nullable
   BlobInfo:
     - noexport: true
-    - BasicResponse: inline
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - SequenceNumber: int64_t, nullable
   BlobCopyInfo:
     - noexport: true
-    - BasicResponse: inline
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CopyId: std::string
     - CopyStatus: CopyStatus
     - VersionId: std::string, nullable
   UserDelegationKey:
-    - noexport: true
-    - BasicResponse: inline
     - SignedObjectId: std::string
     - SignedTenantId: std::string
     - SignedStartsOn: Azure::Core::DateTime(ISO8601)
@@ -2024,17 +2112,16 @@ Models:
     - SignedVersion: std::string
     - Value: std::string
     - from_xml: [
-      [text, UserDelegationKey.SignedOid, SignedObjectId],
-      [text, UserDelegationKey.SignedTid, SignedTenantId],
-      [text, UserDelegationKey.SignedStart, SignedStartsOn],
-      [text, UserDelegationKey.SignedExpiry, SignedExpiresOn],
-      [text, UserDelegationKey.SignedService, SignedService],
-      [text, UserDelegationKey.SignedVersion, SignedVersion],
-      [text, UserDelegationKey.Value, Value],
+      [text, SignedOid, SignedObjectId],
+      [text, SignedTid, SignedTenantId],
+      [text, SignedStart, SignedStartsOn],
+      [text, SignedExpiry, SignedExpiresOn],
+      [text, SignedService, SignedService],
+      [text, SignedVersion, SignedVersion],
+      [text, Value, Value],
     ]
   PageInfo:
     - noexport: true
-    - BasicResponse: inline
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - TransactionalContentHash: ContentHash, nullable
@@ -2042,7 +2129,6 @@ Models:
     - BlobResponseEncryptionOptions: inline
   BlobAppendInfo:
     - noexport: true
-    - BasicResponse: inline
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - TransactionalContentHash: ContentHash, nullable

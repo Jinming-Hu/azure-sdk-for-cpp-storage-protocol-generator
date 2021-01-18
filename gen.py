@@ -94,7 +94,7 @@ class class_definition:
 
 try:
     config = ruamel.yaml.round_trip_load(open("blob.yaml"), preserve_quotes=True)
-except yaml.YAMLError as e:
+except ruamel.yaml.YAMLError as e:
     print(e)
 
 
