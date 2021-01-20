@@ -965,7 +965,16 @@ def gen_add_header_code(*args, **kwargs):
     elif value_type == "Azure::Core::DateTime(RFC1123)":
         content += "request.AddHeader({}, {}.GetString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
     elif hasattr(value_type, "type") and value_type.type == "enum class":
-        content += "request.AddHeader({key}, {value}.Get());".format(key=key, value=value)
+        if not optional:
+            content += "request.AddHeader({key}, {value}.Get());".format(key=key, value=value)
+        else:
+            content += inspect.cleandoc(
+                """
+                if (!{value}.Get().empty())
+                {{
+                    request.AddHeader({key}, {value}.Get());
+                }}
+                """.format(key=key, value=value))
     else:
         raise RuntimeError("unknown type " + value_type.type if hasattr(value_type, "type") else value_type)
 

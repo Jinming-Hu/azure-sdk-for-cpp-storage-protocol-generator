@@ -269,7 +269,7 @@ Services:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
-          - [add_header_code, "x-ms-blob-public-access", AccessType]
+          - [add_header_code, "x-ms-blob-public-access", AccessType, optional]
           - [add_header_code, "x-ms-default-encryption-scope", DefaultEncryptionScope]
           - [add_header_code, "x-ms-deny-encryption-scope-override", PreventEncryptionScopeOverride]
         response_action:
@@ -462,7 +462,7 @@ Services:
         response_action:
           - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-public-access", AccessType]
+          - [get_header_code, "x-ms-blob-public-access", AccessType, optional]
           - [get_xml_body_code]
 
     - SetAccessPolicy:
@@ -486,7 +486,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "acl"]
-          - [add_header_code, "x-ms-blob-public-access", AccessType]
+          - [add_header_code, "x-ms-blob-public-access", AccessType, optional]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - [add_xml_body_code]
