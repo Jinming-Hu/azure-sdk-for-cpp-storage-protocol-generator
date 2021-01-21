@@ -286,12 +286,12 @@ for config_resource in config["Services"]:
         add_export_model(return_type)
 
         if return_type.endswith("Result"):
-            option_type = return_type[:-6]
+            option_type = return_type[:-6] + "Options"
         elif return_type.endswith("ResultInternal"):
-            option_type = return_type[:-14]
+            option_type = return_type[:-14] + "Options"
+            return_type = "Models::Details::" + return_type[:-8]
         else:
             raise RuntimeError("Cannot deduce option name from return name " + return_type)
-        option_type += "Options"
 
         config_option_def = config_function_def["options"]
         option_def = class_definition(option_type, "struct")

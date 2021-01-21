@@ -498,7 +498,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          AcquireBlobContainerLeaseResult:
+          AcquireBlobContainerLeaseResultInternal:
             - BasicResponse: inline
             - BlobLease: inline
         options:
@@ -524,7 +524,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          RenewBlobContainerLeaseResult:
+          RenewBlobContainerLeaseResultInternal:
             - BasicResponse: inline
             - BlobLease: inline
         options:
@@ -548,7 +548,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          ChangeBlobContainerLeaseResult:
+          ChangeBlobContainerLeaseResultInternal:
             - BasicResponse: inline
             - BlobLease: inline
         options:
@@ -574,7 +574,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          ReleaseBlobContainerLeaseResult:
+          ReleaseBlobContainerLeaseResultInternal:
             - BasicResponse: inline
             - BlobContainerInfo: inline
         options:
@@ -597,7 +597,7 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          BreakBlobContainerLeaseResult:
+          BreakBlobContainerLeaseResultInternal:
             - BasicResponse: inline
             - ETag: std::string
             - LastModified: Azure::Core::DateTime(RFC1123)
@@ -964,7 +964,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          AcquireBlobLeaseResult:
+          AcquireBlobLeaseResultInternal:
             - BasicResponse: inline
             - BlobLease: inline
         options:
@@ -988,7 +988,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          RenewBlobLeaseResult:
+          RenewBlobLeaseResultInternal:
             - BasicResponse: inline
             - BlobLease: inline
         options:
@@ -1010,7 +1010,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          ChangeBlobLeaseResult:
+          ChangeBlobLeaseResultInternal:
             - BasicResponse: inline
             - BlobLease: inline
         options:
@@ -1034,7 +1034,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          ReleaseBlobLeaseResult:
+          ReleaseBlobLeaseResultInternal:
             - BasicResponse: inline
             - BlobInfo: inline
         options:
@@ -1056,7 +1056,7 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          BreakBlobLeaseResult:
+          BreakBlobLeaseResultInternal:
             - BasicResponse: inline
             - ETag: std::string
             - LastModified: Azure::Core::DateTime(RFC1123)

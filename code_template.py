@@ -172,10 +172,20 @@ def gen_rest_client(service_name):
 
 
 def gen_model_definition(service_name, class_name, class_def):
+    if class_name.endswith("ResultInternal"):
+        class_name = class_name[:-8]
+        namespace_name = "Details"
+    else:
+        namespace_name = ""
+
+    if namespace_name:
+        content = "namespace " + namespace_name + "{"
+    else:
+        content = ""
     if class_def.type == "struct":
-        content = "{} {} {{".format(class_def.type, class_name)
+        content += "{} {} {{".format(class_def.type, class_name)
     elif class_def.type == "enum class":
-        content = inspect.cleandoc(
+        content += inspect.cleandoc(
             """
             class {class_name} {{
             public:
@@ -186,7 +196,7 @@ def gen_model_definition(service_name, class_name, class_def):
                 const std::string& Get() const {{ return m_value; }}
             """.format(class_name=class_name))
     elif class_def.type == "bitwise enum":
-        content = "enum class {} {{".format(class_name)
+        content += "enum class {} {{".format(class_name)
     source_content = ""
     for i in range(len(class_def.member)):
         if class_def.member_type[i]:
@@ -229,6 +239,8 @@ def gen_model_definition(service_name, class_name, class_def):
         content += "private: std::string m_value;}};  // extensible enum {}".format(class_name)
     else:
         content += "}};  // {} {}".format(class_def.type, class_name)
+    if namespace_name:
+        content += "\n}"
     content += "\n\n"
     source_content += "\n\n"
 
