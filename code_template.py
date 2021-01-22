@@ -43,6 +43,8 @@ include_headers = """
 #include <azure/storage/common/storage_common.hpp>
 #include <azure/storage/common/storage_exception.hpp>
 
+#include "azure/storage/blobs/dll_import_export.hpp"
+
 """
 
 namespace_begin = """
@@ -231,7 +233,7 @@ def gen_model_definition(service_name, class_name, class_def):
             literal = class_def.member_literal[i]
             if literal is None:
                 literal = class_def.member[i]
-            content += "const static {class_name} {member_name};".format(class_name=class_name, member_name=class_def.member[i])
+            content += "AZ_STORAGE_BLOBS_DLLEXPORT const static {class_name} {member_name};".format(class_name=class_name, member_name=class_def.member[i])
             source_content += "const {class_name} {class_name}::{member_name}(\"{member_value}\");".format(class_name=class_name, member_name=class_def.member[i], member_value=literal)
         if class_def.member_comment[i]:
             content += "// " + class_def.member_comment[i] + "\n"
