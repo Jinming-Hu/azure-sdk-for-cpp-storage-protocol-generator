@@ -555,6 +555,8 @@ def gen_fromxml_function(class_name):
             content += "ret.{} = Azure::Core::DateTime::Parse(node.Value, Azure::Core::DateTime::DateFormat::Rfc3339);".format(member)
         elif member_type == "Azure::Core::DateTime(RFC1123)":
             content += "ret.{} = Azure::Core::DateTime::Parse(node.Value, Azure::Core::DateTime::DateFormat::Rfc1123);".format(member)
+        elif member_type == "std::chrono::seconds":
+            content += "ret.{} = std::chrono::seconds(strcmp(node.Value, \"infinite\") == 0 ? -1 : std::stoi(node.Value));".format(member)
         else:
             content += "ret.{} = node.Value;".format(member)
         content += "}"
@@ -976,6 +978,8 @@ def gen_add_header_code(*args, **kwargs):
                 }}""".format(member_name=value, member_optional_value=optional_value, header_name=key))
     elif value_type == "bool":
         content += "request.AddHeader({}, {} ? \"true\":\"false\");".format(key, value)
+    elif value_type == "std::chrono::seconds":
+        content += "request.AddHeader({}, std::to_string({}.count()));".format(key, value)
     elif value_type == "Azure::Core::DateTime(RFC1123)":
         content += "request.AddHeader({}, {}.GetString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
     elif hasattr(value_type, "type") and value_type.type == "enum class":
@@ -1332,6 +1336,8 @@ def gen_get_header_code(*args, **kwargs):
             content += "{} = Azure::Core::Base64Decode({}->second);".format(target, ite_name)
         elif target_type == "bool":
             content += "{} = {}->second == \"true\";".format(target, ite_name)
+        elif target_type == "std::chrono::seconds":
+            content += "{target} = std::chrono::seconds({ite}->second == \"infinite\" ? -1 : std::stoi({ite}->second));".format(target=target, ite=ite_name)
         elif target_type == "Azure::Core::DateTime(ISO8601)":
             content += "{} = Azure::Core::DateTime::Parse({}->second, Azure::Core::DateTime::DateFormat::Rfc3339);".format(target, ite_name)
         elif target_type == "Azure::Core::DateTime(RFC1123)":

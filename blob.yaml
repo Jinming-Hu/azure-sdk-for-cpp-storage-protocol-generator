@@ -503,7 +503,7 @@ Services:
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
-          - LeaseDuration: int32_t = -1
+          - LeaseDuration: std::chrono::seconds
           - ProposedLeaseId: std::string, nullable
           - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
           - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
@@ -604,7 +604,7 @@ Services:
             - LeaseTime: int32_t = 0
         options:
           - BasicRequestOptions: inline
-          - BreakPeriod: int32_t, nullable
+          - BreakPeriod: std::chrono::seconds, nullable
           - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
           - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
         request_action:
@@ -969,7 +969,7 @@ Services:
             - BlobLease: inline
         options:
           - BasicRequestOptions: inline
-          - LeaseDuration: int32_t = -1
+          - LeaseDuration: std::chrono::seconds
           - ProposedLeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
@@ -1063,7 +1063,7 @@ Services:
             - LeaseTime: int32_t = 0
         options:
           - BasicRequestOptions: inline
-          - BreakPeriod: int32_t, nullable
+          - BreakPeriod: std::chrono::seconds, nullable
           - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1689,6 +1689,10 @@ Models:
     - type: enum class
     - Locked: "locked"
     - Unlocked: "unlocked"
+  BlobLeaseDurationType:
+    - type: enum class
+    - Infinite: "infinite"
+    - Fixed: "fixed"
   AccessTier:
     - type: enum class
     - P1
@@ -1909,7 +1913,7 @@ Models:
     - IsSealed: bool, nullable # only for append blob
     - BlobType: BlobType
     - TransactionalContentHash: ContentHash, nullable  # hash for the downloaded range
-    - LeaseDuration: std::string, nullable
+    - LeaseDuration: BlobLeaseDurationType, nullable
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
     - BlobResponseEncryptionOptions: inline
@@ -1930,7 +1934,7 @@ Models:
     - AccessType: PublicAccessType = PublicAccessType::Private
     - HasImmutabilityPolicy: bool = false
     - HasLegalHold: bool = false
-    - LeaseDuration: std::string, nullable
+    - LeaseDuration: BlobLeaseDurationType, nullable
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
     - DefaultEncryptionScope: std::string
@@ -1979,7 +1983,7 @@ Models:
     - IsAccessTierInferred: bool, nullable
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
-    - LeaseDuration: std::string, nullable
+    - LeaseDuration: BlobLeaseDurationType, nullable
     - BlobResponseEncryptionOptions: inline
     - SequenceNumber: int64_t, nullable # only for page blobd
     - IsSealed: bool, nullable # only for append blob
@@ -2070,7 +2074,7 @@ Models:
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
     - Metadata: Metadata
     - BlobType: BlobType
-    - LeaseDuration: std::string, nullable
+    - LeaseDuration: BlobLeaseDurationType, nullable
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
     - ContentLength: int64_t = 0
