@@ -261,7 +261,7 @@ Services:
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
-          - AccessType: PublicAccessType = PublicAccessType::Private
+          - AccessType: PublicAccessType = PublicAccessType::None
           - Metadata: Metadata
           - DefaultEncryptionScope: std::string, nullable
           - PreventEncryptionScopeOverride: bool, nullable
@@ -474,7 +474,7 @@ Services:
             - BlobContainerInfo: inline
         options:
           - BasicRequestOptions: inline
-          - AccessType: PublicAccessType = PublicAccessType::Private
+          - AccessType: PublicAccessType = PublicAccessType::None
           - LeaseId: std::string, nullable
           - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
           - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
@@ -1667,7 +1667,7 @@ Models:
     - type: enum class
     - BlobContainer: "container"
     - Blob: "blob"
-    - Private: ""
+    - None: ""
   BlockType:
     - type: enum class
     - Committed
@@ -1931,7 +1931,7 @@ Models:
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - Metadata: Metadata
-    - AccessType: PublicAccessType = PublicAccessType::Private
+    - AccessType: PublicAccessType = PublicAccessType::None
     - HasImmutabilityPolicy: bool = false
     - HasLegalHold: bool = false
     - LeaseDuration: BlobLeaseDurationType, nullable
@@ -2170,7 +2170,7 @@ Models:
     ]
   BlobContainerAccessPolicy:
     - noexport: true
-    - AccessType: PublicAccessType = PublicAccessType::Private
+    - AccessType: PublicAccessType = PublicAccessType::None
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - SignedIdentifiers: std::vector<BlobSignedIdentifier>
