@@ -832,7 +832,7 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          StartCopyBlobFromUriResult:
+          StartCopyBlobFromUriResultInternal:
             - BasicResponse: inline
             - BlobCopyInfo: inline
         options:
@@ -1470,7 +1470,7 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          StartCopyPageBlobIncrementalResult:
+          StartCopyPageBlobIncrementalResultInternal:
             - BasicResponse: inline
             - BlobCopyInfo: inline
         options:
