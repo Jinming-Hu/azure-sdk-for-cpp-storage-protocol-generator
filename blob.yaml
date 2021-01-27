@@ -642,7 +642,7 @@ Services:
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
           - *RESPONSE_LEASE_HEADER_PACKAGE
           - [get_header_code, "x-ms-creation-time", CreatedOn]
-          - [get_header_code, "x-ms-expiry-time", ExpiriesOn]
+          - [get_header_code, "x-ms-expiry-time", ExpiresOn]
           - [get_header_code, "x-ms-last-access-time", LastAccessedOn]
           - [get_content_range_code, "Content-Range", ContentRange]
           - [get_content_range_code, "Content-Range", BlobSize]
@@ -729,7 +729,7 @@ Services:
           - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-creation-time", CreatedOn]
-          - [get_header_code, "x-ms-expiry-time", ExpiriesOn]
+          - [get_header_code, "x-ms-expiry-time", ExpiresOn]
           - [get_header_code, "x-ms-last-access-time", LastAccessedOn]
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - [get_header_code, "x-ms-blob-type", BlobType]
@@ -1896,7 +1896,7 @@ Models:
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CreatedOn: Azure::Core::DateTime(RFC1123)
-    - ExpiriesOn: Azure::Core::DateTime(RFC1123), nullable
+    - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
     - ContentRange: Azure::Core::Http::Range
     - BlobSize: int64_t = 0
@@ -1967,7 +1967,7 @@ Models:
     - HttpHeaders: BlobHttpHeaders
     - Metadata: Metadata
     - CreatedOn: Azure::Core::DateTime(RFC1123)
-    - ExpiriesOn: Azure::Core::DateTime(RFC1123), nullable
+    - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
     - LastModified: Azure::Core::DateTime(RFC1123)
     - ETag: std::string
@@ -1995,7 +1995,7 @@ Models:
       [text, Properties.Cache-Control, HttpHeaders.CacheControl],
       [text, Properties.Content-Disposition, HttpHeaders.ContentDisposition],
       [text, Properties.Creation-Time, CreatedOn],
-      [text, Properties.Expiry-Time, ExpiriesOn],
+      [text, Properties.Expiry-Time, ExpiresOn],
       [text, Properties.LastAccessTime, LastAccessedOn],
       [text, Properties.Last-Modified, LastModified],
       [text, Properties.Etag, ETag],
@@ -2064,7 +2064,7 @@ Models:
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CreatedOn: Azure::Core::DateTime(RFC1123)
-    - ExpiriesOn: Azure::Core::DateTime(RFC1123), nullable
+    - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
     - Metadata: Metadata
     - BlobType: BlobType
