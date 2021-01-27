@@ -66,15 +66,15 @@ response_lease_package: &RESPONSE_LEASE_HEADER_PACKAGE
 request_conditional_headers_package: &REQUEST_CONDITIONAL_HEADER_PACKAGE
   - [add_header_code, "If-Modified-Since", IfModifiedSince]
   - [add_header_code, "If-Unmodified-Since", IfUnmodifiedSince, ignorable]
-  - [add_header_code, "If-Match", IfMatch, ignorable]
-  - [add_header_code, "If-None-Match", IfNoneMatch, ignorable]
+  - [add_header_code, "If-Match", IfMatch, ignorable, optional]
+  - [add_header_code, "If-None-Match", IfNoneMatch, ignorable, optional]
   - [add_header_code, "x-ms-if-tags", IfTags, ignorable]
 
 request_source_conditional_headers_package: &REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
   - [add_header_code, "x-ms-source-if-modified-since", SourceIfModifiedSince]
   - [add_header_code, "x-ms-source-if-unmodified-since", SourceIfUnmodifiedSince]
-  - [add_header_code, "x-ms-source-if-match", SourceIfMatch]
-  - [add_header_code, "x-ms-source-if-none-match", SourceIfNoneMatch]
+  - [add_header_code, "x-ms-source-if-match", SourceIfMatch, optional]
+  - [add_header_code, "x-ms-source-if-none-match", SourceIfNoneMatch, optional]
 
 Services:
   - Service:
@@ -591,7 +591,7 @@ Services:
         return_type:
           BreakBlobContainerLeaseResultInternal:
             - BasicResponse: inline
-            - ETag: std::string
+            - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - LeaseTime: int32_t = 0
         options:
@@ -884,7 +884,7 @@ Services:
           CreateBlobSnapshotResult:
             - BasicResponse: inline
             - Snapshot: std::string
-            - ETag: std::string
+            - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - VersionId: std::string, nullable
             - BlobResponseEncryptionOptions: inline
@@ -1050,7 +1050,7 @@ Services:
         return_type:
           BreakBlobLeaseResultInternal:
             - BasicResponse: inline
-            - ETag: std::string
+            - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - LeaseTime: int32_t = 0
         options:
@@ -1213,7 +1213,7 @@ Services:
         return_type:
           GetBlockListResult:
             - BasicResponse: inline
-            - ETag: std::string
+            - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - ContentType: std::string
             - ContentLength: int64_t = 0
@@ -1369,7 +1369,7 @@ Services:
         return_type:
           ClearPageBlobPagesResult:
             - BasicResponse: inline
-            - ETag: std::string
+            - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - SequenceNumber: int64_t = 0
         request_action:
@@ -1394,7 +1394,7 @@ Services:
         return_type:
           ResizePageBlobResult:
             - BasicResponse: inline
-            - ETag: std::string
+            - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - SequenceNumber: int64_t = 0
         options:
@@ -1428,7 +1428,7 @@ Services:
         return_type:
           GetPageBlobPageRangesResult:
             - BasicResponse: inline
-            - ETag: std::string
+            - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - BlobContentLength: int64_t = 0
             - PageRanges: std::vector<Azure::Core::Http::Range>
@@ -1589,7 +1589,7 @@ Services:
         return_type:
           SealAppendBlobResult:
             - BasicResponse: inline
-            - ETag: std::string
+            - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - IsSealed: bool = true
         options:
@@ -1854,15 +1854,15 @@ Models:
     - noexport: true
     - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
     - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
-    - IfMatch: std::string, nullable
-    - IfNoneMatch: std::string, nullable
+    - IfMatch: Azure::Core::ETag
+    - IfNoneMatch: Azure::Core::ETag
     - IfTags: std::string, nullable
   BlobRequestSourceConditionalHeaders:
     - noexport: true
     - SourceIfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
     - SourceIfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
-    - SourceIfMatch: std::string, nullable
-    - SourceIfNoneMatch: std::string, nullable
+    - SourceIfMatch: Azure::Core::ETag
+    - SourceIfNoneMatch: Azure::Core::ETag
   BlockInfo:
     - noexport: true
     - TransactionalContentHash: ContentHash, nullable
@@ -1891,7 +1891,7 @@ Models:
     - noexport: true
     - type: struct
     - BodiedResponse: inline
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CreatedOn: Azure::Core::DateTime(RFC1123)
     - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
@@ -1914,13 +1914,13 @@ Models:
     - TagCount: int32_t, nullable
   BlobContentInfo:
     - noexport: true
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - VersionId: std::string, nullable
     - BlobResponseEncryptionOptions: inline
   BlobContainerItemWithoutName:
     - noexport: true
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - Metadata: Metadata
     - AccessType: PublicAccessType = PublicAccessType::None
@@ -1968,7 +1968,7 @@ Models:
     - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
     - LastModified: Azure::Core::DateTime(RFC1123)
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - ContentLength: int64_t = 0
     - BlobType: BlobType
     - Tier: AccessTier, nullable
@@ -2027,7 +2027,7 @@ Models:
     - UncomittedBlobs: "uncommittedblobs"
   BlobContainerInfo:
     - noexport: true
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
   ListBlobContainersIncludeFlags:
     - type: bitwise enum
@@ -2059,7 +2059,7 @@ Models:
     - Rules: std::vector<ObjectReplicationRule>
   BlobProperties:
     - noexport: true
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CreatedOn: Azure::Core::DateTime(RFC1123)
     - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
@@ -2089,12 +2089,12 @@ Models:
     - TagCount: int32_t, nullable
   BlobInfo:
     - noexport: true
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - SequenceNumber: int64_t, nullable
   BlobCopyInfo:
     - noexport: true
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CopyId: std::string
     - CopyStatus: CopyStatus
@@ -2118,14 +2118,14 @@ Models:
     ]
   PageInfo:
     - noexport: true
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - TransactionalContentHash: ContentHash, nullable
     - SequenceNumber: int64_t = 0
     - BlobResponseEncryptionOptions: inline
   BlobAppendInfo:
     - noexport: true
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - TransactionalContentHash: ContentHash, nullable
     - AppendOffset: int64_t = 0
@@ -2163,7 +2163,7 @@ Models:
   BlobContainerAccessPolicy:
     - noexport: true
     - AccessType: PublicAccessType = PublicAccessType::None
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - SignedIdentifiers: std::vector<BlobSignedIdentifier>
     - from_xml: [
@@ -2171,7 +2171,7 @@ Models:
     ]
   BlobLease:
     - noexport: true
-    - ETag: std::string
+    - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - LeaseId: std::string
   FilterBlobItem:

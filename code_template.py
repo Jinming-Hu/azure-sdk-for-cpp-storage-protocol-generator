@@ -31,6 +31,7 @@ include_headers = """
 #include <stdexcept>
 #include <limits>
 
+#include <azure/core/etag.hpp>
 #include <azure/core/datetime.hpp>
 #include <azure/core/internal/strings.hpp>
 #include <azure/core/nullable.hpp>
@@ -557,6 +558,8 @@ def gen_fromxml_function(class_name):
             content += "ret.{} = Azure::Core::DateTime::Parse(node.Value, Azure::Core::DateTime::DateFormat::Rfc1123);".format(member)
         elif member_type == "std::chrono::seconds":
             content += "ret.{} = std::chrono::seconds(strcmp(node.Value, \"infinite\") == 0 ? -1 : std::stoi(node.Value));".format(member)
+        elif member_type == "Azure::Core::ETag":
+            content += "ret.{} = Azure::Core::ETag(node.Value);".format(member)
         else:
             content += "ret.{} = node.Value;".format(member)
         content += "}"
@@ -982,6 +985,15 @@ def gen_add_header_code(*args, **kwargs):
         content += "request.AddHeader({}, std::to_string({}.count()));".format(key, value)
     elif value_type == "Azure::Core::DateTime(RFC1123)":
         content += "request.AddHeader({}, {}.GetString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
+    elif value_type == "Azure::Core::ETag":
+        assert optional
+        content += inspect.cleandoc(
+            """
+            if ({value}.HasValue() && !{value}.ToString().empty())
+            {{
+                request.AddHeader({key}, {value}.ToString());
+            }}
+            """.format(key=key, value=value))
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
             content += "request.AddHeader({key}, {value}.Get());".format(key=key, value=value)
@@ -1361,6 +1373,8 @@ def gen_get_header_code(*args, **kwargs):
             content = "{1} = Azure::Core::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::Core::DateTime::DateFormat::Rfc3339);".format(key.lower(), target)
         elif target_type == "Azure::Core::DateTime(RFC1123)":
             content = "{1} = Azure::Core::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::Core::DateTime::DateFormat::Rfc1123);".format(key.lower(), target)
+        elif target_type == "Azure::Core::ETag":
+            content = "{1} = Azure::Core::ETag(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
             content = "{target} = {target_type}(httpResponse.GetHeaders().at({key}));".format(key=key.lower(), target=target, target_type=target_type.name)
         else:
