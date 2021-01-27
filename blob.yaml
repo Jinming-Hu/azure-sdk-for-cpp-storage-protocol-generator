@@ -86,13 +86,11 @@ Services:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Prefix: std::string
-            - PreviousContinuationToken: std::string, nullable
             - ContinuationToken: std::string, nullable
             - Items: std::vector<BlobContainerItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
               [text, EnumerationResults.Prefix, Prefix],
-              [text, EnumerationResults.Marker, PreviousContinuationToken],
               [text, EnumerationResults.NextMarker, ContinuationToken],
               [start_tag, EnumerationResults.Containers.Container, Items],
             ]
@@ -372,14 +370,12 @@ Services:
             - ServiceEndpoint: std::string
             - BlobContainerName: std::string
             - Prefix: std::string
-            - PreviousContinuationToken: std::string, nullable
             - ContinuationToken: std::string, nullable
             - Items: std::vector<BlobItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
               [attribute, EnumerationResults, ContainerName, BlobContainerName],
               [text, EnumerationResults.Prefix, Prefix],
-              [text, EnumerationResults.Marker, PreviousContinuationToken],
               [text, EnumerationResults.NextMarker, ContinuationToken],
               [start_tag, EnumerationResults.Blobs.Blob, Items],
             ]
@@ -411,7 +407,6 @@ Services:
             - BlobContainerName: std::string
             - Prefix: std::string
             - Delimiter: std::string
-            - PreviousContinuationToken: std::string, nullable
             - ContinuationToken: std::string, nullable
             - Items: std::vector<BlobItem>
             - BlobPrefixes: std::vector<BlobPrefix>
@@ -420,7 +415,6 @@ Services:
               [attribute, EnumerationResults, ContainerName, BlobContainerName],
               [text, EnumerationResults.Prefix, Prefix],
               [text, EnumerationResults.Delimiter, Delimiter],
-              [text, EnumerationResults.Marker, PreviousContinuationToken],
               [text, EnumerationResults.NextMarker, ContinuationToken],
               [start_tag, EnumerationResults.Blobs.Blob, Items],
               [start_tag, EnumerationResults.Blobs.BlobPrefix, BlobPrefixes]
