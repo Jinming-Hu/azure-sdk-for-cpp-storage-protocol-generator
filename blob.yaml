@@ -99,7 +99,7 @@ Services:
           - Prefix: std::string, nullable
           - ContinuationToken: std::string, nullable
           - MaxResults: int32_t, nullable
-          - Include: ListBlobContainersIncludeItem = ListBlobContainersIncludeItem::None
+          - Include: ListBlobContainersIncludeFlags = ListBlobContainersIncludeFlags::None
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "list"]
@@ -384,7 +384,7 @@ Services:
           - Prefix: std::string, nullable
           - ContinuationToken: std::string, nullable
           - MaxResults: int32_t, nullable
-          - Include: ListBlobsIncludeItem = ListBlobsIncludeItem::None
+          - Include: ListBlobsIncludeFlags = ListBlobsIncludeFlags::None
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -425,7 +425,7 @@ Services:
           - Delimiter: std::string, nullable
           - ContinuationToken: std::string, nullable
           - MaxResults: int32_t, nullable
-          - Include: ListBlobsIncludeItem = ListBlobsIncludeItem::None
+          - Include: ListBlobsIncludeFlags = ListBlobsIncludeFlags::None
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -2018,7 +2018,7 @@ Models:
     - from_xml: [
       [text, Name, Name],
     ]
-  ListBlobsIncludeItem:
+  ListBlobsIncludeFlags:
     - type: bitwise enum
     - None: ""
     - Copy: "copy"
@@ -2031,7 +2031,7 @@ Models:
     - noexport: true
     - ETag: std::string
     - LastModified: Azure::Core::DateTime(RFC1123)
-  ListBlobContainersIncludeItem:
+  ListBlobContainersIncludeFlags:
     - type: bitwise enum
     - None: ""
     - Metadata: "metadata"
