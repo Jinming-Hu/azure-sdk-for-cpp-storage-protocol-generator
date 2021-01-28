@@ -223,12 +223,10 @@ Services:
           FindBlobsByTagsSinglePageResult:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
-            - Where: std::string
             - ContinuationToken: std::string, nullable
             - Items: std::vector<FilterBlobItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
-              [text, EnumerationResults.Where, Where],
               [text, EnumerationResults.NextMarker, ContinuationToken],
               [start_tag, EnumerationResults.Blobs.Blob, Items],
             ]
@@ -2179,11 +2177,9 @@ Models:
   FilterBlobItem:
     - BlobName: std::string
     - BlobContainerName: std::string
-    - TagValue: std::string
     - from_xml: [
       [text, Name, BlobName],
       [text, ContainerName, BlobContainerName],
-      [text, TagValue, TagValue],
     ]
   ScheduleBlobExpiryOriginType:
     - type: enum class
