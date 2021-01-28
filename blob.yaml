@@ -741,15 +741,21 @@ Services:
           - [get_header_code, "x-ms-access-tier", Tier]
           - [get_header_code, "x-ms-access-tier-inferred", IsAccessTierInferred]
           - [get_header_code, "x-ms-archive-status", ArchiveStatus]
+          - [get_header_code, "x-ms-rehydrate-priority", RehydratePriority]
           - [get_header_code, "x-ms-access-tier-change-time", AccessTierChangedOn]
           - [get_header_code, "x-ms-copy-id", CopyId]
           - [get_header_code, "x-ms-copy-source", CopySource]
           - [get_header_code, "x-ms-copy-status", CopyStatus]
+          - [get_header_code, "x-ms-copy-status-description", CopyStatusDescription]
+          - [get_header_code, "x-ms-incremental-copy", IsIncrementalCopy]
+          - [get_header_code, "x-ms-copy-destination-snapshot", IncrementalCopyDestinationSnapshot]
           - [get_header_code, "x-ms-copy-progress", CopyProgress]
           - [get_header_code, "x-ms-copy-completion-time", CopyCompletedOn]
           - [get_header_code, "x-ms-or-policy-id", ObjectReplicationDestinationPolicyId]
           - [get_or_code, "x-ms-or-", ObjectReplicationSourceProperties]
           - [get_header_code, "x-ms-tag-count", TagCount]
+          - [get_header_code, "x-ms-version-id", VersionId]
+          - [get_header_code, "x-ms-is-current-version", IsCurrentVersion]
 
     - SetHttpHeaders:
         http_method: Put
@@ -2073,15 +2079,21 @@ Models:
     - Tier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
     - ArchiveStatus: BlobArchiveStatus, nullable
+    - RehydratePriority: RehydratePriority, nullable
     - AccessTierChangedOn: Azure::Core::DateTime(RFC1123), nullable
     - CopyId: std::string, nullable
     - CopySource: std::string, nullable
     - CopyStatus: CopyStatus, nullable
+    - CopyStatusDescription: std::string, nullable
+    - IsIncrementalCopy: bool, nullable
+    - IncrementalCopyDestinationSnapshot: std::string, nullable
     - CopyProgress: std::string, nullable
     - CopyCompletedOn: Azure::Core::DateTime(RFC1123), nullable
     - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
     - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
     - TagCount: int32_t, nullable
+    - VersionId: std::string, nullable
+    - IsCurrentVersion: bool, nullable
   BlobInfo:
     - noexport: true
     - ETag: Azure::Core::ETag
