@@ -550,6 +550,8 @@ def gen_fromxml_function(class_name):
             content += "ret.{} = std::strcmp(node.Value,\"true\") == 0;".format(member)
         elif member_type == "std::vector<uint8_t>":
             content += "ret.{} = Azure::Core::Base64Decode(node.Value);".format(member)
+        elif member_type == "std::vector<std::string>":
+            content += "ret.{}.emplace_back(node.Value);".format(member)
         elif member_type in models_cache and models_cache[member_type].type == "enum class":
             content += "ret.{} = {}(node.Value);".format(member, member_type)
         elif member_type == "Azure::Core::DateTime(ISO8601)":

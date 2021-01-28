@@ -407,7 +407,7 @@ Services:
             - Delimiter: std::string
             - ContinuationToken: std::string, nullable
             - Items: std::vector<BlobItem>
-            - BlobPrefixes: std::vector<BlobPrefix>
+            - BlobPrefixes: std::vector<std::string>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
               [attribute, EnumerationResults, ContainerName, BlobContainerName],
@@ -415,7 +415,7 @@ Services:
               [text, EnumerationResults.Delimiter, Delimiter],
               [text, EnumerationResults.NextMarker, ContinuationToken],
               [start_tag, EnumerationResults.Blobs.Blob, Items],
-              [start_tag, EnumerationResults.Blobs.BlobPrefix, BlobPrefixes]
+              [text, EnumerationResults.Blobs.BlobPrefix.Name, BlobPrefixes]
             ]
         options:
           - BasicRequestOptions: inline
@@ -2010,11 +2010,6 @@ Models:
       [text, Properties.x-ms-blob-sequence-number, SequenceNumber],
       [start_tag, Metadata, Metadata],
       [start_tag, OrMetadata, ObjectReplicationSourceProperties],
-    ]
-  BlobPrefix:
-    - Name: std::string
-    - from_xml: [
-      [text, Name, Name],
     ]
   ListBlobsIncludeFlags:
     - type: bitwise enum
