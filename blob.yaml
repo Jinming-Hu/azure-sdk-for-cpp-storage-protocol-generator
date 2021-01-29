@@ -740,7 +740,7 @@ Services:
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - [get_header_code, "x-ms-blob-type", BlobType]
           - *RESPONSE_LEASE_HEADER_PACKAGE
-          - [get_header_code, "Content-Length", ContentLength]
+          - [get_header_code, "Content-Length", BlobSize]
           - *RESPONSE_MIME_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
@@ -1230,7 +1230,7 @@ Services:
             - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - ContentType: std::string
-            - ContentLength: int64_t = 0
+            - BlobSize: int64_t = 0
             - CommittedBlocks: std::vector<BlobBlock>
             - UncommittedBlocks: std::vector<BlobBlock>
             - from_xml: [
@@ -1248,7 +1248,7 @@ Services:
           - [get_xml_body_code]
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "Content-Type", ContentType]
-          - [get_header_code, "x-ms-blob-content-length", ContentLength]
+          - [get_header_code, "x-ms-blob-content-length", BlobSize]
 
   - PageBlob:
     - Create:
@@ -1262,7 +1262,7 @@ Services:
             - SequenceNumber: int64_t, nullable
         options:
           - BasicRequestOptions: inline
-          - BlobContentLength: int64_t = -1
+          - BlobSize: int64_t = -1
           - SequenceNumber: int64_t, nullable
           - HttpHeaders: BlobHttpHeaders
           - Metadata: Metadata
@@ -1277,7 +1277,7 @@ Services:
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-type", "PageBlob"]
-          - [add_header_code, "x-ms-blob-content-length", BlobContentLength]
+          - [add_header_code, "x-ms-blob-content-length", BlobSize]
           - [add_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - [add_header_code, "x-ms-access-tier", Tier]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
@@ -1413,7 +1413,7 @@ Services:
             - SequenceNumber: int64_t = 0
         options:
           - BasicRequestOptions: inline
-          - BlobContentLength: int64_t = -1
+          - BlobSize: int64_t = -1
           - LeaseId: std::string, nullable
           - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
           - IfSequenceNumberLessThan: int64_t, nullable
@@ -1424,7 +1424,7 @@ Services:
         request_action:
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
-          - [add_header_code, "x-ms-blob-content-length", BlobContentLength]
+          - [add_header_code, "x-ms-blob-content-length", BlobSize]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
           - [add_header_code, "x-ms-if-sequence-number-lt", IfSequenceNumberLessThan]
@@ -1444,7 +1444,7 @@ Services:
             - BasicResponse: inline
             - ETag: Azure::Core::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
-            - BlobContentLength: int64_t = 0
+            - BlobSize: int64_t = 0
             - PageRanges: std::vector<Azure::Core::Http::Range>
             - ClearRanges: std::vector<Azure::Core::Http::Range>
             - from_xml: [
@@ -1470,7 +1470,7 @@ Services:
           - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-content-length", BlobContentLength]
+          - [get_header_code, "x-ms-blob-content-length", BlobSize]
 
     - StartCopyIncremental:
         http_method: Put
@@ -1991,7 +1991,7 @@ Models:
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
     - LastModified: Azure::Core::DateTime(RFC1123)
     - ETag: Azure::Core::ETag
-    - ContentLength: int64_t = 0
+    - BlobSize: int64_t = 0
     - BlobType: BlobType
     - Tier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
@@ -2019,7 +2019,7 @@ Models:
       [text, Properties.LastAccessTime, LastAccessedOn],
       [text, Properties.Last-Modified, LastModified],
       [text, Properties.Etag, ETag],
-      [text, Properties.Content-Length, ContentLength],
+      [text, Properties.Content-Length, BlobSize],
       [text, Properties.BlobType, BlobType],
       [text, Properties.AccessTier, Tier],
       [text, Properties.AccessTierInferred, IsAccessTierInferred],
@@ -2086,7 +2086,7 @@ Models:
     - LeaseDuration: BlobLeaseDurationType, nullable
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
-    - ContentLength: int64_t = 0
+    - BlobSize: int64_t = 0
     - HttpHeaders: BlobHttpHeaders
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int32_t, nullable  # only for append blob
