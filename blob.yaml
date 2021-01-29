@@ -652,6 +652,14 @@ Services:
           - [get_or_code, "x-ms-or-", ObjectReplicationSourceProperties]
           - [get_body_code, BodyStream]
           - [get_header_code, "x-ms-tag-count", TagCount]
+          - [get_header_code, "x-ms-copy-id", CopyId]
+          - [get_header_code, "x-ms-copy-source", CopySource]
+          - [get_header_code, "x-ms-copy-status", CopyStatus]
+          - [get_header_code, "x-ms-copy-status-description", CopyStatusDescription]
+          - [get_header_code, "x-ms-copy-progress", CopyProgress]
+          - [get_header_code, "x-ms-copy-completion-time", CopyCompletedOn]
+          - [get_header_code, "x-ms-version-id", VersionId]
+          - [get_header_code, "x-ms-is-current-version", IsCurrentVersion]
 
     - Delete:
         separate_functions: true
@@ -1918,6 +1926,14 @@ Models:
     - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
     - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
     - TagCount: int32_t, nullable
+    - CopyId: std::string, nullable
+    - CopySource: std::string, nullable
+    - CopyStatus: CopyStatus, nullable
+    - CopyStatusDescription: std::string, nullable
+    - CopyProgress: std::string, nullable
+    - CopyCompletedOn: Azure::Core::DateTime(RFC1123), nullable
+    - VersionId: std::string, nullable
+    - IsCurrentVersion: bool, nullable
   BlobContentInfo:
     - noexport: true
     - ETag: Azure::Core::ETag
