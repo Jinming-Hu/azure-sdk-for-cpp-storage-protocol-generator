@@ -622,6 +622,7 @@ Services:
         options:
           - BasicRequestOptions: inline
           - Range: Azure::Core::Http::Range, nullable
+          - RangeHashAlgorithm: HashAlgorithm, nullable
           - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
           - LeaseId: std::string, nullable
           - BlobRequestConditionalHeaders: inline
@@ -631,6 +632,7 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_hash_algorithm_code, RangeHashAlgorithm]
         response_action:
           - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE

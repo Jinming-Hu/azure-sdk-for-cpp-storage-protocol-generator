@@ -1112,6 +1112,28 @@ def gen_add_source_content_hash_code(*args, **kwargs):
     main_body += content
 
 
+def gen_add_hash_algorithm_code(*args, **kwargs):
+    value = args[0]
+    value_nullable = kwargs[value + ".nullable"]
+
+    assert value_nullable
+
+    content = inspect.cleandoc(
+        """
+        if ({var}.HasValue()) {{
+            if ({var}.GetValue()== HashAlgorithm::Md5) {{
+                request.AddHeader("x-ms-range-get-content-md5", "true");
+            }}
+            else if ({var}.GetValue()== HashAlgorithm::Crc64) {{
+                request.AddHeader("x-ms-range-get-content-crc64", "true");
+            }}
+        }}
+        """.format(var=value))
+
+    global main_body
+    main_body += content
+
+
 def gen_get_content_hash_code(*args, **kwargs):
     value = args[0]
 
@@ -1119,7 +1141,7 @@ def gen_get_content_hash_code(*args, **kwargs):
         """
         {{
             const auto& headers = httpResponse.GetHeaders();
-            auto content_md5_iterator = headers.find("Content-MD5");
+            auto content_md5_iterator = headers.find("content-md5");
             if (content_md5_iterator != headers.end()) {{
                 ContentHash hash;
                 hash.Algorithm = HashAlgorithm::Md5;
