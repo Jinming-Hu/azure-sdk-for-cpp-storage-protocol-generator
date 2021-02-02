@@ -618,7 +618,12 @@ Services:
         http_status_code: [200, 206]
         return_type:
           DownloadBlobResult:
-            - BlobDownloadResponse: inline
+            - BodiedResponse: inline
+            - ContentRange: Azure::Core::Http::Range
+            - BlobSize: int64_t = 0
+            - BlobType: BlobType
+            - TransactionalContentHash: ContentHash, nullable  # hash for the downloaded range
+            - Details: DownloadBlobDetails
         options:
           - BasicRequestOptions: inline
           - Range: Azure::Core::Http::Range, nullable
@@ -635,33 +640,44 @@ Services:
           - [add_hash_algorithm_code, RangeHashAlgorithm]
         response_action:
           - *RESPONSE_REQUEST_ID_PACKAGE
-          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
-          - *RESPONSE_MIME_HEADER_PACKAGE
-          - [get_metadata_code, "x-ms-meta-", Metadata, optional]
-          - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
-          - *RESPONSE_LEASE_HEADER_PACKAGE
-          - [get_header_code, "x-ms-creation-time", CreatedOn]
-          - [get_header_code, "x-ms-expiry-time", ExpiresOn]
-          - [get_header_code, "x-ms-last-access-time", LastAccessedOn]
+          - [get_body_code, BodyStream]
+          - [get_header_code, "x-ms-blob-type", BlobType]
           - [get_content_range_code, "Content-Range", ContentRange]
           - [get_content_range_code, "Content-Range", BlobSize]
-          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
-          - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
-          - [get_header_code, "x-ms-blob-sealed", IsSealed]
-          - [get_header_code, "x-ms-blob-type", BlobType]
-          - [get_header_code, "x-ms-or-policy-id", ObjectReplicationDestinationPolicyId]
-          - [get_or_code, "x-ms-or-", ObjectReplicationSourceProperties]
-          - [get_body_code, BodyStream]
-          - [get_header_code, "x-ms-tag-count", TagCount]
-          - [get_header_code, "x-ms-copy-id", CopyId]
-          - [get_header_code, "x-ms-copy-source", CopySource]
-          - [get_header_code, "x-ms-copy-status", CopyStatus]
-          - [get_header_code, "x-ms-copy-status-description", CopyStatusDescription]
-          - [get_header_code, "x-ms-copy-progress", CopyProgress]
-          - [get_header_code, "x-ms-copy-completion-time", CopyCompletedOn]
-          - [get_header_code, "x-ms-version-id", VersionId]
-          - [get_header_code, "x-ms-is-current-version", IsCurrentVersion]
+          - [get_header_code, "ETag", Details.ETag]
+          - [get_header_code, "Last-Modified", Details.LastModified]
+          - [get_header_code, "Content-Type", Details.HttpHeaders.ContentType, optional]
+          - [get_header_code, "Content-Encoding", Details.HttpHeaders.ContentEncoding, optional]
+          - [get_header_code, "Content-Language", Details.HttpHeaders.ContentLanguage, optional]
+          - [get_header_code, "Cache-Control", Details.HttpHeaders.CacheControl, optional]
+          - [get_header_code, "Content-MD5", Details.HttpHeaders.ContentHash.Value, optional]
+          - [get_header_code, "x-ms-blob-content-md5", Details.HttpHeaders.ContentHash.Value, optional]
+          - [get_header_code, "Content-Disposition", Details.HttpHeaders.ContentDisposition, optional]
+          - [get_metadata_code, "x-ms-meta-", Details.Metadata, optional]
+          - [get_header_code, "x-ms-request-server-encrypted", Details.IsServerEncrypted]
+          - [get_header_code, "x-ms-encryption-key-sha256", Details.EncryptionKeySha256]
+          - [get_header_code, "x-ms-encryption-scope", Details.EncryptionScope]
+          - [get_header_code, "x-ms-lease-status", Details.LeaseStatus]
+          - [get_header_code, "x-ms-lease-state", Details.LeaseState]
+          - [get_header_code, "x-ms-lease-duration", Details.LeaseDuration]
+          - [get_header_code, "x-ms-creation-time", Details.CreatedOn]
+          - [get_header_code, "x-ms-expiry-time", Details.ExpiresOn]
+          - [get_header_code, "x-ms-last-access-time", Details.LastAccessedOn]
+          - [get_header_code, "x-ms-blob-sequence-number", Details.SequenceNumber]
+          - [get_header_code, "x-ms-blob-committed-block-count", Details.CommittedBlockCount]
+          - [get_header_code, "x-ms-blob-sealed", Details.IsSealed]
+          - [get_header_code, "x-ms-or-policy-id", Details.ObjectReplicationDestinationPolicyId]
+          - [get_or_code, "x-ms-or-", Details.ObjectReplicationSourceProperties]
+          - [get_header_code, "x-ms-tag-count", Details.TagCount]
+          - [get_header_code, "x-ms-copy-id", Details.CopyId]
+          - [get_header_code, "x-ms-copy-source", Details.CopySource]
+          - [get_header_code, "x-ms-copy-status", Details.CopyStatus]
+          - [get_header_code, "x-ms-copy-status-description", Details.CopyStatusDescription]
+          - [get_header_code, "x-ms-copy-progress", Details.CopyProgress]
+          - [get_header_code, "x-ms-copy-completion-time", Details.CopyCompletedOn]
+          - [get_header_code, "x-ms-version-id", Details.VersionId]
+          - [get_header_code, "x-ms-is-current-version", Details.IsCurrentVersion]
 
     - Delete:
         separate_functions: true
@@ -1903,24 +1919,18 @@ Models:
     - IsServerEncrypted: bool = false
     - EncryptionKeySha256: std::vector<uint8_t>, nullable
     - EncryptionScope: std::string, nullable
-  BlobDownloadResponse:
-    - noexport: true
+  DownloadBlobDetails:
     - type: struct
-    - BodiedResponse: inline
     - ETag: Azure::Core::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CreatedOn: Azure::Core::DateTime(RFC1123)
     - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
-    - ContentRange: Azure::Core::Http::Range
-    - BlobSize: int64_t = 0
     - HttpHeaders: BlobHttpHeaders
     - Metadata: Metadata
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int64_t, nullable  # only for append blob
     - IsSealed: bool, nullable # only for append blob
-    - BlobType: BlobType
-    - TransactionalContentHash: ContentHash, nullable  # hash for the downloaded range
     - LeaseDuration: BlobLeaseDurationType, nullable
     - LeaseState: BlobLeaseState, nullable
     - LeaseStatus: BlobLeaseStatus, nullable
