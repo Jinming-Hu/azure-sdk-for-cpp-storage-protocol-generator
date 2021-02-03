@@ -1965,37 +1965,36 @@ Models:
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
     - DefaultEncryptionScope: std::string
     - PreventEncryptionScopeOverride: bool = false
+  BlobContainerItemDetails:
+    - type: struct
+    - BlobContainerItemWithoutName: inline
+    - RemainingRetentionDays: int32_t, nullable
+    - DeletedOn: Azure::Core::DateTime(RFC1123), nullable
   BlobContainerItem:
     - Name: std::string
-    - BlobContainerItemWithoutName: inline
     - IsDeleted: bool = false
     - VersionId: std::string, nullable
-    - DeletedOn: Azure::Core::DateTime(RFC1123), nullable
-    - RemainingRetentionDays: int32_t, nullable
+    - Details: BlobContainerItemDetails
     - from_xml: [
       [text, Name, Name],
-      [text, Properties.Etag, ETag],
-      [text, Properties.Last-Modified, LastModified],
-      [text, Properties.PublicAccess, AccessType],
-      [text, Properties.HasImmutabilityPolicy, HasImmutabilityPolicy],
-      [text, Properties.HasLegalHold, HasLegalHold],
-      [text, Properties.LeaseStatus, LeaseStatus],
-      [text, Properties.LeaseState, LeaseState],
-      [text, Properties.LeaseDuration, LeaseDuration],
-      [text, Properties.DefaultEncryptionScope, DefaultEncryptionScope],
-      [text, Properties.DenyEncryptionScopeOverride, PreventEncryptionScopeOverride],
-      [start_tag, Metadata, Metadata],
+      [text, Properties.Etag, Details.ETag],
+      [text, Properties.Last-Modified, Details.LastModified],
+      [text, Properties.PublicAccess, Details.AccessType],
+      [text, Properties.HasImmutabilityPolicy, Details.HasImmutabilityPolicy],
+      [text, Properties.HasLegalHold, Details.HasLegalHold],
+      [text, Properties.LeaseStatus, Details.LeaseStatus],
+      [text, Properties.LeaseState, Details.LeaseState],
+      [text, Properties.LeaseDuration, Details.LeaseDuration],
+      [text, Properties.DefaultEncryptionScope, Details.DefaultEncryptionScope],
+      [text, Properties.DenyEncryptionScopeOverride, Details.PreventEncryptionScopeOverride],
+      [start_tag, Metadata, Details.Metadata],
       [text, Deleted, IsDeleted],
       [text, Version, VersionId],
-      [text, Properties.DeletedTime, DeletedOn],
-      [text, Properties.RemainingRetentionDays, RemainingRetentionDays],
+      [text, Properties.DeletedTime, Details.DeletedOn],
+      [text, Properties.RemainingRetentionDays, Details.RemainingRetentionDays],
     ]
-  BlobItem:
-    - Name: std::string
-    - IsDeleted: bool = false
-    - Snapshot: std::string
-    - VersionId: std::string, nullable
-    - IsCurrentVersion: bool, nullable
+  BlobItemDetails:
+    - type: struct
     - HttpHeaders: BlobHttpHeaders
     - Metadata: Metadata
     - CreatedOn: Azure::Core::DateTime(RFC1123)
@@ -2003,8 +2002,6 @@ Models:
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
     - LastModified: Azure::Core::DateTime(RFC1123)
     - ETag: Azure::Core::ETag
-    - BlobSize: int64_t = 0
-    - BlobType: BlobType
     - Tier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
@@ -2014,36 +2011,45 @@ Models:
     - SequenceNumber: int64_t, nullable # only for page blobd
     - IsSealed: bool, nullable # only for append blob
     - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
+  BlobItem:
+    - Name: std::string
+    - BlobSize: int64_t = 0
+    - BlobType: BlobType
+    - IsDeleted: bool = false
+    - Snapshot: std::string
+    - VersionId: std::string, nullable
+    - IsCurrentVersion: bool, nullable
+    - Details: BlobItemDetails
     - from_xml: [
       [text, Name, Name],
       [text, Deleted, IsDeleted],
       [text, Snapshot, Snapshot],
       [text, VersionId, VersionId],
       [text, IsCurrentVersion, IsCurrentVersion],
-      [text, Properties.Content-Type, HttpHeaders.ContentType],
-      [text, Properties.Content-Encoding, HttpHeaders.ContentEncoding],
-      [text, Properties.Content-Language, HttpHeaders.ContentLanguage],
-      [text, Properties.Content-MD5, HttpHeaders.ContentHash.Value],
-      [text, Properties.Cache-Control, HttpHeaders.CacheControl],
-      [text, Properties.Content-Disposition, HttpHeaders.ContentDisposition],
-      [text, Properties.Creation-Time, CreatedOn],
-      [text, Properties.Expiry-Time, ExpiresOn],
-      [text, Properties.LastAccessTime, LastAccessedOn],
-      [text, Properties.Last-Modified, LastModified],
-      [text, Properties.Etag, ETag],
+      [text, Properties.Content-Type, Details.HttpHeaders.ContentType],
+      [text, Properties.Content-Encoding, Details.HttpHeaders.ContentEncoding],
+      [text, Properties.Content-Language, Details.HttpHeaders.ContentLanguage],
+      [text, Properties.Content-MD5, Details.HttpHeaders.ContentHash.Value],
+      [text, Properties.Cache-Control, Details.HttpHeaders.CacheControl],
+      [text, Properties.Content-Disposition, Details.HttpHeaders.ContentDisposition],
+      [text, Properties.Creation-Time, Details.CreatedOn],
+      [text, Properties.Expiry-Time, Details.ExpiresOn],
+      [text, Properties.LastAccessTime, Details.LastAccessedOn],
+      [text, Properties.Last-Modified, Details.LastModified],
+      [text, Properties.Etag, Details.ETag],
       [text, Properties.Content-Length, BlobSize],
       [text, Properties.BlobType, BlobType],
-      [text, Properties.AccessTier, Tier],
-      [text, Properties.AccessTierInferred, IsAccessTierInferred],
-      [text, Properties.LeaseStatus, LeaseStatus],
-      [text, Properties.LeaseState, LeaseState],
-      [text, Properties.LeaseDuration, LeaseDuration],
-      [text, Properties.ServerEncrypted, IsServerEncrypted],
-      [text, Properties.EncryptionKeySHA256, EncryptionKeySha256],
-      [text, Properties.Sealed, IsSealed],
-      [text, Properties.x-ms-blob-sequence-number, SequenceNumber],
-      [start_tag, Metadata, Metadata],
-      [start_tag, OrMetadata, ObjectReplicationSourceProperties],
+      [text, Properties.AccessTier, Details.Tier],
+      [text, Properties.AccessTierInferred, Details.IsAccessTierInferred],
+      [text, Properties.LeaseStatus, Details.LeaseStatus],
+      [text, Properties.LeaseState, Details.LeaseState],
+      [text, Properties.LeaseDuration, Details.LeaseDuration],
+      [text, Properties.ServerEncrypted, Details.IsServerEncrypted],
+      [text, Properties.EncryptionKeySHA256, Details.EncryptionKeySha256],
+      [text, Properties.Sealed, Details.IsSealed],
+      [text, Properties.x-ms-blob-sequence-number, Details.SequenceNumber],
+      [start_tag, Metadata, Details.Metadata],
+      [start_tag, OrMetadata, Details.ObjectReplicationSourceProperties],
     ]
   ListBlobsIncludeFlags:
     - type: bitwise enum

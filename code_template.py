@@ -511,8 +511,9 @@ def gen_fromxml_function(class_name):
 
         member_type = get_member_type(member)
         if member_type == "std::vector<ObjectReplicationPolicy>":
-            content += "ret.{member_name} = {member_name}FromXml(reader);".format(member_name=member)
-            fromxml_classes.add((member_type, member))
+            function_name = member[member.rfind(".") + 1:]
+            content += "ret.{member_name} = {function_name}FromXml(reader);".format(member_name=member, function_name=function_name)
+            fromxml_classes.add((member_type, function_name))
         elif member_type.startswith("std::vector<") and member_type.endswith(">"):
             inner_type = member_type[len("std::vector<"): -len(">")]
             if inner_type == "Azure::Core::Http::Range":
