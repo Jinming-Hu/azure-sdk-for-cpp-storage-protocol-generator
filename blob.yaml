@@ -655,7 +655,7 @@ Services:
           - [get_header_code, "x-ms-blob-content-md5", Details.HttpHeaders.ContentHash.Value, optional]
           - [get_header_code, "Content-Disposition", Details.HttpHeaders.ContentDisposition, optional]
           - [get_metadata_code, "x-ms-meta-", Details.Metadata, optional]
-          - [get_header_code, "x-ms-request-server-encrypted", Details.IsServerEncrypted]
+          - [get_header_code, "x-ms-server-encrypted", Details.IsServerEncrypted]
           - [get_header_code, "x-ms-encryption-key-sha256", Details.EncryptionKeySha256]
           - [get_header_code, "x-ms-encryption-scope", Details.EncryptionScope]
           - [get_header_code, "x-ms-lease-status", Details.LeaseStatus]
