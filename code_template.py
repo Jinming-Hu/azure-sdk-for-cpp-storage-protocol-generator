@@ -38,7 +38,7 @@ include_headers = """
 #include <azure/core/context.hpp>
 #include <azure/core/response.hpp>
 #include <azure/core/http/http.hpp>
-#include <azure/core/http/pipeline.hpp>
+#include <azure/core/internal/http/pipeline.hpp>
 #include <azure/storage/common/crypt.hpp>
 #include <azure/storage/common/xml_wrapper.hpp>
 #include <azure/storage/common/storage_common.hpp>
@@ -633,7 +633,7 @@ def gen_toxml_function(class_name):
         elif member_type == "Azure::Core::DateTime(ISO8601t)":
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.GetRfc3339String(Azure::Core::DateTime::TimeFractionFormat::Truncate).data()}});".format(member_name)
         elif member_type == "Azure::Core::DateTime(RFC1123)":
-            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.GetString(Azure::Core::DateTime::DateFormat::Rfc1123).data()}});".format(member_name)
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc1123).data()}});".format(member_name)
         elif member_type in ["int32_t", "int64_t"]:
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, std::to_string({}).data()}});".format(member_name)
         else:
@@ -776,7 +776,7 @@ def gen_resource_create_message_function_begin(function_name, option_type, reque
     content = "static Azure::Core::Http::Request {function_name}CreateMessage(const Azure::Core::Http::Url& url,".format(function_name=function_name)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::Http::BodyStream* requestBody,"
-    content += "const {option_type}& options) {{ unused(options);".format(option_type=option_type)
+    content += "const {option_type}& options) {{ (void)options;".format(option_type=option_type)
 
     global main_body
     main_body += content
@@ -790,7 +790,7 @@ def gen_resource_create_message_function_end():
 
 
 def gen_resource_create_response_function_begin(function_name, return_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}CreateResponse(const Azure::Core::Context& context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse) {{ unused(context);".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Core::Response<{return_type}> {function_name}CreateResponse(const Azure::Core::Context& context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse) {{ (void)context;".format(function_name=function_name, return_type=return_type)
 
     global main_body
     main_body += content
@@ -829,7 +829,7 @@ def gen_resource_create_response_function_end(return_type):
 
 
 def gen_resource_function_glue_function(function_name, option_type, return_type, request_body_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Internal::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::Http::BodyStream* requestBody,"
     content += "const {option_type}& options) {{".format(option_type=option_type)
@@ -850,10 +850,10 @@ def gen_resource_function_glue_function(function_name, option_type, return_type,
 
 
 def gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Internal::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::Http::BodyStream* requestBody,"
-    content += "const {option_type}& options) {{ unused(options);".format(option_type=option_type)
+    content += "const {option_type}& options) {{ (void)options;".format(option_type=option_type)
 
     global main_body
     main_body += content
@@ -987,7 +987,7 @@ def gen_add_header_code(*args, **kwargs):
     elif value_type == "std::chrono::seconds":
         content += "request.AddHeader({}, std::to_string({}.count()));".format(key, value)
     elif value_type == "Azure::Core::DateTime(RFC1123)":
-        content += "request.AddHeader({}, {}.GetString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
+        content += "request.AddHeader({}, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
     elif value_type == "Azure::Core::ETag":
         assert optional
         content += inspect.cleandoc(
