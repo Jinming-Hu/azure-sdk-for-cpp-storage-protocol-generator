@@ -333,8 +333,8 @@ Services:
           - [get_header_code, "x-ms-has-immutability-policy", HasImmutabilityPolicy]
           - [get_header_code, "x-ms-has-legal-hold", HasLegalHold]
           - *RESPONSE_LEASE_HEADER_PACKAGE
-          - [get_header_code, "x-ms-default-encryption-scope", DefaultEncryptionScope, optional]
-          - [get_header_code, "x-ms-deny-encryption-scope-override", PreventEncryptionScopeOverride, optional]
+          - [get_header_code, "x-ms-default-encryption-scope", DefaultEncryptionScope]
+          - [get_header_code, "x-ms-deny-encryption-scope-override", PreventEncryptionScopeOverride]
 
     - SetMetadata:
         http_method: Put
@@ -1963,7 +1963,7 @@ Models:
     - LeaseDuration: BlobLeaseDurationType, nullable
     - LeaseState: BlobLeaseState = BlobLeaseState::Available
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
-    - DefaultEncryptionScope: std::string = "$account-encryption-key"
+    - DefaultEncryptionScope: std::string
     - PreventEncryptionScopeOverride: bool = false
   BlobContainerItemDetails:
     - type: struct
