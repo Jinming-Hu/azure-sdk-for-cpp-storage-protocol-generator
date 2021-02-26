@@ -196,7 +196,7 @@ def gen_model_definition(service_name, class_name, class_def):
                 explicit {class_name}(std::string value) : m_value(std::move(value)) {{}}
                 bool operator==(const {class_name}& other) const {{ return m_value == other.m_value; }}
                 bool operator!=(const {class_name}& other) const {{ return !(*this == other); }}
-                const std::string& Get() const {{ return m_value; }}
+                const std::string& ToString() const {{ return m_value; }}
             """.format(class_name=class_name))
     elif class_def.type == "bitwise enum":
         content += "enum class {} {{".format(class_name)
@@ -614,7 +614,7 @@ def gen_toxml_function(class_name):
             elif inner_type1 == "int32_t" or inner_type1 == "int64_t":
                 inner_type1_to_string = "std::to_string(" + inner_type1_to_string + ")"
             elif inner_type1 in models_cache and models_cache[inner_type1].type == "enum class":
-                inner_type1_to_string += ".Get()"
+                inner_type1_to_string += ".ToString()"
             else:
                 raise RuntimeError("unknown type " + inner_type1)
 
@@ -915,7 +915,7 @@ def gen_add_query_code(*args, **kwargs):
             raise RuntimeError("unknown type " + value_type.type + " " + value_type.name if hasattr(value_type, "type") else value_type)
     else:
         if hasattr(value_type, "type") and value_type.type == "enum class":
-            value += ".Get()"
+            value += ".ToString()"
 
     if value_type == "int32_t" or value_type == "int64_t":
         content += "request.GetUrl().AppendQueryParameter({}, std::to_string({}));".format(key, value)
@@ -999,13 +999,13 @@ def gen_add_header_code(*args, **kwargs):
             """.format(key=key, value=value))
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
-            content += "request.AddHeader({key}, {value}.Get());".format(key=key, value=value)
+            content += "request.AddHeader({key}, {value}.ToString());".format(key=key, value=value)
         else:
             content += inspect.cleandoc(
                 """
-                if (!{value}.Get().empty())
+                if (!{value}.ToString().empty())
                 {{
-                    request.AddHeader({key}, {value}.Get());
+                    request.AddHeader({key}, {value}.ToString());
                 }}
                 """.format(key=key, value=value))
     else:
