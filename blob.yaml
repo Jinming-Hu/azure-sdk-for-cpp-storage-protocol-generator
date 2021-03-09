@@ -95,11 +95,12 @@ Services:
               [start_tag, EnumerationResults.Containers.Container, Items],
             ]
         options:
-          - BasicRequestOptions: inline
-          - Prefix: std::string, nullable
-          - ContinuationToken: std::string, nullable
-          - MaxResults: int32_t, nullable
-          - Include: ListBlobContainersIncludeFlags = ListBlobContainersIncludeFlags::None
+          ListBlobContainersSinglePageOptions:
+            - BasicRequestOptions: inline
+            - Prefix: std::string, nullable
+            - ContinuationToken: std::string, nullable
+            - MaxResults: int32_t, nullable
+            - Include: ListBlobContainersIncludeFlags = ListBlobContainersIncludeFlags::None
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "list"]
@@ -115,44 +116,52 @@ Services:
         http_method: Post
         http_status_code: 200
         return_type:
-          GetUserDelegationKeyResult:
-            - BasicResponse: inline
-            - Key: UserDelegationKey
+          UserDelegationKey:
+            - SignedObjectId: std::string
+            - SignedTenantId: std::string
+            - SignedStartsOn: Azure::Core::DateTime(ISO8601)
+            - SignedExpiresOn: Azure::Core::DateTime(ISO8601)
+            - SignedService: std::string
+            - SignedVersion: std::string
+            - Value: std::string
             - from_xml: [
-              [start_tag, UserDelegationKey, Key]
+              [text, UserDelegationKey.SignedOid, SignedObjectId],
+              [text, UserDelegationKey.SignedTid, SignedTenantId],
+              [text, UserDelegationKey.SignedStart, SignedStartsOn],
+              [text, UserDelegationKey.SignedExpiry, SignedExpiresOn],
+              [text, UserDelegationKey.SignedService, SignedService],
+              [text, UserDelegationKey.SignedVersion, SignedVersion],
+              [text, UserDelegationKey.Value, Value],
             ]
         options:
-          - BasicRequestOptions: inline
-          - StartsOn: Azure::Core::DateTime(ISO8601t)
-          - ExpiresOn: Azure::Core::DateTime(ISO8601t)
-          - to_xml: [
-            [tag, KeyInfo.Start, StartsOn],
-            [tag, KeyInfo.Expiry, ExpiresOn],
-          ]
+          GetUserDelegationKeyOptions:
+            - BasicRequestOptions: inline
+            - StartsOn: Azure::Core::DateTime(ISO8601t)
+            - ExpiresOn: Azure::Core::DateTime(ISO8601t)
+            - to_xml: [
+              [tag, KeyInfo.Start, StartsOn],
+              [tag, KeyInfo.Expiry, ExpiresOn],
+            ]
         request_action:
           - [add_xml_body_code]
           - [add_query_code, "restype", "service"]
           - [add_query_code, "comp", "userdelegationkey"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - GetProperties:
         http_method: Get
         http_status_code: 200
-        return_type:
-          GetServicePropertiesResult:
-            - BasicResponse: inline
-            - BlobServiceProperties: inline
+        return_type: BlobServiceProperties
         options:
-          - BasicRequestOptions: inline
+          GetServicePropertiesOptions:
+            - BasicRequestOptions: inline
         request_action:
           - [add_query_code, "restype", "service"]
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - SetProperties:
@@ -162,11 +171,12 @@ Services:
           SetServicePropertiesResult:
             - BasicResponse: inline
         options:
-          - BasicRequestOptions: inline
-          - Properties: BlobServiceProperties
-          - to_xml: [
-            [tag, StorageServiceProperties, Properties],
-          ]
+          SetServicePropertiesOptions:
+            - BasicRequestOptions: inline
+            - Properties: BlobServiceProperties
+            - to_xml: [
+              [tag, StorageServiceProperties, Properties],
+            ]
         request_action:
           - [add_xml_body_code]
           - [add_query_code, "restype", "service"]
@@ -179,19 +189,18 @@ Services:
         http_method: Head
         http_status_code: 200
         return_type:
-          GetAccountInfoResult:
-            - BasicResponse: inline
+          AccountInfo:
             - SkuName: SkuName
             - AccountKind: AccountKind
             - IsHierarchicalNamespaceEnabled: bool = false
         options:
+          GetAccountInfoOptions:
             - BasicRequestOptions: inline
         request_action:
           - [add_query_code, "restype", "account"]
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_header_code, "x-ms-sku-name", SkuName]
           - [get_header_code, "x-ms-account-kind", AccountKind]
           - [get_header_code, "x-ms-is-hns-enabled", IsHierarchicalNamespaceEnabled]
@@ -200,20 +209,19 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          GetServiceStatisticsResult:
-            - BasicResponse: inline
+          ServiceStatistics:
             - GeoReplication: BlobGeoReplication
             - from_xml: [
               [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
             ]
         options:
-          - BasicRequestOptions: inline
+          GetServiceStatisticsOptions:
+            - BasicRequestOptions: inline
         request_action:
           - [add_query_code, "restype", "service"]
           - [add_query_code, "comp", "stats"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - FindBlobsByTagsSinglePage:
@@ -231,10 +239,11 @@ Services:
               [start_tag, EnumerationResults.Blobs.Blob, Items],
             ]
         options:
-          - BasicRequestOptions: inline
-          - Where: std::string
-          - ContinuationToken: std::string, nullable
-          - MaxResults: int32_t, nullable
+          FindBlobsByTagsSinglePageOptions:
+            - BasicRequestOptions: inline
+            - Where: std::string
+            - ContinuationToken: std::string, nullable
+            - MaxResults: int32_t, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "blobs"]
@@ -256,11 +265,12 @@ Services:
             - Created: bool = true
             - BlobContainerInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - AccessType: PublicAccessType = PublicAccessType::None
-          - Metadata: Metadata
-          - DefaultEncryptionScope: std::string, nullable
-          - PreventEncryptionScopeOverride: bool, nullable
+          CreateBlobContainerOptions:
+            - BasicRequestOptions: inline
+            - AccessType: PublicAccessType = PublicAccessType::None
+            - Metadata: Metadata
+            - DefaultEncryptionScope: std::string, nullable
+            - PreventEncryptionScopeOverride: bool, nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -280,10 +290,11 @@ Services:
             - BasicResponse: inline
             - Deleted: bool = true
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string, nullable
-          - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
-          - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
+          DeleteBlobContainerOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string, nullable
+            - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
+            - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -299,9 +310,10 @@ Services:
           UndeleteBlobContainerResult:
             - BasicResponse: inline
         options:
-          - BasicRequestOptions: inline
-          - DeletedBlobContainerName: std::string
-          - DeletedBlobContainerVersion: std::string
+          UndeleteBlobContainerOptions:
+            - BasicRequestOptions: inline
+            - DeletedBlobContainerName: std::string
+            - DeletedBlobContainerVersion: std::string
         request_action:
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "undelete"]
@@ -315,18 +327,17 @@ Services:
         http_method: Head
         http_status_code: 200
         return_type:
-          GetBlobContainerPropertiesResult:
-            - BasicResponse: inline
+          BlobContainerProperties:
             - BlobContainerItemWithoutName: inline
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string, nullable
+          GetBlobContainerPropertiesOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string, nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_metadata_code, "x-ms-meta-", Metadata, optional]
           - [get_header_code, "x-ms-blob-public-access", AccessType, optional]
@@ -344,10 +355,11 @@ Services:
             - BasicResponse: inline
             - BlobContainerInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - Metadata: Metadata
-          - LeaseId: std::string, nullable
-          - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
+          SetBlobContainerMetadataOptions:
+            - BasicRequestOptions: inline
+            - Metadata: Metadata
+            - LeaseId: std::string, nullable
+            - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
         request_action:
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "metadata"]
@@ -378,11 +390,12 @@ Services:
               [start_tag, EnumerationResults.Blobs.Blob, Items],
             ]
         options:
-          - BasicRequestOptions: inline
-          - Prefix: std::string, nullable
-          - ContinuationToken: std::string, nullable
-          - MaxResults: int32_t, nullable
-          - Include: ListBlobsIncludeFlags = ListBlobsIncludeFlags::None
+          ListBlobsSinglePageOptions:
+            - BasicRequestOptions: inline
+            - Prefix: std::string, nullable
+            - ContinuationToken: std::string, nullable
+            - MaxResults: int32_t, nullable
+            - Include: ListBlobsIncludeFlags = ListBlobsIncludeFlags::None
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -418,12 +431,13 @@ Services:
               [text, EnumerationResults.Blobs.BlobPrefix.Name, BlobPrefixes]
             ]
         options:
-          - BasicRequestOptions: inline
-          - Prefix: std::string, nullable
-          - Delimiter: std::string, nullable
-          - ContinuationToken: std::string, nullable
-          - MaxResults: int32_t, nullable
-          - Include: ListBlobsIncludeFlags = ListBlobsIncludeFlags::None
+          ListBlobsByHierarchySinglePageOptions:
+            - BasicRequestOptions: inline
+            - Prefix: std::string, nullable
+            - Delimiter: std::string, nullable
+            - ContinuationToken: std::string, nullable
+            - MaxResults: int32_t, nullable
+            - Include: ListBlobsIncludeFlags = ListBlobsIncludeFlags::None
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -440,20 +454,16 @@ Services:
     - GetAccessPolicy:
         http_method: Get
         http_status_code: 200
-        return_type:
-          GetBlobContainerAccessPolicyResult:
-            - BasicResponse: inline
-            - BlobContainerAccessPolicy: inline
+        return_type: BlobContainerAccessPolicy
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string, nullable
+          GetBlobContainerAccessPolicyOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "acl"]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
-          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-public-access", AccessType, optional]
           - [get_xml_body_code]
 
@@ -465,15 +475,16 @@ Services:
             - BasicResponse: inline
             - BlobContainerInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - AccessType: PublicAccessType = PublicAccessType::None
-          - LeaseId: std::string, nullable
-          - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
-          - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
-          - SignedIdentifiers: std::vector<BlobSignedIdentifier>
-          - to_xml: [
-              [tag, SignedIdentifiers, SignedIdentifiers],
-            ]
+          SetBlobContainerAccessPolicyOptions:
+            - BasicRequestOptions: inline
+            - AccessType: PublicAccessType = PublicAccessType::None
+            - LeaseId: std::string, nullable
+            - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
+            - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
+            - SignedIdentifiers: std::vector<BlobSignedIdentifier>
+            - to_xml: [
+                [tag, SignedIdentifiers, SignedIdentifiers],
+              ]
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -494,11 +505,12 @@ Services:
             - BasicResponse: inline
             - BlobLease: inline
         options:
-          - BasicRequestOptions: inline
-          - LeaseDuration: std::chrono::seconds
-          - ProposedLeaseId: std::string, nullable
-          - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
-          - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
+          AcquireBlobContainerLeaseOptions:
+            - BasicRequestOptions: inline
+            - LeaseDuration: std::chrono::seconds
+            - ProposedLeaseId: std::string, nullable
+            - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
+            - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -520,10 +532,11 @@ Services:
             - BasicResponse: inline
             - BlobLease: inline
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string
-          - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
-          - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
+          RenewBlobContainerLeaseOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string
+            - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
+            - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -544,11 +557,12 @@ Services:
             - BasicResponse: inline
             - BlobLease: inline
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string
-          - ProposedLeaseId: std::string
-          - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
-          - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
+          ChangeBlobContainerLeaseOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string
+            - ProposedLeaseId: std::string
+            - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
+            - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -570,10 +584,11 @@ Services:
             - BasicResponse: inline
             - BlobContainerInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string
-          - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
-          - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
+          ReleaseBlobContainerLeaseOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string
+            - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
+            - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -591,14 +606,15 @@ Services:
         return_type:
           BreakBlobContainerLeaseResultInternal:
             - BasicResponse: inline
-            - ETag: Azure::Core::ETag
+            - ETag: Azure::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - LeaseTime: int32_t = 0
         options:
-          - BasicRequestOptions: inline
-          - BreakPeriod: std::chrono::seconds, nullable
-          - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
-          - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
+          BreakBlobContainerLeaseOptions:
+            - BasicRequestOptions: inline
+            - BreakPeriod: std::chrono::seconds, nullable
+            - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
+            - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
@@ -625,12 +641,13 @@ Services:
             - TransactionalContentHash: ContentHash, nullable  # hash for the downloaded range
             - Details: DownloadBlobDetails
         options:
-          - BasicRequestOptions: inline
-          - Range: Azure::Core::Http::Range, nullable
-          - RangeHashAlgorithm: HashAlgorithm, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - LeaseId: std::string, nullable
-          - BlobRequestConditionalHeaders: inline
+          DownloadBlobOptions:
+            - BasicRequestOptions: inline
+            - Range: Azure::Core::Http::Range, nullable
+            - RangeHashAlgorithm: HashAlgorithm, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - LeaseId: std::string, nullable
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_range_header_code, "x-ms-range", Range]
@@ -688,10 +705,11 @@ Services:
             - BasicResponse: inline
             - Deleted: bool = true
         options:
-          - BasicRequestOptions: inline
-          - DeleteSnapshots: DeleteSnapshotsOption, nullable
-          - LeaseId: std::string, nullable
-          - BlobRequestConditionalHeaders: inline
+          DeleteBlobOptions:
+            - BasicRequestOptions: inline
+            - DeleteSnapshots: DeleteSnapshotsOption, nullable
+            - LeaseId: std::string, nullable
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-delete-snapshots", DeleteSnapshots]
@@ -707,9 +725,10 @@ Services:
           SetBlobExpiryResult:
             - BasicResponse: inline
         options:
-          - BasicRequestOptions: inline
-          - ExpiryOrigin: ScheduleBlobExpiryOriginType
-          - ExpiryTime: std::string, nullable
+          SetBlobExpiryOptions:
+            - BasicRequestOptions: inline
+            - ExpiryOrigin: ScheduleBlobExpiryOriginType
+            - ExpiryTime: std::string, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "expiry"]
@@ -725,7 +744,8 @@ Services:
           UndeleteBlobResult:
             - BasicResponse: inline
         options:
-          - BasicRequestOptions: inline
+          UndeleteBlobOptions:
+            - BasicRequestOptions: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "undelete"]
@@ -735,22 +755,19 @@ Services:
     - GetProperties:
         http_method: Head
         http_status_code: 200
-        return_type:
-          GetBlobPropertiesResult:
-            - BasicResponse: inline
-            - BlobProperties: inline
+        return_type: BlobProperties
         options:
-          - BasicRequestOptions: inline
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - LeaseId: std::string, nullable
-          - BlobRequestConditionalHeaders: inline
+          GetBlobPropertiesOptions:
+            - BasicRequestOptions: inline
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - LeaseId: std::string, nullable
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-creation-time", CreatedOn]
           - [get_header_code, "x-ms-expiry-time", ExpiresOn]
@@ -791,10 +808,11 @@ Services:
             - BasicResponse: inline
             - BlobInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - HttpHeaders: BlobHttpHeaders
-          - LeaseId: std::string, nullable
-          - BlobRequestConditionalHeaders: inline
+          SetBlobHttpHeadersOptions:
+            - BasicRequestOptions: inline
+            - HttpHeaders: BlobHttpHeaders
+            - LeaseId: std::string, nullable
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -814,12 +832,13 @@ Services:
             - BasicResponse: inline
             - BlobInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - Metadata: Metadata
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - LeaseId: std::string, nullable
-          - BlobRequestConditionalHeaders: inline
+          SetBlobMetadataOptions:
+            - BasicRequestOptions: inline
+            - Metadata: Metadata
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - LeaseId: std::string, nullable
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "metadata"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -839,10 +858,11 @@ Services:
           SetBlobAccessTierResult:
             - BasicResponse: inline
         options:
-          - BasicRequestOptions: inline
-          - Tier: AccessTier
-          - RehydratePriority: RehydratePriority, nullable
-          - IfTags: std::string, nullable
+          SetBlobAccessTierOptions:
+            - BasicRequestOptions: inline
+            - Tier: AccessTier
+            - RehydratePriority: RehydratePriority, nullable
+            - IfTags: std::string, nullable
         request_action:
           - [add_query_code, "comp", "tier"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -860,17 +880,18 @@ Services:
             - BasicResponse: inline
             - BlobCopyInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - Metadata: Metadata
-          - SourceUri: std::string
-          - LeaseId: std::string, nullable
-          - SourceLeaseId: std::string, nullable
-          - Tier: AccessTier, nullable
-          - RehydratePriority: RehydratePriority, nullable
-          - BlobRequestConditionalHeaders: inline
-          - BlobRequestSourceConditionalHeaders: inline
-          - SourceIfTags: std::string, nullable
-          - ShouldSealDestination: bool, nullable
+          StartCopyBlobFromUriOptions:
+            - BasicRequestOptions: inline
+            - Metadata: Metadata
+            - SourceUri: std::string
+            - LeaseId: std::string, nullable
+            - SourceLeaseId: std::string, nullable
+            - Tier: AccessTier, nullable
+            - RehydratePriority: RehydratePriority, nullable
+            - BlobRequestConditionalHeaders: inline
+            - BlobRequestSourceConditionalHeaders: inline
+            - SourceIfTags: std::string, nullable
+            - ShouldSealDestination: bool, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
@@ -897,9 +918,10 @@ Services:
           AbortCopyBlobFromUriResult:
             - BasicResponse: inline
         options:
-          - BasicRequestOptions: inline
-          - CopyId: std::string
-          - LeaseId: std::string, nullable
+          AbortCopyBlobFromUriOptions:
+            - BasicRequestOptions: inline
+            - CopyId: std::string
+            - LeaseId: std::string, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "copy"]
@@ -916,17 +938,18 @@ Services:
           CreateBlobSnapshotResult:
             - BasicResponse: inline
             - Snapshot: std::string
-            - ETag: Azure::Core::ETag
+            - ETag: Azure::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - VersionId: std::string, nullable
             - BlobResponseEncryptionOptions: inline
         options:
-          - BasicRequestOptions: inline
-          - Metadata: Metadata
-          - LeaseId: std::string, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          CreateBlobSnapshotOptions:
+            - BasicRequestOptions: inline
+            - Metadata: Metadata
+            - LeaseId: std::string, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "snapshot"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -952,8 +975,9 @@ Services:
               [start_tag, Tags.TagSet, Tags],
             ]
         options:
-          - BasicRequestOptions: inline
-          - IfTags: std::string, nullable
+          GetBlobTagsOptions:
+            - BasicRequestOptions: inline
+            - IfTags: std::string, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "tags"]
@@ -969,12 +993,13 @@ Services:
           SetBlobTagsResult:
             - BasicResponse: inline
         options:
-          - BasicRequestOptions: inline
-          - Tags: std::map<std::string, std::string>
-          - IfTags: std::string, nullable
-          - to_xml: [
-            [tag, Tags.TagSet, Tags],
-          ]
+          SetBlobTagsOptions:
+            - BasicRequestOptions: inline
+            - Tags: std::map<std::string, std::string>
+            - IfTags: std::string, nullable
+            - to_xml: [
+              [tag, Tags.TagSet, Tags],
+            ]
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "tags"]
@@ -992,10 +1017,11 @@ Services:
             - BasicResponse: inline
             - BlobLease: inline
         options:
-          - BasicRequestOptions: inline
-          - LeaseDuration: std::chrono::seconds
-          - ProposedLeaseId: std::string, nullable
-          - BlobRequestConditionalHeaders: inline
+          AcquireBlobLeaseOptions:
+            - BasicRequestOptions: inline
+            - LeaseDuration: std::chrono::seconds
+            - ProposedLeaseId: std::string, nullable
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "lease"]
@@ -1016,9 +1042,10 @@ Services:
             - BasicResponse: inline
             - BlobLease: inline
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string
-          - BlobRequestConditionalHeaders: inline
+          RenewBlobLeaseOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "lease"]
@@ -1038,10 +1065,11 @@ Services:
             - BasicResponse: inline
             - BlobLease: inline
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string
-          - ProposedLeaseId: std::string
-          - BlobRequestConditionalHeaders: inline
+          ChangeBlobLeaseOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string
+            - ProposedLeaseId: std::string
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "lease"]
@@ -1062,9 +1090,10 @@ Services:
             - BasicResponse: inline
             - BlobInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string
-          - BlobRequestConditionalHeaders: inline
+          ReleaseBlobLeaseOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "lease"]
@@ -1082,13 +1111,14 @@ Services:
         return_type:
           BreakBlobLeaseResultInternal:
             - BasicResponse: inline
-            - ETag: Azure::Core::ETag
+            - ETag: Azure::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - LeaseTime: int32_t = 0
         options:
-          - BasicRequestOptions: inline
-          - BreakPeriod: std::chrono::seconds, nullable
-          - BlobRequestConditionalHeaders: inline
+          BreakBlobLeaseOptions:
+            - BasicRequestOptions: inline
+            - BreakPeriod: std::chrono::seconds, nullable
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "lease"]
@@ -1111,15 +1141,16 @@ Services:
             - BlobContentInfo: inline
             - TransactionalContentHash: ContentHash, nullable
         options:
-          - BodiedRequestOptions: inline
-          - TransactionalContentHash: ContentHash, nullable
-          - HttpHeaders: BlobHttpHeaders
-          - Metadata: Metadata
-          - LeaseId: std::string, nullable
-          - Tier: AccessTier, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          UploadBlockBlobOptions:
+            - BodiedRequestOptions: inline
+            - TransactionalContentHash: ContentHash, nullable
+            - HttpHeaders: BlobHttpHeaders
+            - Metadata: Metadata
+            - LeaseId: std::string, nullable
+            - Tier: AccessTier, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_body_code]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1146,12 +1177,13 @@ Services:
             - BasicResponse: inline
             - BlockInfo: inline
         options:
-          - BodiedRequestOptions: inline
-          - BlockId: std::string
-          - TransactionalContentHash: ContentHash, nullable
-          - LeaseId: std::string, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
+          StageBlockOptions:
+            - BodiedRequestOptions: inline
+            - BlockId: std::string
+            - TransactionalContentHash: ContentHash, nullable
+            - LeaseId: std::string, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
         request_action:
           - [add_body_code]
           - [add_query_code, "comp", "block"]
@@ -1173,15 +1205,16 @@ Services:
             - BasicResponse: inline
             - BlockInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - BlockId: std::string
-          - SourceUri: std::string
-          - SourceRange: Azure::Core::Http::Range, nullable
-          - TransactionalContentHash: ContentHash, nullable
-          - LeaseId: std::string, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestSourceConditionalHeaders: inline
+          StageBlockFromUriOptions:
+            - BasicRequestOptions: inline
+            - BlockId: std::string
+            - SourceUri: std::string
+            - SourceRange: Azure::Core::Http::Range, nullable
+            - TransactionalContentHash: ContentHash, nullable
+            - LeaseId: std::string, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestSourceConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "block"]
           - [add_query_code, "blockid", BlockId]
@@ -1206,18 +1239,19 @@ Services:
             - BlobContentInfo: inline
             - TransactionalContentHash: ContentHash, nullable
         options:
-          - BasicRequestOptions: inline
-          - BlockList: std::vector<std::pair<BlockType, std::string>>
-          - HttpHeaders: BlobHttpHeaders
-          - Metadata: Metadata
-          - LeaseId: std::string, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
-          - Tier: AccessTier, nullable
-          - to_xml: [
-            [tag, BlockList, BlockList]
-          ]
+          CommitBlockListOptions:
+            - BasicRequestOptions: inline
+            - BlockList: std::vector<std::pair<BlockType, std::string>>
+            - HttpHeaders: BlobHttpHeaders
+            - Metadata: Metadata
+            - LeaseId: std::string, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
+            - Tier: AccessTier, nullable
+            - to_xml: [
+              [tag, BlockList, BlockList]
+            ]
         request_action:
           - [add_xml_body_code]
           - [add_query_code, "comp", "blocklist"]
@@ -1238,6 +1272,7 @@ Services:
         http_method: Get
         http_status_code: 200
         options:
+          GetBlockListOptions:
             - BasicRequestOptions: inline
             - ListType: BlockListTypeOption = BlockListTypeOption::Committed
             - LeaseId: std::string, nullable
@@ -1245,7 +1280,7 @@ Services:
         return_type:
           GetBlockListResult:
             - BasicResponse: inline
-            - ETag: Azure::Core::ETag
+            - ETag: Azure::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - ContentType: std::string
             - BlobSize: int64_t = 0
@@ -1279,16 +1314,17 @@ Services:
             - BlobContentInfo: inline
             - SequenceNumber: int64_t, nullable
         options:
-          - BasicRequestOptions: inline
-          - BlobSize: int64_t = -1
-          - SequenceNumber: int64_t, nullable
-          - HttpHeaders: BlobHttpHeaders
-          - Metadata: Metadata
-          - LeaseId: std::string, nullable
-          - Tier: AccessTier, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          CreatePageBlobOptions:
+            - BasicRequestOptions: inline
+            - BlobSize: int64_t = -1
+            - SequenceNumber: int64_t, nullable
+            - HttpHeaders: BlobHttpHeaders
+            - Metadata: Metadata
+            - LeaseId: std::string, nullable
+            - Tier: AccessTier, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
@@ -1310,16 +1346,17 @@ Services:
         http_method: Put
         http_status_code: 201
         options:
-          - BodiedRequestOptions: inline
-          - Range: Azure::Core::Http::Range
-          - TransactionalContentHash: ContentHash, nullable
-          - LeaseId: std::string, nullable
-          - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
-          - IfSequenceNumberLessThan: int64_t, nullable
-          - IfSequenceNumberEqualTo: int64_t, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          UploadPageBlobPagesOptions:
+            - BodiedRequestOptions: inline
+            - Range: Azure::Core::Http::Range
+            - TransactionalContentHash: ContentHash, nullable
+            - LeaseId: std::string, nullable
+            - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
+            - IfSequenceNumberLessThan: int64_t, nullable
+            - IfSequenceNumberEqualTo: int64_t, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         return_type:
           UploadPageBlobPagesResult:
             - BasicResponse: inline
@@ -1348,18 +1385,19 @@ Services:
         http_method: Put
         http_status_code: 201
         options:
-          - BasicRequestOptions: inline
-          - SourceUri: std::string
-          - SourceRange: Azure::Core::Http::Range
-          - Range: Azure::Core::Http::Range
-          - TransactionalContentHash: ContentHash, nullable
-          - LeaseId: std::string, nullable
-          - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
-          - IfSequenceNumberLessThan: int64_t, nullable
-          - IfSequenceNumberEqualTo: int64_t, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          UploadPageBlobPagesFromUriOptions:
+            - BasicRequestOptions: inline
+            - SourceUri: std::string
+            - SourceRange: Azure::Core::Http::Range
+            - Range: Azure::Core::Http::Range
+            - TransactionalContentHash: ContentHash, nullable
+            - LeaseId: std::string, nullable
+            - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
+            - IfSequenceNumberLessThan: int64_t, nullable
+            - IfSequenceNumberEqualTo: int64_t, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         return_type:
           UploadPageBlobPagesFromUriResult:
             - BasicResponse: inline
@@ -1389,19 +1427,20 @@ Services:
         http_method: Put
         http_status_code: 201
         options:
-          - BasicRequestOptions: inline
-          - Range: Azure::Core::Http::Range
-          - LeaseId: std::string, nullable
-          - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
-          - IfSequenceNumberLessThan: int64_t, nullable
-          - IfSequenceNumberEqualTo: int64_t, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          ClearPageBlobPagesOptions:
+            - BasicRequestOptions: inline
+            - Range: Azure::Core::Http::Range
+            - LeaseId: std::string, nullable
+            - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
+            - IfSequenceNumberLessThan: int64_t, nullable
+            - IfSequenceNumberEqualTo: int64_t, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         return_type:
           ClearPageBlobPagesResult:
             - BasicResponse: inline
-            - ETag: Azure::Core::ETag
+            - ETag: Azure::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - SequenceNumber: int64_t = 0
         request_action:
@@ -1426,19 +1465,20 @@ Services:
         return_type:
           ResizePageBlobResult:
             - BasicResponse: inline
-            - ETag: Azure::Core::ETag
+            - ETag: Azure::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - SequenceNumber: int64_t = 0
         options:
-          - BasicRequestOptions: inline
-          - BlobSize: int64_t = -1
-          - LeaseId: std::string, nullable
-          - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
-          - IfSequenceNumberLessThan: int64_t, nullable
-          - IfSequenceNumberEqualTo: int64_t, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          ResizePageBlobOptions:
+            - BasicRequestOptions: inline
+            - BlobSize: int64_t = -1
+            - LeaseId: std::string, nullable
+            - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
+            - IfSequenceNumberLessThan: int64_t, nullable
+            - IfSequenceNumberEqualTo: int64_t, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1460,7 +1500,7 @@ Services:
         return_type:
           GetPageBlobPageRangesResult:
             - BasicResponse: inline
-            - ETag: Azure::Core::ETag
+            - ETag: Azure::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - BlobSize: int64_t = 0
             - PageRanges: std::vector<Azure::Core::Http::Range>
@@ -1470,12 +1510,13 @@ Services:
               [start_tag, PageList.ClearRange, ClearRanges],
             ]
         options:
-          - BasicRequestOptions: inline
-          - PreviousSnapshot: std::string, nullable
-          - PreviousSnapshotUrl: std::string, nullable
-          - Range: Azure::Core::Http::Range, nullable
-          - LeaseId: std::string, nullable
-          - BlobRequestConditionalHeaders: inline
+          GetPageBlobPageRangesOptions:
+            - BasicRequestOptions: inline
+            - PreviousSnapshot: std::string, nullable
+            - PreviousSnapshotUrl: std::string, nullable
+            - Range: Azure::Core::Http::Range, nullable
+            - LeaseId: std::string, nullable
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "pagelist"]
           - [add_query_code, "prevsnapshot", PreviousSnapshot]
@@ -1498,9 +1539,10 @@ Services:
             - BasicResponse: inline
             - BlobCopyInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - CopySource: std::string
-          - BlobRequestConditionalHeaders: inline
+          StartCopyPageBlobIncrementalOptions:
+            - BasicRequestOptions: inline
+            - CopySource: std::string
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "incrementalcopy"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1523,13 +1565,14 @@ Services:
             - Created: bool = true
             - BlobContentInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - HttpHeaders: BlobHttpHeaders
-          - Metadata: Metadata
-          - LeaseId: std::string, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          CreateAppendBlobOptions:
+            - BasicRequestOptions: inline
+            - HttpHeaders: BlobHttpHeaders
+            - Metadata: Metadata
+            - LeaseId: std::string, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
@@ -1552,14 +1595,15 @@ Services:
             - BasicResponse: inline
             - BlobAppendInfo: inline
         options:
-          - BodiedRequestOptions: inline
-          - TransactionalContentHash: ContentHash, nullable
-          - LeaseId: std::string, nullable
-          - MaxSize: int64_t, nullable
-          - AppendPosition: int64_t, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          AppendBlockOptions:
+            - BodiedRequestOptions: inline
+            - TransactionalContentHash: ContentHash, nullable
+            - LeaseId: std::string, nullable
+            - MaxSize: int64_t, nullable
+            - AppendPosition: int64_t, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_body_code]
           - [add_query_code, "comp", "appendblock"]
@@ -1586,16 +1630,17 @@ Services:
             - BasicResponse: inline
             - BlobAppendInfo: inline
         options:
-          - BasicRequestOptions: inline
-          - SourceUri: std::string
-          - SourceRange: Azure::Core::Http::Range, nullable
-          - TransactionalContentHash: ContentHash, nullable
-          - LeaseId: std::string, nullable
-          - MaxSize: int64_t, nullable
-          - AppendPosition: int64_t, nullable
-          - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-          - BlobRequestEncryptionScopeOptions: inline
-          - BlobRequestConditionalHeaders: inline
+          AppendBlockFromUriOptions:
+            - BasicRequestOptions: inline
+            - SourceUri: std::string
+            - SourceRange: Azure::Core::Http::Range, nullable
+            - TransactionalContentHash: ContentHash, nullable
+            - LeaseId: std::string, nullable
+            - MaxSize: int64_t, nullable
+            - AppendPosition: int64_t, nullable
+            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
+            - BlobRequestEncryptionScopeOptions: inline
+            - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "appendblock"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1621,14 +1666,15 @@ Services:
         return_type:
           SealAppendBlobResult:
             - BasicResponse: inline
-            - ETag: Azure::Core::ETag
+            - ETag: Azure::ETag
             - LastModified: Azure::Core::DateTime(RFC1123)
             - IsSealed: bool = true
         options:
-          - BasicRequestOptions: inline
-          - LeaseId: std::string, nullable
-          - BlobRequestConditionalHeaders: inline
-          - AppendPosition: int64_t, nullable
+          SealAppendBlobOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string, nullable
+            - BlobRequestConditionalHeaders: inline
+            - AppendPosition: int64_t, nullable
         request_action:
           - [add_query_code, "comp", "seal"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -1648,8 +1694,9 @@ Services:
             - BasicResponse: inline
             - ContentType: std::string
         options:
-          - BodiedRequestOptions: inline
-          - ContentType: std::string
+          SubmitBlobBatchOptions:
+            - BodiedRequestOptions: inline
+            - ContentType: std::string
         request_action:
           - [add_body_code]
           - [add_query_code, "comp", "batch"]
@@ -1686,7 +1733,7 @@ Models:
     - noexport: true
     - type: struct
     - BasicResponse: inline
-    - BodyStream: std::unique_ptr<Azure::Core::Http::BodyStream>
+    - BodyStream: std::unique_ptr<Azure::IO::BodyStream>
   PublicAccessType:
     - type: enum class
     - BlobContainer: "container"
@@ -1886,15 +1933,15 @@ Models:
     - noexport: true
     - IfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
     - IfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
-    - IfMatch: Azure::Core::ETag
-    - IfNoneMatch: Azure::Core::ETag
+    - IfMatch: Azure::ETag
+    - IfNoneMatch: Azure::ETag
     - IfTags: std::string, nullable
   BlobRequestSourceConditionalHeaders:
     - noexport: true
     - SourceIfModifiedSince: Azure::Core::DateTime(RFC1123), nullable
     - SourceIfUnmodifiedSince: Azure::Core::DateTime(RFC1123), nullable
-    - SourceIfMatch: Azure::Core::ETag
-    - SourceIfNoneMatch: Azure::Core::ETag
+    - SourceIfMatch: Azure::ETag
+    - SourceIfNoneMatch: Azure::ETag
   BlockInfo:
     - noexport: true
     - TransactionalContentHash: ContentHash, nullable
@@ -1921,7 +1968,7 @@ Models:
     - EncryptionScope: std::string, nullable
   DownloadBlobDetails:
     - type: struct
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CreatedOn: Azure::Core::DateTime(RFC1123)
     - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
@@ -1948,13 +1995,13 @@ Models:
     - IsCurrentVersion: bool, nullable
   BlobContentInfo:
     - noexport: true
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - VersionId: std::string, nullable
     - BlobResponseEncryptionOptions: inline
   BlobContainerItemWithoutName:
     - noexport: true
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - Metadata: Metadata
     - AccessType: PublicAccessType = PublicAccessType::None
@@ -2001,7 +2048,7 @@ Models:
     - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
     - LastAccessedOn: Azure::Core::DateTime(RFC1123), nullable
     - LastModified: Azure::Core::DateTime(RFC1123)
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - Tier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
     - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
@@ -2062,7 +2109,7 @@ Models:
     - UncomittedBlobs: "uncommittedblobs"
   BlobContainerInfo:
     - noexport: true
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
   ListBlobContainersIncludeFlags:
     - type: bitwise enum
@@ -2093,8 +2140,7 @@ Models:
     - PolicyId: std::string
     - Rules: std::vector<ObjectReplicationRule>
   BlobProperties:
-    - noexport: true
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CreatedOn: Azure::Core::DateTime(RFC1123)
     - ExpiresOn: Azure::Core::DateTime(RFC1123), nullable
@@ -2130,43 +2176,26 @@ Models:
     - IsCurrentVersion: bool, nullable
   BlobInfo:
     - noexport: true
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - SequenceNumber: int64_t, nullable
   BlobCopyInfo:
     - noexport: true
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - CopyId: std::string
     - CopyStatus: CopyStatus
     - VersionId: std::string, nullable
-  UserDelegationKey:
-    - SignedObjectId: std::string
-    - SignedTenantId: std::string
-    - SignedStartsOn: Azure::Core::DateTime(ISO8601)
-    - SignedExpiresOn: Azure::Core::DateTime(ISO8601)
-    - SignedService: std::string
-    - SignedVersion: std::string
-    - Value: std::string
-    - from_xml: [
-      [text, SignedOid, SignedObjectId],
-      [text, SignedTid, SignedTenantId],
-      [text, SignedStart, SignedStartsOn],
-      [text, SignedExpiry, SignedExpiresOn],
-      [text, SignedService, SignedService],
-      [text, SignedVersion, SignedVersion],
-      [text, Value, Value],
-    ]
   PageInfo:
     - noexport: true
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - TransactionalContentHash: ContentHash, nullable
     - SequenceNumber: int64_t = 0
     - BlobResponseEncryptionOptions: inline
   BlobAppendInfo:
     - noexport: true
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - TransactionalContentHash: ContentHash, nullable
     - AppendOffset: int64_t = 0
@@ -2202,17 +2231,14 @@ Models:
       [tag, SignedIdentifier.AccessPolicy.Permission, Permissions],
     ]
   BlobContainerAccessPolicy:
-    - noexport: true
     - AccessType: PublicAccessType = PublicAccessType::None
-    - ETag: Azure::Core::ETag
-    - LastModified: Azure::Core::DateTime(RFC1123)
     - SignedIdentifiers: std::vector<BlobSignedIdentifier>
     - from_xml: [
       [start_tag, SignedIdentifiers.SignedIdentifier, SignedIdentifiers],
     ]
   BlobLease:
     - noexport: true
-    - ETag: Azure::Core::ETag
+    - ETag: Azure::ETag
     - LastModified: Azure::Core::DateTime(RFC1123)
     - LeaseId: std::string
   FilterBlobItem:

@@ -53,7 +53,7 @@ class class_definition:
                 continue
             if t.startswith("std::"):
                 continue
-            if t.startswith("Azure::Core::"):
+            if t.startswith("Azure::"):
                 continue
             if t in ["Metadata"]:
                 continue
@@ -285,15 +285,14 @@ for config_resource in config["Services"]:
             return_type_def = get_class_definition(return_type)
         add_export_model(return_type)
 
-        if return_type.endswith("Result"):
-            option_type = return_type[:-6] + "Options"
-        elif return_type.endswith("ResultInternal"):
-            option_type = return_type[:-14] + "Options"
+        if return_type.endswith("ResultInternal"):
             return_type = "Models::Details::" + return_type[:-8]
-        else:
-            raise RuntimeError("Cannot deduce option name from return name " + return_type)
 
-        config_option_def = config_function_def["options"]
+        if type(config_function_def["options"]) is ruamel.yaml.comments.CommentedMap:
+            option_type, config_option_def = next(iter(config_function_def["options"].items()))
+        else:
+            raise RuntimeError("Unsupported option definition")
+
         option_def = class_definition(option_type, "struct")
         for m in config_option_def:
             member_name, member_desc = next(iter(m.items()))

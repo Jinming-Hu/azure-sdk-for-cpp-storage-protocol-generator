@@ -561,8 +561,8 @@ def gen_fromxml_function(class_name):
             content += "ret.{} = Azure::Core::DateTime::Parse(node.Value, Azure::Core::DateTime::DateFormat::Rfc1123);".format(member)
         elif member_type == "std::chrono::seconds":
             content += "ret.{} = std::chrono::seconds(strcmp(node.Value, \"infinite\") == 0 ? -1 : std::stoi(node.Value));".format(member)
-        elif member_type == "Azure::Core::ETag":
-            content += "ret.{} = Azure::Core::ETag(node.Value);".format(member)
+        elif member_type == "Azure::ETag":
+            content += "ret.{} = Azure::ETag(node.Value);".format(member)
         else:
             content += "ret.{} = node.Value;".format(member)
         content += "}"
@@ -629,9 +629,9 @@ def gen_toxml_function(class_name):
         elif member_type == "bool":
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {} ? \"true\":\"false\"}});".format(member_name)
         elif member_type == "Azure::Core::DateTime(ISO8601)":
-            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.GetRfc3339String(Azure::Core::DateTime::TimeFractionFormat::AllDigits).data()}});".format(member_name)
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc3339, Azure::Core::DateTime::TimeFractionFormat::AllDigits).data()}});".format(member_name)
         elif member_type == "Azure::Core::DateTime(ISO8601t)":
-            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.GetRfc3339String(Azure::Core::DateTime::TimeFractionFormat::Truncate).data()}});".format(member_name)
+            content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc3339, Azure::Core::DateTime::TimeFractionFormat::Truncate).data()}});".format(member_name)
         elif member_type == "Azure::Core::DateTime(RFC1123)":
             content = "writer.Write(Storage::Details::XmlNode{{Storage::Details::XmlNodeType::Text, nullptr, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc1123).data()}});".format(member_name)
         elif member_type in ["int32_t", "int64_t"]:
@@ -775,7 +775,7 @@ def gen_function_option_definition(service_name, class_name, class_def):
 def gen_resource_create_message_function_begin(function_name, option_type, request_body_type):
     content = "static Azure::Core::Http::Request {function_name}CreateMessage(const Azure::Core::Http::Url& url,".format(function_name=function_name)
     if request_body_type == HttpBodyType.PassOn:
-        content += "Azure::Core::Http::BodyStream* requestBody,"
+        content += "Azure::IO::BodyStream* requestBody,"
     content += "const {option_type}& options) {{ (void)options;".format(option_type=option_type)
 
     global main_body
@@ -790,7 +790,7 @@ def gen_resource_create_message_function_end():
 
 
 def gen_resource_create_response_function_begin(function_name, return_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}CreateResponse(const Azure::Core::Context& context, std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse) {{ (void)context;".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Response<{return_type}> {function_name}CreateResponse(std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse, const Azure::Core::Context& context) {{ (void)context;".format(function_name=function_name, return_type=return_type)
 
     global main_body
     main_body += content
@@ -822,25 +822,25 @@ def gen_resource_create_response_function_check_status_code(return_type, http_st
 
 
 def gen_resource_create_response_function_end(return_type):
-    content = "return Azure::Core::Response<{return_type}>(std::move(response), std::move(pHttpResponse));}}\n\n".format(return_type=return_type)
+    content = "return Azure::Response<{return_type}>(std::move(response), std::move(pHttpResponse));}}\n\n".format(return_type=return_type)
 
     global main_body
     main_body += content
 
 
 def gen_resource_function_glue_function(function_name, option_type, return_type, request_body_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Internal::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Internal::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
-        content += "Azure::Core::Http::BodyStream* requestBody,"
-    content += "const {option_type}& options) {{".format(option_type=option_type)
+        content += "Azure::IO::BodyStream* requestBody,"
+    content += "const {option_type}& options, const Azure::Core::Context& context) {{".format(option_type=option_type)
     content += "auto request = {function_name}CreateMessage(url,".format(function_name=function_name, option_type=option_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "requestBody,"
     content += "options);"
     content += inspect.cleandoc(
         """
-        auto pHttpResponse = pipeline.Send(context, request);
-        return {function_name}CreateResponse(context, std::move(pHttpResponse));
+        auto pHttpResponse = pipeline.Send(request, context);
+        return {function_name}CreateResponse(std::move(pHttpResponse), context);
         }}
         """.format(function_name=function_name))
     content += "\n\n"
@@ -850,17 +850,17 @@ def gen_resource_function_glue_function(function_name, option_type, return_type,
 
 
 def gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type):
-    content = "static Azure::Core::Response<{return_type}> {function_name}(const Azure::Core::Context& context, Azure::Core::Internal::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Internal::Http::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
-        content += "Azure::Core::Http::BodyStream* requestBody,"
-    content += "const {option_type}& options) {{ (void)options;".format(option_type=option_type)
+        content += "Azure::IO::BodyStream* requestBody,"
+    content += "const {option_type}& options, const Azure::Core::Context& context) {{ (void)options;".format(option_type=option_type)
 
     global main_body
     main_body += content
 
 
 def gen_resource_send_request(return_type, http_status_code):
-    content = "auto pHttpResponse = pipeline.Send(context, request);"
+    content = "auto pHttpResponse = pipeline.Send(request, context);"
 
     global main_body
     main_body += content
@@ -869,7 +869,7 @@ def gen_resource_send_request(return_type, http_status_code):
 
 
 def gen_resource_function_end(return_type):
-    content = "return Azure::Core::Response<{return_type}>(std::move(response), std::move(pHttpResponse));}}\n\n".format(return_type=return_type)
+    content = "return Azure::Response<{return_type}>(std::move(response), std::move(pHttpResponse));}}\n\n".format(return_type=return_type)
 
     global main_body
     main_body += content
@@ -957,13 +957,13 @@ def gen_add_header_code(*args, **kwargs):
 
     if value_type == "std::string":
         if not optional:
-            content += "request.AddHeader({}, {});".format(key, value)
+            content += "request.SetHeader({}, {});".format(key, value)
         else:
             content += inspect.cleandoc(
                 """
                 if (!{1}.empty())
                 {{
-                    request.AddHeader({0}, {1});
+                    request.SetHeader({0}, {1});
                 }}
                 """.format(key, value))
             if default_value:
@@ -971,41 +971,41 @@ def gen_add_header_code(*args, **kwargs):
                     """
                     else
                     {{
-                        request.AddHeader({0}, {1});
+                        request.SetHeader({0}, {1});
                     }}
                     """.format(key, default_value))
     elif value_type in ["int64_t", "int32_t"]:
         if not optional:
-            content += "request.AddHeader({}, std::to_string({}));".format(key, value)
+            content += "request.SetHeader({}, std::to_string({}));".format(key, value)
         else:
             content += inspect.cleandoc(
                 """if ({member_name} != {member_optional_value}) {{
-                    request.AddHeader({header_name}, std::to_string({member_name}));
+                    request.SetHeader({header_name}, std::to_string({member_name}));
                 }}""".format(member_name=value, member_optional_value=optional_value, header_name=key))
     elif value_type == "bool":
-        content += "request.AddHeader({}, {} ? \"true\":\"false\");".format(key, value)
+        content += "request.SetHeader({}, {} ? \"true\":\"false\");".format(key, value)
     elif value_type == "std::chrono::seconds":
-        content += "request.AddHeader({}, std::to_string({}.count()));".format(key, value)
+        content += "request.SetHeader({}, std::to_string({}.count()));".format(key, value)
     elif value_type == "Azure::Core::DateTime(RFC1123)":
-        content += "request.AddHeader({}, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
-    elif value_type == "Azure::Core::ETag":
+        content += "request.SetHeader({}, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
+    elif value_type == "Azure::ETag":
         assert optional
         content += inspect.cleandoc(
             """
             if ({value}.HasValue() && !{value}.ToString().empty())
             {{
-                request.AddHeader({key}, {value}.ToString());
+                request.SetHeader({key}, {value}.ToString());
             }}
             """.format(key=key, value=value))
     elif hasattr(value_type, "type") and value_type.type == "enum class":
         if not optional:
-            content += "request.AddHeader({key}, {value}.ToString());".format(key=key, value=value)
+            content += "request.SetHeader({key}, {value}.ToString());".format(key=key, value=value)
         else:
             content += inspect.cleandoc(
                 """
                 if (!{value}.ToString().empty())
                 {{
-                    request.AddHeader({key}, {value}.ToString());
+                    request.SetHeader({key}, {value}.ToString());
                 }}
                 """.format(key=key, value=value))
     else:
@@ -1038,7 +1038,7 @@ def gen_add_range_header_code(*args, **kwargs):
             if ({var}.Length.HasValue()) {{
                 headerValue += std::to_string({var}.Offset + {var}.Length.GetValue() - 1);
             }}
-            request.AddHeader({key}, std::move(headerValue));
+            request.SetHeader({key}, std::move(headerValue));
         }}
         """.format(key=key, var=value))
 
@@ -1053,7 +1053,7 @@ def gen_add_metadata_code(*args, **kwargs):
         """
         for (const auto& pair : {1})
         {{
-            request.AddHeader({0} + pair.first, pair.second);
+            request.SetHeader({0} + pair.first, pair.second);
         }}
         """.format(prefix, value))
 
@@ -1074,10 +1074,10 @@ def gen_add_content_hash_code(*args, **kwargs):
     content += inspect.cleandoc(
         """
         if ({var}.Algorithm == HashAlgorithm::Md5) {{
-            request.AddHeader("Content-MD5", Azure::Core::Base64Encode({var}.Value));
+            request.SetHeader("Content-MD5", Azure::Core::Base64Encode({var}.Value));
         }}
         else if ({var}.Algorithm == HashAlgorithm::Crc64) {{
-            request.AddHeader("x-ms-content-crc64", Azure::Core::Base64Encode({var}.Value));
+            request.SetHeader("x-ms-content-crc64", Azure::Core::Base64Encode({var}.Value));
         }}
         """.format(var=value))
 
@@ -1100,10 +1100,10 @@ def gen_add_source_content_hash_code(*args, **kwargs):
     content += inspect.cleandoc(
         """
         if ({var}.Algorithm == HashAlgorithm::Md5) {{
-            request.AddHeader("x-ms-source-content-md5", Azure::Core::Base64Encode({var}.Value));
+            request.SetHeader("x-ms-source-content-md5", Azure::Core::Base64Encode({var}.Value));
         }}
         else if ({var}.Algorithm == HashAlgorithm::Crc64) {{
-            request.AddHeader("x-ms-source-content-crc64", Azure::Core::Base64Encode({var}.Value));
+            request.SetHeader("x-ms-source-content-crc64", Azure::Core::Base64Encode({var}.Value));
         }}
         """.format(var=value))
     if value_nullable:
@@ -1123,10 +1123,10 @@ def gen_add_hash_algorithm_code(*args, **kwargs):
         """
         if ({var}.HasValue()) {{
             if ({var}.GetValue()== HashAlgorithm::Md5) {{
-                request.AddHeader("x-ms-range-get-content-md5", "true");
+                request.SetHeader("x-ms-range-get-content-md5", "true");
             }}
             else if ({var}.GetValue()== HashAlgorithm::Crc64) {{
-                request.AddHeader("x-ms-range-get-content-crc64", "true");
+                request.SetHeader("x-ms-range-get-content-crc64", "true");
             }}
         }}
         """.format(var=value))
@@ -1266,7 +1266,7 @@ def gen_no_body_code(*args, **kwargs):
         content += ", true"
     content += ");"
     if http_method not in ["Get", "Head", "Delete"]:
-        content += "request.AddHeader(\"Content-Length\", \"0\");"
+        content += "request.SetHeader(\"Content-Length\", \"0\");"
 
     global main_body
     main_body += content
@@ -1279,7 +1279,7 @@ def gen_add_body_code(*args, **kwargs):
     if response_body_type == HttpBodyType.PassOn:
         content += ", true"
     content += ");"
-    content += "request.AddHeader(\"Content-Length\", std::to_string(requestBody->Length()));"
+    content += "request.SetHeader(\"Content-Length\", std::to_string(requestBody->Length()));"
 
     global main_body
     main_body += content
@@ -1303,14 +1303,14 @@ def gen_add_xml_body_code(*args, **kwargs):
 
     content += inspect.cleandoc(
         """
-        Azure::Core::Http::MemoryBodyStream xml_body_stream(reinterpret_cast<const uint8_t*>(xml_body.data()), xml_body.length());
+        Azure::IO::MemoryBodyStream xml_body_stream(reinterpret_cast<const uint8_t*>(xml_body.data()), xml_body.length());
         auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url, &xml_body_stream
         """.format(http_method=http_method))
 
     if response_body_type == HttpBodyType.PassOn:
         content += ", true"
     content += ");"
-    content += "request.AddHeader(\"Content-Length\", std::to_string(xml_body_stream.Length()));"
+    content += "request.SetHeader(\"Content-Length\", std::to_string(xml_body_stream.Length()));"
 
     global main_body
     main_body += content
@@ -1320,7 +1320,7 @@ def gen_get_body_code(*args, **kwargs):
     body = args[0]
     value_type = kwargs[body + ".type"]
 
-    if value_type != "std::unique_ptr<Azure::Core::Http::BodyStream>":
+    if value_type != "std::unique_ptr<Azure::IO::BodyStream>":
         raise RuntimeError("Unknown response body type")
 
     content = "{0} = httpResponse.GetBodyStream();".format(body)
@@ -1398,8 +1398,8 @@ def gen_get_header_code(*args, **kwargs):
             content = "{1} = Azure::Core::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::Core::DateTime::DateFormat::Rfc3339);".format(key.lower(), target)
         elif target_type == "Azure::Core::DateTime(RFC1123)":
             content = "{1} = Azure::Core::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::Core::DateTime::DateFormat::Rfc1123);".format(key.lower(), target)
-        elif target_type == "Azure::Core::ETag":
-            content = "{1} = Azure::Core::ETag(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
+        elif target_type == "Azure::ETag":
+            content = "{1} = Azure::ETag(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
             content = "{target} = {target_type}(httpResponse.GetHeaders().at({key}));".format(key=key.lower(), target=target, target_type=target_type.name)
         else:
