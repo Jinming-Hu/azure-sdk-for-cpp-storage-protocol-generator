@@ -286,7 +286,7 @@ for config_resource in config["Services"]:
         add_export_model(return_type)
 
         if return_type.endswith("ResultInternal"):
-            return_type = "Models::Details::" + return_type[:-8]
+            return_type = "Models::_detail::" + return_type[:-8]
 
         if type(config_function_def["options"]) is ruamel.yaml.comments.CommentedMap:
             option_type, config_option_def = next(iter(config_function_def["options"].items()))
