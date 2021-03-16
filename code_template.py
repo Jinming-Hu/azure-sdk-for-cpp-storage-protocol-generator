@@ -219,7 +219,7 @@ def gen_model_definition(service_name, class_name, class_def):
                 real_member_type = class_def.member_type[i]
             real_member_type = ns_prefix + real_member_type
             if class_def.member_nullable[i]:
-                real_member_type = "Azure::Core::Nullable<" + real_member_type + ">"
+                real_member_type = "Azure::Nullable<" + real_member_type + ">"
             content += real_member_type + " " + class_def.member[i]
             if class_def.member_default_value[i]:
                 if class_def.member_default_value[i].startswith(class_def.member[i] + "::"):
@@ -368,10 +368,10 @@ def gen_fromxml_function(class_name):
                     return ret;
                 }}
                 """.format(member_name))
-        elif class_type == "Azure::Core::Http::Range":
+        elif class_type == "Azure::Core::Http::HttpRange":
             content = inspect.cleandoc(
                 """
-                static Azure::Core::Http::Range {}FromXml(Storage::_detail::XmlReader& reader) {{
+                static Azure::Core::Http::HttpRange {}FromXml(Storage::_detail::XmlReader& reader) {{
                     int depth = 0;
                     bool is_start = false;
                     bool is_end = false;
@@ -397,7 +397,7 @@ def gen_fromxml_function(class_name):
                             else if (is_end) {{ end = std::stoll(node.Value); }}
                         }}
                     }}
-                    Azure::Core::Http::Range ret;
+                    Azure::Core::Http::HttpRange ret;
                     ret.Offset = start;
                     ret.Length = end - start + 1;
                     return ret;
@@ -516,7 +516,7 @@ def gen_fromxml_function(class_name):
             fromxml_classes.add((member_type, function_name))
         elif member_type.startswith("std::vector<") and member_type.endswith(">"):
             inner_type = member_type[len("std::vector<"): -len(">")]
-            if inner_type == "Azure::Core::Http::Range":
+            if inner_type == "Azure::Core::Http::HttpRange":
                 content += "ret.{member_name}.emplace_back({member_name}FromXml(reader));".format(member_name=member)
                 fromxml_classes.add((inner_type, member))
             else:
@@ -550,15 +550,15 @@ def gen_fromxml_function(class_name):
         elif member_type == "bool":
             content += "ret.{} = std::strcmp(node.Value,\"true\") == 0;".format(member)
         elif member_type == "std::vector<uint8_t>":
-            content += "ret.{} = Azure::Core::Base64Decode(node.Value);".format(member)
+            content += "ret.{} = Azure::Core::Convert::Base64Decode(node.Value);".format(member)
         elif member_type == "std::vector<std::string>":
             content += "ret.{}.emplace_back(node.Value);".format(member)
         elif member_type in models_cache and models_cache[member_type].type == "enum class":
             content += "ret.{} = {}(node.Value);".format(member, member_type)
-        elif member_type == "Azure::Core::DateTime(ISO8601)":
-            content += "ret.{} = Azure::Core::DateTime::Parse(node.Value, Azure::Core::DateTime::DateFormat::Rfc3339);".format(member)
-        elif member_type == "Azure::Core::DateTime(RFC1123)":
-            content += "ret.{} = Azure::Core::DateTime::Parse(node.Value, Azure::Core::DateTime::DateFormat::Rfc1123);".format(member)
+        elif member_type == "Azure::DateTime(ISO8601)":
+            content += "ret.{} = Azure::DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);".format(member)
+        elif member_type == "Azure::DateTime(RFC1123)":
+            content += "ret.{} = Azure::DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);".format(member)
         elif member_type == "std::chrono::seconds":
             content += "ret.{} = std::chrono::seconds(strcmp(node.Value, \"infinite\") == 0 ? -1 : std::stoi(node.Value));".format(member)
         elif member_type == "Azure::ETag":
@@ -628,12 +628,12 @@ def gen_toxml_function(class_name):
             content = "writer.Write(Storage::_detail::XmlNode{{Storage::_detail::XmlNodeType::Text, nullptr, {}.data()}});".format(member_name)
         elif member_type == "bool":
             content = "writer.Write(Storage::_detail::XmlNode{{Storage::_detail::XmlNodeType::Text, nullptr, {} ? \"true\":\"false\"}});".format(member_name)
-        elif member_type == "Azure::Core::DateTime(ISO8601)":
-            content = "writer.Write(Storage::_detail::XmlNode{{Storage::_detail::XmlNodeType::Text, nullptr, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc3339, Azure::Core::DateTime::TimeFractionFormat::AllDigits).data()}});".format(member_name)
-        elif member_type == "Azure::Core::DateTime(ISO8601t)":
-            content = "writer.Write(Storage::_detail::XmlNode{{Storage::_detail::XmlNodeType::Text, nullptr, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc3339, Azure::Core::DateTime::TimeFractionFormat::Truncate).data()}});".format(member_name)
-        elif member_type == "Azure::Core::DateTime(RFC1123)":
-            content = "writer.Write(Storage::_detail::XmlNode{{Storage::_detail::XmlNodeType::Text, nullptr, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc1123).data()}});".format(member_name)
+        elif member_type == "Azure::DateTime(ISO8601)":
+            content = "writer.Write(Storage::_detail::XmlNode{{Storage::_detail::XmlNodeType::Text, nullptr, {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::AllDigits).data()}});".format(member_name)
+        elif member_type == "Azure::DateTime(ISO8601t)":
+            content = "writer.Write(Storage::_detail::XmlNode{{Storage::_detail::XmlNodeType::Text, nullptr, {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::Truncate).data()}});".format(member_name)
+        elif member_type == "Azure::DateTime(RFC1123)":
+            content = "writer.Write(Storage::_detail::XmlNode{{Storage::_detail::XmlNodeType::Text, nullptr, {}.ToString(Azure::DateTime::DateFormat::Rfc1123).data()}});".format(member_name)
         elif member_type in ["int32_t", "int64_t"]:
             content = "writer.Write(Storage::_detail::XmlNode{{Storage::_detail::XmlNodeType::Text, nullptr, std::to_string({}).data()}});".format(member_name)
         else:
@@ -753,7 +753,7 @@ def gen_function_option_definition(service_name, class_name, class_def):
             real_member_type = class_def.member_type[i]
         real_member_type = ns_prefix + real_member_type
         if class_def.member_nullable[i]:
-            real_member_type = "Azure::Core::Nullable<" + real_member_type + ">"
+            real_member_type = "Azure::Nullable<" + real_member_type + ">"
         content += real_member_type + " " + class_def.member[i]
         if class_def.member_default_value[i]:
             if class_def.member_default_value[i].startswith(class_def.member[i] + "::"):
@@ -773,9 +773,9 @@ def gen_function_option_definition(service_name, class_name, class_def):
 
 
 def gen_resource_create_message_function_begin(function_name, option_type, request_body_type):
-    content = "static Azure::Core::Http::Request {function_name}CreateMessage(const Azure::Core::Http::Url& url,".format(function_name=function_name)
+    content = "static Azure::Core::Http::Request {function_name}CreateMessage(const Azure::Core::Url& url,".format(function_name=function_name)
     if request_body_type == HttpBodyType.PassOn:
-        content += "Azure::IO::BodyStream* requestBody,"
+        content += "Azure::Core::IO::BodyStream* requestBody,"
     content += "const {option_type}& options) {{ (void)options;".format(option_type=option_type)
 
     global main_body
@@ -829,9 +829,9 @@ def gen_resource_create_response_function_end(return_type):
 
 
 def gen_resource_function_glue_function(function_name, option_type, return_type, request_body_type):
-    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
-        content += "Azure::IO::BodyStream* requestBody,"
+        content += "Azure::Core::IO::BodyStream* requestBody,"
     content += "const {option_type}& options, const Azure::Core::Context& context) {{".format(option_type=option_type)
     content += "auto request = {function_name}CreateMessage(url,".format(function_name=function_name, option_type=option_type)
     if request_body_type == HttpBodyType.PassOn:
@@ -850,9 +850,9 @@ def gen_resource_function_glue_function(function_name, option_type, return_type,
 
 
 def gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type):
-    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Http::Url& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
-        content += "Azure::IO::BodyStream* requestBody,"
+        content += "Azure::Core::IO::BodyStream* requestBody,"
     content += "const {option_type}& options, const Azure::Core::Context& context) {{ (void)options;".format(option_type=option_type)
 
     global main_body
@@ -952,7 +952,7 @@ def gen_add_header_code(*args, **kwargs):
         value += ".GetValue()"
 
     if value_type == "std::vector<uint8_t>":
-        value = "Azure::Core::Base64Encode(" + value + ")"
+        value = "Azure::Core::Convert::Base64Encode(" + value + ")"
         value_type = "std::string"
 
     if value_type == "std::string":
@@ -986,8 +986,8 @@ def gen_add_header_code(*args, **kwargs):
         content += "request.SetHeader({}, {} ? \"true\":\"false\");".format(key, value)
     elif value_type == "std::chrono::seconds":
         content += "request.SetHeader({}, std::to_string({}.count()));".format(key, value)
-    elif value_type == "Azure::Core::DateTime(RFC1123)":
-        content += "request.SetHeader({}, {}.ToString(Azure::Core::DateTime::DateFormat::Rfc1123));".format(key, value)
+    elif value_type == "Azure::DateTime(RFC1123)":
+        content += "request.SetHeader({}, {}.ToString(Azure::DateTime::DateFormat::Rfc1123));".format(key, value)
     elif value_type == "Azure::ETag":
         assert optional
         content += inspect.cleandoc(
@@ -1023,7 +1023,7 @@ def gen_add_range_header_code(*args, **kwargs):
     value = args[1]
     value_type = kwargs[value + ".type"]
     value_nullable = kwargs[value + ".nullable"]
-    assert value_type == "Azure::Core::Http::Range"
+    assert value_type == "Azure::Core::Http::HttpRange"
 
     if value_nullable:
         content = "if ({}.HasValue())".format(value)
@@ -1074,10 +1074,10 @@ def gen_add_content_hash_code(*args, **kwargs):
     content += inspect.cleandoc(
         """
         if ({var}.Algorithm == HashAlgorithm::Md5) {{
-            request.SetHeader("Content-MD5", Azure::Core::Base64Encode({var}.Value));
+            request.SetHeader("Content-MD5", Azure::Core::Convert::Base64Encode({var}.Value));
         }}
         else if ({var}.Algorithm == HashAlgorithm::Crc64) {{
-            request.SetHeader("x-ms-content-crc64", Azure::Core::Base64Encode({var}.Value));
+            request.SetHeader("x-ms-content-crc64", Azure::Core::Convert::Base64Encode({var}.Value));
         }}
         """.format(var=value))
 
@@ -1100,10 +1100,10 @@ def gen_add_source_content_hash_code(*args, **kwargs):
     content += inspect.cleandoc(
         """
         if ({var}.Algorithm == HashAlgorithm::Md5) {{
-            request.SetHeader("x-ms-source-content-md5", Azure::Core::Base64Encode({var}.Value));
+            request.SetHeader("x-ms-source-content-md5", Azure::Core::Convert::Base64Encode({var}.Value));
         }}
         else if ({var}.Algorithm == HashAlgorithm::Crc64) {{
-            request.SetHeader("x-ms-source-content-crc64", Azure::Core::Base64Encode({var}.Value));
+            request.SetHeader("x-ms-source-content-crc64", Azure::Core::Convert::Base64Encode({var}.Value));
         }}
         """.format(var=value))
     if value_nullable:
@@ -1146,14 +1146,14 @@ def gen_get_content_hash_code(*args, **kwargs):
             if (content_md5_iterator != headers.end()) {{
                 ContentHash hash;
                 hash.Algorithm = HashAlgorithm::Md5;
-                hash.Value = Azure::Core::Base64Decode(content_md5_iterator->second);
+                hash.Value = Azure::Core::Convert::Base64Decode(content_md5_iterator->second);
                 {var} = std::move(hash);
             }}
             auto x_ms_content_crc64_iterator = headers.find("x-ms-content-crc64");
             if (x_ms_content_crc64_iterator != headers.end()) {{
                 ContentHash hash;
                 hash.Algorithm = HashAlgorithm::Crc64;
-                hash.Value = Azure::Core::Base64Decode(x_ms_content_crc64_iterator->second);
+                hash.Value = Azure::Core::Convert::Base64Decode(x_ms_content_crc64_iterator->second);
                 {var} = std::move(hash);
             }}
         }}
@@ -1171,7 +1171,7 @@ def gen_get_content_range_code(*args, **kwargs):
 
     key2 = "\"Content-Length\""
 
-    if target_type == "Azure::Core::Http::Range":
+    if target_type == "Azure::Core::Http::HttpRange":
         content = inspect.cleandoc(
         """
         auto content_range_iterator = httpResponse.GetHeaders().find({key});
@@ -1182,10 +1182,10 @@ def gen_get_content_range_code(*args, **kwargs):
             auto slash_pos = content_range.find("/", dash_pos + 1);
             int64_t range_start_offset = std::stoll(std::string(content_range.begin() + bytes_pos + 6, content_range.begin() + dash_pos));
             int64_t range_end_offset = std::stoll(std::string(content_range.begin() + dash_pos + 1, content_range.begin() + slash_pos));
-            {target} = Azure::Core::Http::Range{{range_start_offset, range_end_offset - range_start_offset + 1}};
+            {target} = Azure::Core::Http::HttpRange{{range_start_offset, range_end_offset - range_start_offset + 1}};
         }}
         else {{
-            {target} = Azure::Core::Http::Range{{0, std::stoll(httpResponse.GetHeaders().at({key2}))}};
+            {target} = Azure::Core::Http::HttpRange{{0, std::stoll(httpResponse.GetHeaders().at({key2}))}};
         }}
         """.format(key=key.lower(), key2=key2.lower(), target=target))
     elif target_type == "int64_t":
@@ -1303,7 +1303,7 @@ def gen_add_xml_body_code(*args, **kwargs):
 
     content += inspect.cleandoc(
         """
-        Azure::IO::MemoryBodyStream xml_body_stream(reinterpret_cast<const uint8_t*>(xml_body.data()), xml_body.length());
+        Azure::Core::IO::MemoryBodyStream xml_body_stream(reinterpret_cast<const uint8_t*>(xml_body.data()), xml_body.length());
         auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url, &xml_body_stream
         """.format(http_method=http_method))
 
@@ -1320,7 +1320,7 @@ def gen_get_body_code(*args, **kwargs):
     body = args[0]
     value_type = kwargs[body + ".type"]
 
-    if value_type != "std::unique_ptr<Azure::IO::BodyStream>":
+    if value_type != "std::unique_ptr<Azure::Core::IO::BodyStream>":
         raise RuntimeError("Unknown response body type")
 
     content = "{0} = httpResponse.GetBodyStream();".format(body)
@@ -1370,15 +1370,15 @@ def gen_get_header_code(*args, **kwargs):
         elif target_type == "std::string":
             content += "{} = {}->second;".format(target, ite_name)
         elif target_type == "std::vector<uint8_t>":
-            content += "{} = Azure::Core::Base64Decode({}->second);".format(target, ite_name)
+            content += "{} = Azure::Core::Convert::Base64Decode({}->second);".format(target, ite_name)
         elif target_type == "bool":
             content += "{} = {}->second == \"true\";".format(target, ite_name)
         elif target_type == "std::chrono::seconds":
             content += "{target} = std::chrono::seconds({ite}->second == \"infinite\" ? -1 : std::stoi({ite}->second));".format(target=target, ite=ite_name)
-        elif target_type == "Azure::Core::DateTime(ISO8601)":
-            content += "{} = Azure::Core::DateTime::Parse({}->second, Azure::Core::DateTime::DateFormat::Rfc3339);".format(target, ite_name)
-        elif target_type == "Azure::Core::DateTime(RFC1123)":
-            content += "{} = Azure::Core::DateTime::Parse({}->second, Azure::Core::DateTime::DateFormat::Rfc1123);".format(target, ite_name)
+        elif target_type == "Azure::DateTime(ISO8601)":
+            content += "{} = Azure::DateTime::Parse({}->second, Azure::DateTime::DateFormat::Rfc3339);".format(target, ite_name)
+        elif target_type == "Azure::DateTime(RFC1123)":
+            content += "{} = Azure::DateTime::Parse({}->second, Azure::DateTime::DateFormat::Rfc1123);".format(target, ite_name)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
             content += "{target} = {target_type}({ite}->second);".format(target=target, ite=ite_name, target_type=target_type.name)
         else:
@@ -1394,10 +1394,10 @@ def gen_get_header_code(*args, **kwargs):
             content = "{1} = httpResponse.GetHeaders().at({0});".format(key.lower(), target)
         elif target_type == "bool":
             content = "{1} = httpResponse.GetHeaders().at({0}) == \"true\";".format(key.lower(), target)
-        elif target_type == "Azure::Core::DateTime(ISO8601)":
-            content = "{1} = Azure::Core::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::Core::DateTime::DateFormat::Rfc3339);".format(key.lower(), target)
-        elif target_type == "Azure::Core::DateTime(RFC1123)":
-            content = "{1} = Azure::Core::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::Core::DateTime::DateFormat::Rfc1123);".format(key.lower(), target)
+        elif target_type == "Azure::DateTime(ISO8601)":
+            content = "{1} = Azure::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::DateTime::DateFormat::Rfc3339);".format(key.lower(), target)
+        elif target_type == "Azure::DateTime(RFC1123)":
+            content = "{1} = Azure::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::DateTime::DateFormat::Rfc1123);".format(key.lower(), target)
         elif target_type == "Azure::ETag":
             content = "{1} = Azure::ETag(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
