@@ -5,9 +5,6 @@ output_cpp: blob_rest_client.cpp
 Constants:
   ApiVersion: &ApiVersion "2020-02-10"
 
-response_request_id_package: &RESPONSE_REQUEST_ID_PACKAGE
-  - [get_header_code, "x-ms-request-id", RequestId]
-
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
   - [add_header_code, "x-ms-version", *ApiVersion]
   - [add_query_code, "timeout", Timeout]
@@ -109,7 +106,6 @@ Services:
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - GetUserDelegationKey:
@@ -182,8 +178,7 @@ Services:
           - [add_query_code, "restype", "service"]
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
-        response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
+        response_action: {}
 
     - GetAccountInfo:
         http_method: Head
@@ -251,7 +246,6 @@ Services:
           - [add_query_code, "marker", ContinuationToken]
           - [add_query_code, "maxresults", MaxResults]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
 
@@ -279,7 +273,6 @@ Services:
           - [add_header_code, "x-ms-default-encryption-scope", DefaultEncryptionScope]
           - [add_header_code, "x-ms-deny-encryption-scope-override", PreventEncryptionScopeOverride]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - Delete:
@@ -300,8 +293,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
-        response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
+        response_action: {}
 
     - Undelete:
         http_method: Put
@@ -320,8 +312,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "x-ms-deleted-container-name", DeletedBlobContainerName]
           - [add_header_code, "x-ms-deleted-container-version", DeletedBlobContainerVersion]
-        response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
+        response_action: {}
 
     - GetProperties:
         http_method: Head
@@ -368,7 +359,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - ListBlobsSinglePage:
@@ -405,7 +395,6 @@ Services:
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - ListBlobsByHierarchySinglePage:
@@ -448,7 +437,6 @@ Services:
           - [add_query_code, "maxresults", MaxResults]
           - [add_query_code, "include", Include, optional]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - GetAccessPolicy:
@@ -494,7 +482,6 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - [add_xml_body_code]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - AcquireLease:
@@ -520,7 +507,6 @@ Services:
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -545,7 +531,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -572,7 +557,6 @@ Services:
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -597,7 +581,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - BreakLease:
@@ -623,7 +606,6 @@ Services:
           - [add_header_code, "x-ms-lease-break-period", BreakPeriod]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-time", LeaseTime]
 
@@ -656,7 +638,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_hash_algorithm_code, RangeHashAlgorithm]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_body_code, BodyStream]
           - [get_header_code, "x-ms-blob-type", BlobType]
@@ -715,8 +696,7 @@ Services:
           - [add_header_code, "x-ms-delete-snapshots", DeleteSnapshots]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
-        response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
+        response_action: {}
 
     - ScheduleDeletion:
         http_method: Put
@@ -734,8 +714,7 @@ Services:
           - [add_query_code, "comp", "expiry"]
           - [add_header_code, "x-ms-expiry-option", ExpiryOrigin]
           - [add_header_code, "x-ms-expiry-time", ExpiryTime]
-        response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
+        response_action: {}
 
     - Undelete:
         http_method: Put
@@ -749,8 +728,7 @@ Services:
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "undelete"]
-        response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
+        response_action: {}
 
     - GetProperties:
         http_method: Head
@@ -820,7 +798,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
@@ -847,7 +824,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - SetAccessTier:
@@ -869,8 +845,7 @@ Services:
           - [add_header_code, "x-ms-access-tier", Tier]
           - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
           - [add_header_code, "x-ms-if-tags", IfTags]
-        response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
+        response_action: {}
 
     - StartCopyFromUri:
         http_method: Put
@@ -905,7 +880,6 @@ Services:
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
           - [add_header_code, "x-ms-source-if-tags", SourceIfTags]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-copy-id", CopyId]
           - [get_header_code, "x-ms-copy-status", CopyStatus]
@@ -928,8 +902,7 @@ Services:
           - [add_query_code, "copyid", CopyId]
           - [add_header_code, "x-ms-copy-action", "abort"]
           - [add_header_code, "x-ms-lease-id", LeaseId]
-        response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
+        response_action: {}
 
     - CreateSnapshot:
         http_method: Put
@@ -958,7 +931,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [get_header_code, "x-ms-snapshot", Snapshot]
@@ -983,7 +955,6 @@ Services:
           - [add_query_code, "comp", "tags"]
           - [add_header_code, "x-ms-if-tags", IfTags]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
 
     - SetTags:
@@ -1006,8 +977,7 @@ Services:
           - [add_header_code, "Content-Type", "application/xml; charset=UTF-8"]
           - [add_header_code, "x-ms-if-tags", IfTags]
           - [add_xml_body_code]
-        response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
+        response_action: {}
 
     - AcquireLease:
         http_method: Put
@@ -1030,7 +1000,6 @@ Services:
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -1053,7 +1022,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -1078,7 +1046,6 @@ Services:
           - [add_header_code, "x-ms-proposed-lease-id", ProposedLeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-id", LeaseId]
 
@@ -1101,7 +1068,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
@@ -1126,7 +1092,6 @@ Services:
           - [add_header_code, "x-ms-lease-break-period", BreakPeriod]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-lease-time", LeaseTime]
 
@@ -1163,7 +1128,6 @@ Services:
           - [add_header_code, "x-ms-access-tier", Tier]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
@@ -1193,7 +1157,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
@@ -1226,7 +1189,6 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
@@ -1263,7 +1225,6 @@ Services:
           - [add_header_code, "x-ms-access-tier", Tier]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
@@ -1297,7 +1258,6 @@ Services:
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-if-tags", IfTags]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "Content-Type", ContentType]
@@ -1337,7 +1297,6 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
@@ -1375,7 +1334,6 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
@@ -1417,7 +1375,6 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
@@ -1455,7 +1412,6 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
@@ -1490,7 +1446,6 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
@@ -1526,7 +1481,6 @@ Services:
           - [add_header_code, "x-ms-previous-snapshot-url", PreviousSnapshotUrl]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_xml_body_code]
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-content-length", BlobSize]
@@ -1549,7 +1503,6 @@ Services:
           - [add_header_code, "x-ms-copy-source", CopySource]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-copy-id", CopyId]
           - [get_header_code, "x-ms-copy-status", CopyStatus]
@@ -1582,7 +1535,6 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-version-id", VersionId]
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
@@ -1615,7 +1567,6 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-append-offset", AppendOffset]
@@ -1653,7 +1604,6 @@ Services:
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-append-offset", AppendOffset]
@@ -1682,7 +1632,6 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - [add_header_code, "x-ms-blob-condition-appendpos", AppendPosition]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
   - BlobBatch:
@@ -1703,7 +1652,6 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_header_code, "Content-Type", ContentType]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
           - [get_header_code, "Content-Type", ContentType]
 
 
@@ -1728,7 +1676,6 @@ Models:
   BasicResponse:
     - noexport: true
     - type: struct
-    - RequestId: std::string
   BodiedResponse:
     - noexport: true
     - type: struct
