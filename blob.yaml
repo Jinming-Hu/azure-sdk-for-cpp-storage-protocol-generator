@@ -210,7 +210,7 @@ Services:
         http_status_code: 200
         return_type:
           ServiceStatistics:
-            - GeoReplication: BlobGeoReplication
+            - GeoReplication: GeoReplication
             - from_xml: [
               [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
             ]
@@ -1749,18 +1749,18 @@ Models:
     - BlockBlob
     - PageBlob
     - AppendBlob
-  BlobLeaseState:
+  LeaseState:
     - type: enum class
     - Available: "available"
     - Leased: "leased"
     - Expired: "expired"
     - Breaking: "breaking"
     - Broken: "broken"
-  BlobLeaseStatus:
+  LeaseStatus:
     - type: enum class
     - Locked: "locked"
     - Unlocked: "unlocked"
-  BlobLeaseDurationType:
+  LeaseDurationType:
     - type: enum class
     - Infinite: "infinite"
     - Fixed: "fixed"
@@ -1818,12 +1818,12 @@ Models:
       [text, Name, Name],
       [text, Size, Size],
     ]
-  BlobAnalyticsLogging:
+  AnalyticsLogging:
     - Version: std::string
     - Delete: bool = false
     - Read: bool = false
     - Write: bool = false
-    - RetentionPolicy: BlobRetentionPolicy
+    - RetentionPolicy: RetentionPolicy
     - from_xml: [
       [text, Version, Version],
       [text, Delete, Delete],
@@ -1838,10 +1838,10 @@ Models:
       [tag, Write, Write],
       [tag, RetentionPolicy, RetentionPolicy],
     ]
-  BlobMetrics:
+  Metrics:
     - Version: std::string
     - IsEnabled: bool = false
-    - RetentionPolicy: BlobRetentionPolicy
+    - RetentionPolicy: RetentionPolicy
     - IncludeApis: bool, nullable
     - from_xml: [
       [text, Version, Version],
@@ -1855,7 +1855,7 @@ Models:
       [tag, IncludeAPIs, IncludeApis],
       [tag, RetentionPolicy, RetentionPolicy],
     ]
-  BlobCorsRule:
+  CorsRule:
     - AllowedOrigins: std::string
     - AllowedMethods: std::string
     - AllowedHeaders: std::string
@@ -1875,7 +1875,7 @@ Models:
       [tag, CorsRule.ExposedHeaders, ExposedHeaders],
       [tag, CorsRule.MaxAgeInSeconds, MaxAgeInSeconds],
     ]
-  BlobRetentionPolicy:
+  RetentionPolicy:
     - IsEnabled: bool = false
     - Days: int32_t, nullable
     - from_xml: [
@@ -1886,7 +1886,7 @@ Models:
       [tag, Enabled, IsEnabled],
       [tag, Days, Days],
     ]
-  BlobStaticWebsite:
+  StaticWebsite:
     - IsEnabled: bool = false
     - IndexDocument: std::string, nullable
     - DefaultIndexDocumentPath: std::string, nullable
@@ -1904,13 +1904,13 @@ Models:
       [tag, ErrorDocument404Path, ErrorDocument404Path],
     ]
   BlobServiceProperties:
-    - Logging: BlobAnalyticsLogging
-    - HourMetrics: BlobMetrics
-    - MinuteMetrics: BlobMetrics
-    - Cors: std::vector<BlobCorsRule>
+    - Logging: AnalyticsLogging
+    - HourMetrics: Metrics
+    - MinuteMetrics: Metrics
+    - Cors: std::vector<CorsRule>
     - DefaultServiceVersion: std::string, nullable
-    - DeleteRetentionPolicy: BlobRetentionPolicy
-    - StaticWebsite: BlobStaticWebsite
+    - DeleteRetentionPolicy: RetentionPolicy
+    - StaticWebsite: StaticWebsite
     - from_xml: [
       [start_tag, StorageServiceProperties.Logging, Logging],
       [start_tag, StorageServiceProperties.HourMetrics, HourMetrics],
@@ -1978,9 +1978,9 @@ Models:
     - SequenceNumber: int64_t, nullable  # only for page blob
     - CommittedBlockCount: int64_t, nullable  # only for append blob
     - IsSealed: bool, nullable # only for append blob
-    - LeaseDuration: BlobLeaseDurationType, nullable
-    - LeaseState: BlobLeaseState, nullable
-    - LeaseStatus: BlobLeaseStatus, nullable
+    - LeaseDuration: LeaseDurationType, nullable
+    - LeaseState: LeaseState, nullable
+    - LeaseStatus: LeaseStatus, nullable
     - BlobResponseEncryptionOptions: inline
     - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
     - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
@@ -2007,9 +2007,9 @@ Models:
     - AccessType: PublicAccessType = PublicAccessType::None
     - HasImmutabilityPolicy: bool = false
     - HasLegalHold: bool = false
-    - LeaseDuration: BlobLeaseDurationType, nullable
-    - LeaseState: BlobLeaseState = BlobLeaseState::Available
-    - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
+    - LeaseDuration: LeaseDurationType, nullable
+    - LeaseState: LeaseState = LeaseState::Available
+    - LeaseStatus: LeaseStatus = LeaseStatus::Unlocked
     - DefaultEncryptionScope: std::string
     - PreventEncryptionScopeOverride: bool = false
   BlobContainerItemDetails:
@@ -2051,9 +2051,9 @@ Models:
     - ETag: Azure::ETag
     - Tier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
-    - LeaseStatus: BlobLeaseStatus = BlobLeaseStatus::Unlocked
-    - LeaseState: BlobLeaseState = BlobLeaseState::Available
-    - LeaseDuration: BlobLeaseDurationType, nullable
+    - LeaseStatus: LeaseStatus = LeaseStatus::Unlocked
+    - LeaseState: LeaseState = LeaseState::Available
+    - LeaseDuration: LeaseDurationType, nullable
     - BlobResponseEncryptionOptions: inline
     - SequenceNumber: int64_t, nullable # only for page blobd
     - IsSealed: bool, nullable # only for append blob
@@ -2125,7 +2125,7 @@ Models:
     - type: enum class
     - IncludeSnapshots: "include"
     - OnlySnapshots: "only"
-  BlobArchiveStatus:
+  ArchiveStatus:
     - type: enum class
     - RehydratePendingToHot: "rehydrate-pending-to-hot"
     - RehydratePendingToCool: "rehydrate-pending-to-cool"
@@ -2147,9 +2147,9 @@ Models:
     - LastAccessedOn: Azure::DateTime(RFC1123), nullable
     - Metadata: Metadata
     - BlobType: BlobType
-    - LeaseDuration: BlobLeaseDurationType, nullable
-    - LeaseState: BlobLeaseState, nullable
-    - LeaseStatus: BlobLeaseStatus, nullable
+    - LeaseDuration: LeaseDurationType, nullable
+    - LeaseState: LeaseState, nullable
+    - LeaseStatus: LeaseStatus, nullable
     - BlobSize: int64_t = 0
     - HttpHeaders: BlobHttpHeaders
     - SequenceNumber: int64_t, nullable  # only for page blob
@@ -2158,7 +2158,7 @@ Models:
     - BlobResponseEncryptionOptions: inline
     - Tier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
-    - ArchiveStatus: BlobArchiveStatus, nullable
+    - ArchiveStatus: ArchiveStatus, nullable
     - RehydratePriority: RehydratePriority, nullable
     - AccessTierChangedOn: Azure::DateTime(RFC1123), nullable
     - CopyId: std::string, nullable
@@ -2201,13 +2201,13 @@ Models:
     - AppendOffset: int64_t = 0
     - CommittedBlockCount: int64_t = 0
     - BlobResponseEncryptionOptions: inline
-  BlobGeoReplicationStatus:
+  GeoReplicationStatus:
     - type: enum class
     - Live: "live"
     - Bootstrap: "bootstrap"
     - Unavailable: "unavailable"
-  BlobGeoReplication:
-    - Status: BlobGeoReplicationStatus
+  GeoReplication:
+    - Status: GeoReplicationStatus
     - LastSyncedOn: Azure::DateTime(RFC1123), nullable
     - from_xml: [
       [text, Status, Status],
