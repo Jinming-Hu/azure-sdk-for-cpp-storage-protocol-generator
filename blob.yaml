@@ -454,12 +454,7 @@ Services:
     - GetAccessPolicy:
         http_method: Get
         http_status_code: 200
-        return_type:
-          GetBlobContainerAccessPolicyResult:
-            - BasicResponse: inline
-            - ETag: Azure::ETag
-            - LastModified: Azure::DateTime(RFC1123)
-            - BlobContainerAccessPolicy: inline
+        return_type: BlobContainerAccessPolicy
         options:
           GetBlobContainerAccessPolicyOptions:
             - BasicRequestOptions: inline
@@ -469,8 +464,6 @@ Services:
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "acl"]
         response_action:
-          - *RESPONSE_REQUEST_ID_PACKAGE
-          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-public-access", AccessType, optional]
           - [get_xml_body_code]
 
