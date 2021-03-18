@@ -488,7 +488,7 @@ Services:
             - LeaseId: std::string, nullable
             - IfModifiedSince: Azure::DateTime(RFC1123), nullable
             - IfUnmodifiedSince: Azure::DateTime(RFC1123), nullable
-            - SignedIdentifiers: std::vector<BlobSignedIdentifier>
+            - SignedIdentifiers: std::vector<SignedIdentifier>
             - to_xml: [
                 [tag, SignedIdentifiers, SignedIdentifiers],
               ]
@@ -2220,7 +2220,7 @@ Models:
       [text, Status, Status],
       [text, LastSyncTime, LastSyncedOn],
     ]
-  BlobSignedIdentifier:
+  SignedIdentifier:
     - Id: std::string
     - StartsOn: Azure::DateTime(ISO8601)
     - ExpiresOn: Azure::DateTime(ISO8601)
@@ -2239,7 +2239,7 @@ Models:
     ]
   BlobContainerAccessPolicy:
     - AccessType: PublicAccessType = PublicAccessType::None
-    - SignedIdentifiers: std::vector<BlobSignedIdentifier>
+    - SignedIdentifiers: std::vector<SignedIdentifier>
     - from_xml: [
       [start_tag, SignedIdentifiers.SignedIdentifier, SignedIdentifiers],
     ]
