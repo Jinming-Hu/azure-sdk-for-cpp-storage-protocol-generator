@@ -775,7 +775,7 @@ def gen_function_option_definition(service_name, class_name, class_def):
 def gen_resource_create_message_function_begin(function_name, option_type, request_body_type):
     content = "static Azure::Core::Http::Request {function_name}CreateMessage(const Azure::Core::Url& url,".format(function_name=function_name)
     if request_body_type == HttpBodyType.PassOn:
-        content += "Azure::Core::IO::BodyStream* requestBody,"
+        content += "Azure::Core::IO::BodyStream& requestBody,"
     content += "const {option_type}& options) {{ (void)options;".format(option_type=option_type)
 
     global main_body
@@ -831,7 +831,7 @@ def gen_resource_create_response_function_end(return_type):
 def gen_resource_function_glue_function(function_name, option_type, return_type, request_body_type):
     content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
-        content += "Azure::Core::IO::BodyStream* requestBody,"
+        content += "Azure::Core::IO::BodyStream& requestBody,"
     content += "const {option_type}& options, const Azure::Core::Context& context) {{".format(option_type=option_type)
     content += "auto request = {function_name}CreateMessage(url,".format(function_name=function_name, option_type=option_type)
     if request_body_type == HttpBodyType.PassOn:
@@ -852,7 +852,7 @@ def gen_resource_function_glue_function(function_name, option_type, return_type,
 def gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type):
     content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Url& url,".format(function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
-        content += "Azure::Core::IO::BodyStream* requestBody,"
+        content += "Azure::Core::IO::BodyStream& requestBody,"
     content += "const {option_type}& options, const Azure::Core::Context& context) {{ (void)options;".format(option_type=option_type)
 
     global main_body
@@ -1275,11 +1275,11 @@ def gen_no_body_code(*args, **kwargs):
 def gen_add_body_code(*args, **kwargs):
     response_body_type = kwargs["response_body_type"]
     http_method = kwargs["http_method"]
-    content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url, requestBody".format(http_method=http_method)
+    content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url, &requestBody".format(http_method=http_method)
     if response_body_type == HttpBodyType.PassOn:
         content += ", true"
     content += ");"
-    content += "request.SetHeader(\"Content-Length\", std::to_string(requestBody->Length()));"
+    content += "request.SetHeader(\"Content-Length\", std::to_string(requestBody.Length()));"
 
     global main_body
     main_body += content
