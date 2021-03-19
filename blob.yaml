@@ -299,7 +299,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          UndeleteBlobContainerResult:
+          UndeleteBlobContainerResultInternal:
             - BasicResponse: inline
         options:
           UndeleteBlobContainerOptions:
@@ -759,7 +759,7 @@ Services:
           - [get_header_code, "x-ms-blob-committed-block-count", CommittedBlockCount]
           - [get_header_code, "x-ms-blob-sealed", IsSealed]
           - *RESPONSE_ENCRYPTION_HEADER_PACKAGE
-          - [get_header_code, "x-ms-access-tier", Tier]
+          - [get_header_code, "x-ms-access-tier", AccessTier]
           - [get_header_code, "x-ms-access-tier-inferred", IsAccessTierInferred]
           - [get_header_code, "x-ms-archive-status", ArchiveStatus]
           - [get_header_code, "x-ms-rehydrate-priority", RehydratePriority]
@@ -836,13 +836,13 @@ Services:
         options:
           SetBlobAccessTierOptions:
             - BasicRequestOptions: inline
-            - Tier: AccessTier
+            - AccessTier: AccessTier
             - RehydratePriority: RehydratePriority, nullable
             - IfTags: std::string, nullable
         request_action:
           - [add_query_code, "comp", "tier"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
-          - [add_header_code, "x-ms-access-tier", Tier]
+          - [add_header_code, "x-ms-access-tier", AccessTier]
           - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
           - [add_header_code, "x-ms-if-tags", IfTags]
         response_action: {}
@@ -861,7 +861,7 @@ Services:
             - SourceUri: std::string
             - LeaseId: std::string, nullable
             - SourceLeaseId: std::string, nullable
-            - Tier: AccessTier, nullable
+            - AccessTier: AccessTier, nullable
             - RehydratePriority: RehydratePriority, nullable
             - BlobRequestConditionalHeaders: inline
             - BlobRequestSourceConditionalHeaders: inline
@@ -873,7 +873,7 @@ Services:
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-source-lease-id", SourceLeaseId]
-          - [add_header_code, "x-ms-access-tier", Tier]
+          - [add_header_code, "x-ms-access-tier", AccessTier]
           - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
           - [add_header_code, "x-ms-seal-blob", ShouldSealDestination]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
@@ -1112,7 +1112,7 @@ Services:
             - HttpHeaders: BlobHttpHeaders
             - Metadata: Metadata
             - LeaseId: std::string, nullable
-            - Tier: AccessTier, nullable
+            - AccessTier: AccessTier, nullable
             - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
@@ -1125,7 +1125,7 @@ Services:
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-type", "BlockBlob"]
-          - [add_header_code, "x-ms-access-tier", Tier]
+          - [add_header_code, "x-ms-access-tier", AccessTier]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
@@ -1210,7 +1210,7 @@ Services:
             - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
-            - Tier: AccessTier, nullable
+            - AccessTier: AccessTier, nullable
             - to_xml: [
               [tag, BlockList, BlockList]
             ]
@@ -1222,7 +1222,7 @@ Services:
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
-          - [add_header_code, "x-ms-access-tier", Tier]
+          - [add_header_code, "x-ms-access-tier", AccessTier]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
@@ -1281,7 +1281,7 @@ Services:
             - HttpHeaders: BlobHttpHeaders
             - Metadata: Metadata
             - LeaseId: std::string, nullable
-            - Tier: AccessTier, nullable
+            - AccessTier: AccessTier, nullable
             - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
@@ -1293,7 +1293,7 @@ Services:
           - [add_header_code, "x-ms-blob-type", "PageBlob"]
           - [add_header_code, "x-ms-blob-content-length", BlobSize]
           - [add_header_code, "x-ms-blob-sequence-number", SequenceNumber]
-          - [add_header_code, "x-ms-access-tier", Tier]
+          - [add_header_code, "x-ms-access-tier", AccessTier]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
@@ -1996,7 +1996,7 @@ Models:
     - LastAccessedOn: Azure::DateTime(RFC1123), nullable
     - LastModified: Azure::DateTime(RFC1123)
     - ETag: Azure::ETag
-    - Tier: AccessTier, nullable
+    - AccessTier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
     - LeaseStatus: LeaseStatus = LeaseStatus::Unlocked
     - LeaseState: LeaseState = LeaseState::Available
@@ -2033,7 +2033,7 @@ Models:
       [text, Properties.Etag, Details.ETag],
       [text, Properties.Content-Length, BlobSize],
       [text, Properties.BlobType, BlobType],
-      [text, Properties.AccessTier, Details.Tier],
+      [text, Properties.AccessTier, Details.AccessTier],
       [text, Properties.AccessTierInferred, Details.IsAccessTierInferred],
       [text, Properties.LeaseStatus, Details.LeaseStatus],
       [text, Properties.LeaseState, Details.LeaseState],
@@ -2103,7 +2103,7 @@ Models:
     - CommittedBlockCount: int32_t, nullable  # only for append blob
     - IsSealed: bool, nullable # only for append blob
     - BlobResponseEncryptionOptions: inline
-    - Tier: AccessTier, nullable
+    - AccessTier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
     - ArchiveStatus: ArchiveStatus, nullable
     - RehydratePriority: RehydratePriority, nullable
