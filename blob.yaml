@@ -851,11 +851,11 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          StartCopyBlobFromUriResultInternal:
+          StartBlobCopyFromUriResultInternal:
             - BasicResponse: inline
             - BlobCopyInfo: inline
         options:
-          StartCopyBlobFromUriOptions:
+          StartBlobCopyFromUriOptions:
             - BasicRequestOptions: inline
             - Metadata: Metadata
             - SourceUri: std::string
@@ -889,10 +889,10 @@ Services:
         http_method: Put
         http_status_code: 204
         return_type:
-          AbortCopyBlobFromUriResult:
+          AbortBlobCopyFromUriResult:
             - BasicResponse: inline
         options:
-          AbortCopyBlobFromUriOptions:
+          AbortBlobCopyFromUriOptions:
             - BasicRequestOptions: inline
             - CopyId: std::string
             - LeaseId: std::string, nullable
@@ -1317,7 +1317,7 @@ Services:
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
         return_type:
-          UploadPageBlobPagesResult:
+          UploadPagesResult:
             - BasicResponse: inline
             - PageInfo: inline
         request_action:
@@ -1357,7 +1357,7 @@ Services:
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
         return_type:
-          UploadPageBlobPagesFromUriResult:
+          UploadPagesFromUriResult:
             - BasicResponse: inline
             - PageInfo: inline
         request_action:
@@ -1395,7 +1395,7 @@ Services:
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
         return_type:
-          ClearPageBlobPagesResult:
+          ClearPagesResult:
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
@@ -1453,7 +1453,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          GetPageBlobPageRangesResult:
+          GetPageRangesResult:
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
@@ -1489,11 +1489,11 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          StartCopyPageBlobIncrementalResultInternal:
+          StartBlobCopyIncrementalResultInternal:
             - BasicResponse: inline
             - BlobCopyInfo: inline
         options:
-          StartCopyPageBlobIncrementalOptions:
+          StartBlobCopyIncrementalOptions:
             - BasicRequestOptions: inline
             - CopySource: std::string
             - BlobRequestConditionalHeaders: inline
