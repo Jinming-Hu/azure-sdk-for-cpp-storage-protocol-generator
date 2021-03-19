@@ -1235,7 +1235,7 @@ Services:
         options:
           GetBlockListOptions:
             - BasicRequestOptions: inline
-            - ListType: BlockListTypeOption = BlockListTypeOption::Committed
+            - ListType: BlockListType = BlockListType::Committed
             - LeaseId: std::string, nullable
             - IfTags: std::string, nullable
         return_type:
@@ -2063,7 +2063,7 @@ Models:
     - None: ""
     - Metadata: "metadata"
     - Deleted: "deleted"
-  BlockListTypeOption:
+  BlockListType:
     - type: enum class
     - Committed: "committed"
     - Uncommitted: "uncommitted"
