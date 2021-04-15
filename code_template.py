@@ -448,7 +448,10 @@ def gen_fromxml_function(class_name):
         main_body += content + "\n\n"
         return
 
-    class_def = models_cache[class_name]
+    class_internal_name = class_name
+    if "_detail::" in class_internal_name:
+        class_internal_name = class_name[class_name.rfind("::") + 2:] + "Internal"
+    class_def = models_cache[class_internal_name]
     if not class_def.fromxml_actions:
         raise RuntimeError("couldn't find fromxml actions for class " + class_name)
 
@@ -470,11 +473,11 @@ def gen_fromxml_function(class_name):
 
     content = inspect.cleandoc(
         """
-        static {0} {0}FromXml(_internal::XmlReader& reader)
+        static {0} {1}FromXml(_internal::XmlReader& reader)
         {{
             {0} ret;
             enum class XmlTagName {{
-        """.format(class_def.name))
+        """.format(class_name, class_def.name))
     for xml_tag in all_xml_tag:
         content += "k_" + to_cpp_name(xml_tag) + ","
     content += "k_Unknown,"
@@ -1332,6 +1335,9 @@ def gen_get_body_code(*args, **kwargs):
 def gen_get_xml_body_code(*args, **kwargs):
     return_type = kwargs["return_type"]
 
+    class_internal_name = return_type
+    if "_detail::" in class_internal_name:
+        class_internal_name = return_type[return_type.rfind("::") + 2:] + "Internal"
     content = inspect.cleandoc(
         """
         {{
@@ -1339,7 +1345,7 @@ def gen_get_xml_body_code(*args, **kwargs):
             _internal::XmlReader reader(reinterpret_cast<const char*>(httpResponseBody.data()), httpResponseBody.size());
             response = {}FromXml(reader);
         }}
-        """.format(return_type))
+        """.format(class_internal_name))
     fromxml_classes.add(return_type)
 
     global main_body

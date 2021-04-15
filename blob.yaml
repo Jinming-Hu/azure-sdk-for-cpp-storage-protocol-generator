@@ -75,11 +75,11 @@ request_source_conditional_headers_package: &REQUEST_SOURCE_CONDITIONAL_HEADER_P
 
 Services:
   - Service:
-    - ListBlobContainersSinglePage:
+    - ListBlobContainers:
         http_method: Get
         http_status_code: 200
         return_type:
-          ListBlobContainersSinglePageResult:
+          ListBlobContainersResultInternal:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - Prefix: std::string
@@ -92,7 +92,7 @@ Services:
               [start_tag, EnumerationResults.Containers.Container, Items],
             ]
         options:
-          ListBlobContainersSinglePageOptions:
+          ListBlobContainersOptions:
             - BasicRequestOptions: inline
             - Prefix: std::string, nullable
             - ContinuationToken: std::string, nullable
@@ -219,11 +219,11 @@ Services:
         response_action:
           - [get_xml_body_code]
 
-    - FindBlobsByTagsSinglePage:
+    - FindBlobsByTags:
         http_method: Get
         http_status_code: 200
         return_type:
-          FindBlobsByTagsSinglePageResult:
+          FindBlobsByTagsResultInternal:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - ContinuationToken: std::string, nullable
@@ -234,7 +234,7 @@ Services:
               [start_tag, EnumerationResults.Blobs.Blob, Items],
             ]
         options:
-          FindBlobsByTagsSinglePageOptions:
+          FindBlobsByTagsOptions:
             - BasicRequestOptions: inline
             - Where: std::string
             - ContinuationToken: std::string, nullable
@@ -361,11 +361,11 @@ Services:
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
-    - ListBlobsSinglePage:
+    - ListBlobs:
         http_method: Get
         http_status_code: 200
         return_type:
-          ListBlobsSinglePageResult:
+          ListBlobsResultInternal:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - BlobContainerName: std::string
@@ -380,7 +380,7 @@ Services:
               [start_tag, EnumerationResults.Blobs.Blob, Items],
             ]
         options:
-          ListBlobsSinglePageOptions:
+          ListBlobsOptions:
             - BasicRequestOptions: inline
             - Prefix: std::string, nullable
             - ContinuationToken: std::string, nullable
@@ -397,11 +397,11 @@ Services:
         response_action:
           - [get_xml_body_code]
 
-    - ListBlobsByHierarchySinglePage:
+    - ListBlobsByHierarchy:
         http_method: Get
         http_status_code: 200
         return_type:
-          ListBlobsByHierarchySinglePageResult:
+          ListBlobsByHierarchyResultInternal:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - BlobContainerName: std::string
@@ -420,7 +420,7 @@ Services:
               [text, EnumerationResults.Blobs.BlobPrefix.Name, BlobPrefixes]
             ]
         options:
-          ListBlobsByHierarchySinglePageOptions:
+          ListBlobsByHierarchyOptions:
             - BasicRequestOptions: inline
             - Prefix: std::string, nullable
             - Delimiter: std::string, nullable
@@ -940,7 +940,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          GetBlobTagsResult:
+          GetBlobTagsResultInternal:
             - BasicResponse: inline
             - Tags: std::map<std::string, std::string>
             - from_xml: [
