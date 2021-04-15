@@ -669,7 +669,7 @@ def gen_toxml_function(class_name):
                     xml_path.append(p)
                 if member_nullable:
                     content += "if (options.{}.HasValue()) {{".format(member)
-                    member += ".GetValue()"
+                    member += ".Value()"
                 last_path_added = False
                 if len(xml_path) < len(target_xml_path):
                     p = target_xml_path[len(xml_path)]
@@ -885,7 +885,7 @@ def gen_add_query_code(*args, **kwargs):
     content = ""
     if value_nullable:
         content += "if ({}.HasValue()) {{".format(value)
-        value += ".GetValue()"
+        value += ".Value()"
 
     need_encoding = True
     if value_type == "std::string" and value.startswith("\"") and value.endswith("\""):
@@ -949,7 +949,7 @@ def gen_add_header_code(*args, **kwargs):
     content = ""
     if value_nullable:
         content += "if ({}.HasValue()) {{\n".format(value)
-        value += ".GetValue()"
+        value += ".Value()"
 
     if value_type == "std::vector<uint8_t>":
         value = "Azure::Core::Convert::Base64Encode(" + value + ")"
@@ -1027,7 +1027,7 @@ def gen_add_range_header_code(*args, **kwargs):
 
     if value_nullable:
         content = "if ({}.HasValue())".format(value)
-        value += ".GetValue()"
+        value += ".Value()"
     else:
         content = ""
 
@@ -1036,7 +1036,7 @@ def gen_add_range_header_code(*args, **kwargs):
         {{
             std::string headerValue = \"bytes=\" + std::to_string({var}.Offset) + "-";
             if ({var}.Length.HasValue()) {{
-                headerValue += std::to_string({var}.Offset + {var}.Length.GetValue() - 1);
+                headerValue += std::to_string({var}.Offset + {var}.Length.Value() - 1);
             }}
             request.SetHeader({key}, std::move(headerValue));
         }}
@@ -1067,7 +1067,7 @@ def gen_add_content_hash_code(*args, **kwargs):
 
     if value_nullable:
         content = "if ({var}.HasValue()) {{".format(var=value)
-        value += ".GetValue()"
+        value += ".Value()"
     else:
         content = ""
 
@@ -1094,7 +1094,7 @@ def gen_add_source_content_hash_code(*args, **kwargs):
 
     if value_nullable:
         content = "if ({var}.HasValue()) {{".format(var=value)
-        value += ".GetValue()"
+        value += ".Value()"
     else:
         content = ""
     content += inspect.cleandoc(
@@ -1122,10 +1122,10 @@ def gen_add_hash_algorithm_code(*args, **kwargs):
     content = inspect.cleandoc(
         """
         if ({var}.HasValue()) {{
-            if ({var}.GetValue()== HashAlgorithm::Md5) {{
+            if ({var}.Value()== HashAlgorithm::Md5) {{
                 request.SetHeader("x-ms-range-get-content-md5", "true");
             }}
-            else if ({var}.GetValue()== HashAlgorithm::Crc64) {{
+            else if ({var}.Value()== HashAlgorithm::Crc64) {{
                 request.SetHeader("x-ms-range-get-content-crc64", "true");
             }}
         }}
@@ -1323,7 +1323,7 @@ def gen_get_body_code(*args, **kwargs):
     if value_type != "std::unique_ptr<Azure::Core::IO::BodyStream>":
         raise RuntimeError("Unknown response body type")
 
-    content = "{0} = httpResponse.GetBodyStream();".format(body)
+    content = "{0} = httpResponse.ExtractBodyStream();".format(body)
 
     global main_body
     main_body += content
