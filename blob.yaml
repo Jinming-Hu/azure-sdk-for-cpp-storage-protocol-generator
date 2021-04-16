@@ -227,7 +227,7 @@ Services:
             - BasicResponse: inline
             - ServiceEndpoint: std::string
             - ContinuationToken: std::string, nullable
-            - Items: std::vector<FilterBlobItem>
+            - Items: std::vector<TaggedBlobItem>
             - from_xml: [
               [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
               [text, EnumerationResults.NextMarker, ContinuationToken],
@@ -2188,7 +2188,7 @@ Models:
     - ETag: Azure::ETag
     - LastModified: Azure::DateTime(RFC1123)
     - LeaseId: std::string
-  FilterBlobItem:
+  TaggedBlobItem:
     - BlobName: std::string
     - BlobContainerName: std::string
     - from_xml: [
