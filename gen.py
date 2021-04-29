@@ -485,12 +485,38 @@ for config_resource in config["Services"]:
 
 
 code_template.gen_constant_definition()
-for class_name in toposort.toposort_flatten(export_models):
-    if models_cache[class_name].external:
-        continue
-    if models_cache[class_name].noexport:
-        raise RuntimeError("Trying to export a non-export class " + class_name)
-    code_template.gen_model_definition(service_name, class_name, models_cache[class_name])
+model_layers = list(toposort.toposort(export_models))
+for i in range(len(model_layers)):
+    current_layer = model_layers[i]
+    next_layer_dependencies = set()
+    if i < len(model_layers) - 1:
+        next_layer = model_layers[i + 1]
+        for j in next_layer:
+            next_layer_dependencies |= export_models[j]
+    if len(next_layer_dependencies) == 0:
+        break
+    intersection = next_layer_dependencies & current_layer
+    diff = current_layer - next_layer_dependencies
+    model_layers[i] = intersection
+    if i < len(model_layers) - 1:
+        model_layers[i + 1] |= diff
+
+for layer in model_layers:
+    sorted_layer = sorted(layer)
+    l1 = []
+    l2 = []
+    for i in sorted_layer:
+        if i.endswith("Internal"):
+            l2.append(i)
+        else:
+            l1.append(i)
+    sorted_layer = l1 + l2
+    for class_name in sorted_layer:
+        if models_cache[class_name].external:
+            continue
+        if models_cache[class_name].noexport:
+            raise RuntimeError("Trying to export a non-export class " + class_name)
+        code_template.gen_model_definition(service_name, class_name, models_cache[class_name])
 
 generated_dir = pathlib.Path("generated")
 output_path = generated_dir / pathlib.Path(config["output_hpp"]).name
