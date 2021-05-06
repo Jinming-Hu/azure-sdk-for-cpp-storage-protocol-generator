@@ -1271,7 +1271,7 @@ def gen_no_body_code(*args, **kwargs):
 
     content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url".format(http_method=http_method)
     if response_body_type == HttpBodyType.PassOn:
-        content += ", true"
+        content += ", false"
     content += ");"
     if http_method not in ["Get", "Head", "Delete"]:
         content += "request.SetHeader(\"Content-Length\", \"0\");"
@@ -1285,7 +1285,7 @@ def gen_add_body_code(*args, **kwargs):
     http_method = kwargs["http_method"]
     content = "auto request = Azure::Core::Http::Request(Azure::Core::Http::HttpMethod::{http_method}, url, &requestBody".format(http_method=http_method)
     if response_body_type == HttpBodyType.PassOn:
-        content += ", true"
+        content += ", false"
     content += ");"
     content += "request.SetHeader(\"Content-Length\", std::to_string(requestBody.Length()));"
 
