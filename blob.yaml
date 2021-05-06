@@ -1703,11 +1703,11 @@ Services:
 
 
 Models:
-  HashAlgorithm:
+  HashAlgorithm:  # Extensible enum used to identify hash algorithm.
     - external: true
     - type: enum class
-    - Md5
-    - Crc64
+    - Md5  # MD5
+    - Crc64  # CRC64
   ContentHash:
     - external: true
     - Value: std::vector<uint8_t>
@@ -1728,21 +1728,21 @@ Models:
     - type: struct
     - BasicResponse: inline
     - BodyStream: std::unique_ptr<Azure::Core::IO::BodyStream>  # Content of the blob or blob range.
-  PublicAccessType:
+  PublicAccessType:  # Extensible enum used to indicates whether data in the container may be accessed publicly and the level of access.
     - type: enum class
-    - BlobContainer: "container"
-    - Blob: "blob"
-    - None: ""
-  BlockType:
+    - BlobContainer: "container"  # Indicates full public read access for container and blob data. Clients can enumerate blobs within the container via anonymous request, but cannot enumerate containers within the storage account.
+    - Blob: "blob"  # Indicates public read access for blobs. Blob data within this container can be read via anonymous request, but container data is not available. Clients cannot enumerate blobs within the container via anonymous request.
+    - None: ""  # Indicates the container is private to the account owner.
+  BlockType:  # Extensible enum used to specify how the service should look for a block ID.
     - type: enum class
-    - Committed
-    - Uncommitted
-    - Latest
-  BlobType:
+    - Committed  # Look for a block ID in the committed block list.
+    - Uncommitted  # Look for a block ID in the uncommitted block list.
+    - Latest  # Look for a block ID in the uncommitted block list first and then in the committed block list.
+  BlobType:  # Extensible enum used to identify blob type.
     - type: enum class
-    - BlockBlob
-    - PageBlob
-    - AppendBlob
+    - BlockBlob  # Block blob.
+    - PageBlob  # Page blob.
+    - AppendBlob  # Append blob.
   LeaseState:
     - type: enum class
     - Available: "available"
@@ -1785,7 +1785,7 @@ Models:
     - type: enum class
     - Success: "success"
     - Pending: "pending"
-  SkuName:
+  SkuName:  # Extensible enum that used to identify the sku of a storage account.
     - type: enum class
     - StandardLrs: "Standard_LRS"
     - StandardGrs: "Standard_GRS"
@@ -1795,7 +1795,7 @@ Models:
     - PremiumZrs: "Premium_ZRS"
     - StandardGzrs: "Standard_GZRS"
     - StandardRagzrs: "Standard_RAGZRS"
-  AccountKind:
+  AccountKind:  # Extensible enum that used to identify the account kind.
     - type: enum class
     - Storage: "Storage"
     - BlobStorage: "BlobStorage"

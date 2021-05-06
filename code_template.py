@@ -191,6 +191,8 @@ def gen_model_definition(service_name, class_name, class_def):
             content += "\n/**\n* @brief " + class_def.comment + "\n*/\n"
         content += "{} {} {{".format(class_def.type, class_name)
     elif class_def.type == "enum class":
+        if class_def.comment:
+            content += "\n/**\n* @brief " + class_def.comment + "\n*/\n"
         content += inspect.cleandoc(
             """
             class {class_name} {{
