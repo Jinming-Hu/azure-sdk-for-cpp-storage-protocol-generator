@@ -50,6 +50,7 @@ CommentTemplate:
   VersionId: "A string value that uniquely identifies the blob. This value is null if Blob Versioning is not enabled."
   IsCurrentVersion: "Indicates if this is the current version of the blob. This value is null if Blob Versioning is not enabled."
   AppendOffset: "The offset at which the block was committed."
+  LeaseID: "Uniquely identifies a container's or blob's lease."
 
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
   - [add_header_code, "x-ms-version", *ApiVersion]
@@ -251,7 +252,7 @@ Services:
         http_status_code: 200
         return_type:
           ServiceStatistics:  # Statistics for the storage service.
-            - GeoReplication: GeoReplication  # Geo-replication information for the secondary storage service.
+            - GeoReplication: GeoReplication  # Geo-replication information for the secondary storage endpoint.
             - from_xml: [
               [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
             ]
@@ -667,7 +668,7 @@ Services:
             - BlobSize: int64_t = 0
             - BlobType: BlobType
             - TransactionalContentHash: ContentHash, nullable
-            - Details: DownloadBlobDetails  # Details information of the downloaded blob.
+            - Details: DownloadBlobDetails  # Detailed information of the downloaded blob.
         options:
           DownloadBlobOptions:
             - BasicRequestOptions: inline
@@ -1804,19 +1805,19 @@ Models:
   EncryptionAlgorithmType:
     - type: enum class
     - Aes256: "AES256"
-  BlobBlock:
-    - Name: std::string
-    - Size: int64_t = 0
+  BlobBlock:  # Describes a sinlge block in block blob.
+    - Name: std::string  # Base64 encoded block id.
+    - Size: int64_t = 0  # Block size in bytes.
     - from_xml: [
       [text, Name, Name],
       [text, Size, Size],
     ]
-  AnalyticsLogging:
-    - Version: std::string
-    - Delete: bool = false
-    - Read: bool = false
-    - Write: bool = false
-    - RetentionPolicy: RetentionPolicy
+  AnalyticsLogging:  # Azure analytics logging settings.
+    - Version: std::string  # The version of storage analytics to configure.
+    - Delete: bool = false  # Whether all delete requests should be logged.
+    - Read: bool = false  # Whether all read requests should be logged.
+    - Write: bool = false  # Whether all write requests should be logged.
+    - RetentionPolicy: RetentionPolicy  # Determines how long the data should be persist.
     - from_xml: [
       [text, Version, Version],
       [text, Delete, Delete],
@@ -1831,11 +1832,11 @@ Models:
       [tag, Write, Write],
       [tag, RetentionPolicy, RetentionPolicy],
     ]
-  Metrics:
-    - Version: std::string
-    - IsEnabled: bool = false
-    - RetentionPolicy: RetentionPolicy
-    - IncludeApis: bool, nullable
+  Metrics:  # Summary of request statistics grouped by API in hour or minute aggregates for blobs.
+    - Version: std::string  # The version of storage analytics to configure.
+    - IsEnabled: bool = false  # Indicates whether metrics are enabled for blob service.
+    - RetentionPolicy: RetentionPolicy  # Determines how long the metrics data should persist.
+    - IncludeApis: bool, nullable  # Indicates whether metrics should generate summary statistics for called API operations.
     - from_xml: [
       [text, Version, Version],
       [text, Enabled, IsEnabled],
@@ -1848,12 +1849,12 @@ Models:
       [tag, IncludeAPIs, IncludeApis],
       [tag, RetentionPolicy, RetentionPolicy],
     ]
-  CorsRule:
-    - AllowedOrigins: std::string
-    - AllowedMethods: std::string
-    - AllowedHeaders: std::string
-    - ExposedHeaders: std::string
-    - MaxAgeInSeconds: int32_t = 0
+  CorsRule:  # Settings for a CORS rule.
+    - AllowedOrigins: std::string  # A comma-separated list of origin domains that are allowed via CORS, or "*" if all domains are allowed.
+    - AllowedMethods: std::string  # 	A comma-separated list of HTTP methods that are allowed to be executed by the origin. For Azure Storage, permitted methods are DELETE, GET, HEAD, MERGE, POST, OPTIONS or PUT.
+    - AllowedHeaders: std::string  # A comma-separated list of headers allowed to be part of the cross-origin request.
+    - ExposedHeaders: std::string  # A comma-separated list of response headers to expose to CORS clients.
+    - MaxAgeInSeconds: int32_t = 0  # The number of seconds that the client/browser should cache a preflight response.
     - from_xml: [
       [text, AllowedOrigins, AllowedOrigins],
       [text, AllowedMethods, AllowedMethods],
@@ -1868,9 +1869,9 @@ Models:
       [tag, CorsRule.ExposedHeaders, ExposedHeaders],
       [tag, CorsRule.MaxAgeInSeconds, MaxAgeInSeconds],
     ]
-  RetentionPolicy:
-    - IsEnabled: bool = false
-    - Days: int32_t, nullable
+  RetentionPolicy:  # Determines how long the associated data should persist.
+    - IsEnabled: bool = false  # Indicates whether this retention policy is enabled.
+    - Days: int32_t, nullable  # Indicates the number of days that metrics or logging or soft-deleted data should be retained.
     - from_xml: [
       [text, Enabled, IsEnabled],
       [text, Days, Days],
@@ -1879,11 +1880,11 @@ Models:
       [tag, Enabled, IsEnabled],
       [tag, Days, Days],
     ]
-  StaticWebsite:
-    - IsEnabled: bool = false
-    - IndexDocument: std::string, nullable
-    - DefaultIndexDocumentPath: std::string, nullable
-    - ErrorDocument404Path: std::string, nullable
+  StaticWebsite:  # The properties that enable a storage account to host a static website.
+    - IsEnabled: bool = false  # Indicates whether this storage account is hosting a static website.
+    - IndexDocument: std::string, nullable  # The default name of the index page under each directory.
+    - DefaultIndexDocumentPath: std::string, nullable  # Absolute path of the default index page.
+    - ErrorDocument404Path: std::string, nullable   # The absolute path of the custom 404 page.
     - from_xml: [
       [text, Enabled, IsEnabled],
       [text, IndexDocument, IndexDocument],
@@ -1939,13 +1940,13 @@ Models:
     - noexport: true
     - TransactionalContentHash: ContentHash, nullable
     - BlobResponseEncryptionOptions: inline
-  BlobHttpHeaders:
-    - ContentType: std::string
-    - ContentEncoding: std::string
-    - ContentLanguage: std::string
-    - ContentHash: ContentHash
-    - CacheControl: std::string
-    - ContentDisposition: std::string
+  BlobHttpHeaders:  # Standard HTTP properties supported by containers and blobs.
+    - ContentType: std::string  # MIME content type of the blob.
+    - ContentEncoding: std::string  # Specifies which content encodings have been applied to the blob.
+    - ContentLanguage: std::string  # Specifies the natural languages used by this blob.
+    - ContentHash: ContentHash  # A hash of the blob content.
+    - CacheControl: std::string  # Specifies directives for caching mechanisms.
+    - ContentDisposition: std::string  # Conveys additional information about how to process the resource payload, and also can be used to attach additional metadata.
   BlobRequestCustomerProvidedKeyEncryptionOptions:
     - noexport: true
     - EncryptionKey: std::string, nullable
@@ -1959,12 +1960,12 @@ Models:
     - IsServerEncrypted: bool = false
     - EncryptionKeySha256: std::vector<uint8_t>, nullable
     - EncryptionScope: std::string, nullable
-  DownloadBlobDetails:
+  DownloadBlobDetails:  # Detailed information of a downloaded blob.
     - type: struct
     - ETag: Azure::ETag
     - LastModified: Azure::DateTime(RFC1123)
     - CreatedOn: Azure::DateTime(RFC1123)
-    - ExpiresOn: Azure::DateTime(RFC1123), nullable
+    - ExpiresOn: Azure::DateTime(RFC1123), nullable  # The time this blob will expire.
     - LastAccessedOn: Azure::DateTime(RFC1123), nullable
     - HttpHeaders: BlobHttpHeaders
     - Metadata: Metadata
@@ -2005,16 +2006,16 @@ Models:
     - LeaseStatus: LeaseStatus = LeaseStatus::Unlocked
     - DefaultEncryptionScope: std::string
     - PreventEncryptionScopeOverride: bool = false
-  BlobContainerItemDetails:
+  BlobContainerItemDetails:  # Detailed information of a blob container.
     - type: struct
     - BlobContainerItemWithoutName: inline
-    - RemainingRetentionDays: int32_t, nullable
-    - DeletedOn: Azure::DateTime(RFC1123), nullable
-  BlobContainerItem:
-    - Name: std::string
-    - IsDeleted: bool = false
-    - VersionId: std::string, nullable
-    - Details: BlobContainerItemDetails
+    - RemainingRetentionDays: int32_t, nullable  # Remaining days before this container will be permanantely deleted. Only valid when this container was deleted.
+    - DeletedOn: Azure::DateTime(RFC1123), nullable  # Data and time at which this container was deleted. Only valid when this container was deleted.
+  BlobContainerItem:  # A container item from the result of #Azure::Storage::Blobs::BlobServiceClient::ListBlobContainers.
+    - Name: std::string  # Blob container name.
+    - IsDeleted: bool = false  # Indicates whether this container was deleted.
+    - VersionId: std::string, nullable  # Version ID of a deleted container. This is null if a container is not deleted.
+    - Details: BlobContainerItemDetails  # Detailed information of this container item.
     - from_xml: [
       [text, Name, Name],
       [text, Properties.Etag, Details.ETag],
@@ -2033,12 +2034,12 @@ Models:
       [text, Properties.DeletedTime, Details.DeletedOn],
       [text, Properties.RemainingRetentionDays, Details.RemainingRetentionDays],
     ]
-  BlobItemDetails:
+  BlobItemDetails:  # Detailed information of a blob.
     - type: struct
     - HttpHeaders: BlobHttpHeaders
     - Metadata: Metadata
     - CreatedOn: Azure::DateTime(RFC1123)
-    - ExpiresOn: Azure::DateTime(RFC1123), nullable
+    - ExpiresOn: Azure::DateTime(RFC1123), nullable  # The time this blob will expire.
     - LastAccessedOn: Azure::DateTime(RFC1123), nullable
     - LastModified: Azure::DateTime(RFC1123)
     - ETag: Azure::ETag
@@ -2051,15 +2052,15 @@ Models:
     - SequenceNumber: int64_t, nullable
     - IsSealed: bool, nullable
     - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy>
-  BlobItem:
+  BlobItem:  # A blob item from the result of #Azure::Storage::Blobs::BlobContainerClient::ListBlobs.
     - Name: std::string
     - BlobSize: int64_t = 0
     - BlobType: BlobType
-    - IsDeleted: bool = false
-    - Snapshot: std::string
+    - IsDeleted: bool = false  # Indicates whether this blob was deleted.
+    - Snapshot: std::string  # A string value that uniquely identifies a blob snapshot.
     - VersionId: std::string, nullable
     - IsCurrentVersion: bool, nullable
-    - Details: BlobItemDetails
+    - Details: BlobItemDetails  # Detailed information of the downloaded blob.
     - from_xml: [
       [text, Name, Name],
       [text, Deleted, IsDeleted],
@@ -2126,17 +2127,17 @@ Models:
     - type: enum class
     - Complete: "complete"
     - Failed: "failed"
-  ObjectReplicationRule:
-    - RuleId: std::string
-    - ReplicationStatus: ObjectReplicationStatus
-  ObjectReplicationPolicy:
-    - PolicyId: std::string
-    - Rules: std::vector<ObjectReplicationRule>
+  ObjectReplicationRule:  # Contains the object replication rule ID and replication status of a blob.
+    - RuleId: std::string  # Rule ID.
+    - ReplicationStatus: ObjectReplicationStatus  # Replication status.
+  ObjectReplicationPolicy:  # Contains object replication policy ID and the respective list of #ObjectReplicationRule s. This is used when retrieving the object replication properties on the source blob. The policy id for the destination blob is set in ObjectReplicationDestinationPolicyId of the respective method responses.
+    - PolicyId: std::string  # The policy ID.
+    - Rules: std::vector<ObjectReplicationRule>  # The Rule IDs and respective replication status that are under the policy ID.
   BlobProperties:  # Properties of a blob.
     - ETag: Azure::ETag
     - LastModified: Azure::DateTime(RFC1123)
     - CreatedOn: Azure::DateTime(RFC1123)
-    - ExpiresOn: Azure::DateTime(RFC1123), nullable  # The time the blob will expire.
+    - ExpiresOn: Azure::DateTime(RFC1123), nullable  # The time this blob will expire.
     - LastAccessedOn: Azure::DateTime(RFC1123), nullable
     - Metadata: Metadata
     - BlobType: BlobType
@@ -2199,18 +2200,18 @@ Models:
     - Live: "live"
     - Bootstrap: "bootstrap"
     - Unavailable: "unavailable"
-  GeoReplication:
-    - Status: GeoReplicationStatus
-    - LastSyncedOn: Azure::DateTime(RFC1123), nullable
+  GeoReplication:  # Geo-replication information for the secondary storage endpoint.
+    - Status: GeoReplicationStatus  # Status of the secondary storage endpoint.
+    - LastSyncedOn: Azure::DateTime(RFC1123), nullable  # All primary writes preceding this value are guaranteed to be available for read operations at the secondary. Primary writes after this point in time may or may not be available for reads. This value may be null if replication status is bootstrap or unavailable.
     - from_xml: [
       [text, Status, Status],
       [text, LastSyncTime, LastSyncedOn],
     ]
-  SignedIdentifier:
-    - Id: std::string
-    - StartsOn: Azure::DateTime(ISO8601)
-    - ExpiresOn: Azure::DateTime(ISO8601)
-    - Permissions: std::string
+  SignedIdentifier:  # Describes how you reference an ACL in a blob container.
+    - Id: std::string  # A unique ID for this signed identifier.
+    - StartsOn: Azure::DateTime(ISO8601)  # Date and time since when this policy is active.
+    - ExpiresOn: Azure::DateTime(ISO8601)  # Date and time the policy expires.
+    - Permissions: std::string  # The permissions for this ACL policy.
     - from_xml: [
       [text, Id, Id],
       [text, AccessPolicy.Start, StartsOn],
@@ -2234,9 +2235,9 @@ Models:
     - ETag: Azure::ETag
     - LastModified: Azure::DateTime(RFC1123)
     - LeaseId: std::string
-  TaggedBlobItem:
-    - BlobName: std::string
-    - BlobContainerName: std::string
+  TaggedBlobItem:  # Blob information from the result of #Azure::Storage::Blobs::BlobServiceClient::FindBlobsByTags.
+    - BlobName: std::string  # Blob name.
+    - BlobContainerName: std::string  # Blob container name.
     - from_xml: [
       [text, Name, BlobName],
       [text, ContainerName, BlobContainerName],
