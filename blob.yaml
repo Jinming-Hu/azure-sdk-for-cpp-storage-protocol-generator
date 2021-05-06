@@ -5,6 +5,52 @@ output_cpp: blob_rest_client.cpp
 Constants:
   ApiVersion: &ApiVersion "2020-02-10"
 
+CommentTemplate:
+  ETag: "The ETag contains a value that you can use to perform operations conditionally."
+  LastModified: "The date and time the container was last modified. Any operation that modifies the blob, including an update of the metadata or properties, changes the last-modified time of the blob."
+  CreatedOn: "The date and time at which the blob was created."
+  Metadata: "A set of name-value pairs associated with this blob as user-defined metadata."
+  TagCount: "the number of tags stored on the blob."
+  HttpHeaders: "System properties of the blob."
+  SequenceNumber: "The current sequence number for a page blob. This value is null for block blobs or append blobs."
+  CommittedBlockCount: "The number of committed blocks present in the blob. This value is null for block blobs or page blobs."
+  IsSealed: "If the blob has been sealed. This value is null for block blobs or page blobs."
+  LeaseDuration: "Indicates whether the lease is of infinite or fixed duration when the blob or container is leased. This value is null if the blob or container is not leased."
+  LeaseState: "Lease state of the blob."
+  LeaseStatus: "The current lease status of the blob."
+  IsServerEncrypted: "True if the blob data and metadata are completely encrypted using the specified algorithm. Otherwise, the value is set to false (when the blob is unencrypted, or if only parts of the blob/application metadata are encrypted)."
+  EncryptionKeySha256: "The SHA-256 hash of the encryption key used to encrypt the blob data and metadata."
+  EncryptionScope: "Name of the encryption scope used to encrypt the blob data and metadata."
+  AccessType: "Indicates whether data in the container may be accessed publicly and the level of access."
+  HasImmutabilityPolicy: "Indicates whether the container has an immutability policy set on it."
+  HasLegalHold: "Indicates whether the container has a legal hold."
+  DefaultEncryptionScope: "The default encryption scope for the container."
+  PreventEncryptionScopeOverride: "Indicates whether the container's default encryption scope can be overridden."
+  SignedIdentifiers: "A collection of signed identifiers."
+  BlobSize: "Size of the blob."
+  BlobType: "The blob's type."
+  TransactionalContentHash: "The request may return a CRC64 or MD5 hash for the downloaded range of data."
+  ContentRange: "Indicates the range of bytes returned."
+  LastAccessedOn: "The date and time at which the blob was last read or written to."
+  AccessTier: "The tier of page blob or block blob."
+  IsAccessTierInferred: "True if the access tier is not explicitly set on the blob."
+  ArchiveStatus: "Indicates if the blob is being rehydrated."
+  RehydratePriority: "Priority of rehydrate if the blob is being rehydrated."
+  AccessTierChangedOn: "The date and time the tier was changed on the object."
+  CopyId: "String identifier for the last attempted Copy Blob operation where this blob was the destination. This value is null if this blob has never been the destination of a copy operation, or if this blob has been modified after a concluded copy operation."
+  CopySource: "URL that specifies the source blob or file used in the last attempted copy operation where this blob was the destination blob. This value is null if this blob has never been the destination of a copy operation, or if this blob has been modified after a concluded copy operation."
+  CopyStatus: "State of the copy operation identified by the copy id. Possible values include success, pending, aborted, failed etc. This value is null if this blob has never been the destination of a copy operation, or if this blob has been modified after a concluded copy operation."
+  CopyStatusDescription: "Describes the cause of the last fatal or non-fatal copy operation failure. This is not null only when copy status is failed or pending."
+  IsIncrementalCopy: "True if the copy operation is incremental copy."
+  IncrementalCopyDestinationSnapshot: "Snapshot time of the last successful incremental copy snapshot for this blob."
+  CopyProgress: "Contains the number of bytes copied and the total bytes in the source in the last attempted copy operation where this blob was the destination blob."
+  CopyCompletedOn: "Conclusion time of the last attempted copy operation where this blob was the destination blob."
+  ObjectReplicationDestinationPolicyId: "Only valid when Object Replication is enabled and current blob is the destination."
+  ObjectReplicationSourceProperties: "Only valid when Object Replication is enabled and current blob is the source."
+  VersionId: "A string value that uniquely identifies the blob. This value is null if Blob Versioning is not enabled."
+  IsCurrentVersion: "Indicates if this is the current version of the blob. This value is null if Blob Versioning is not enabled."
+  AppendOffset: "The offset at which the block was committed."
+
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
   - [add_header_code, "x-ms-version", *ApiVersion]
   - [add_query_code, "timeout", Timeout]
@@ -112,14 +158,14 @@ Services:
         http_method: Post
         http_status_code: 200
         return_type:
-          UserDelegationKey:
-            - SignedObjectId: std::string
-            - SignedTenantId: std::string
-            - SignedStartsOn: Azure::DateTime(ISO8601)
-            - SignedExpiresOn: Azure::DateTime(ISO8601)
-            - SignedService: std::string
-            - SignedVersion: std::string
-            - Value: std::string
+          UserDelegationKey:  # A user delegation key that can be used to sign user delegation SAS.
+            - SignedObjectId: std::string  # The immutable identifier for an object in the Microsoft identity system.
+            - SignedTenantId: std::string  # A GUID that represents the Azure AD tenant that the user is from.
+            - SignedStartsOn: Azure::DateTime(ISO8601)  # The start time of the user delegation key.
+            - SignedExpiresOn: Azure::DateTime(ISO8601)  # The expiry time of the user delegation key.
+            - SignedService: std::string  # The service of the user delegation key can be used for.
+            - SignedVersion: std::string  # The rest api version used to get user delegation key.
+            - Value: std::string  # The signature of the user delegation key.
             - from_xml: [
               [text, UserDelegationKey.SignedOid, SignedObjectId],
               [text, UserDelegationKey.SignedTid, SignedTenantId],
@@ -164,7 +210,7 @@ Services:
         http_method: Put
         http_status_code: 202
         return_type:
-          SetServicePropertiesResult:
+          SetServicePropertiesResult:  # Response type for #Azure::Storage::Blobs::BlobServiceClient::SetProperties.
             - BasicResponse: inline
         options:
           SetServicePropertiesOptions:
@@ -184,10 +230,10 @@ Services:
         http_method: Head
         http_status_code: 200
         return_type:
-          AccountInfo:
-            - SkuName: SkuName
-            - AccountKind: AccountKind
-            - IsHierarchicalNamespaceEnabled: bool = false
+          AccountInfo:  # Storage account information.
+            - SkuName: SkuName  # The SKU name of the storage account. See https://docs.microsoft.com/en-us/rest/api/storagerp/srp_sku_types for more information.
+            - AccountKind: AccountKind  # The account kind of the storage account. See https://docs.microsoft.com/en-us/rest/api/storagerp/srp_sku_types for more information.
+            - IsHierarchicalNamespaceEnabled: bool = false  # Indicates if the account has a hierarchical namespace enabled.
         options:
           GetAccountInfoOptions:
             - BasicRequestOptions: inline
@@ -204,8 +250,8 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          ServiceStatistics:
-            - GeoReplication: GeoReplication
+          ServiceStatistics:  # Statistics for the storage service.
+            - GeoReplication: GeoReplication  # Geo-replication information for the secondary storage service.
             - from_xml: [
               [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
             ]
@@ -254,9 +300,9 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          CreateBlobContainerResult:
+          CreateBlobContainerResult:  # Response type for #Azure::Storage::Blobs::BlobContainerClient::Create.
             - BasicResponse: inline
-            - Created: bool = true
+            - Created: bool = true  # Indicates if the container was successfully created in this operation.
             - BlobContainerInfo: inline
         options:
           CreateBlobContainerOptions:
@@ -279,9 +325,9 @@ Services:
         http_method: Delete
         http_status_code: 202
         return_type:
-          DeleteBlobContainerResult:
+          DeleteBlobContainerResult:  # Response type for #Azure::Storage::Blobs::BlobContainerClient::Delete.
             - BasicResponse: inline
-            - Deleted: bool = true
+            - Deleted: bool = true  # Indicates if the container was successfully deleted in this operation.
         options:
           DeleteBlobContainerOptions:
             - BasicRequestOptions: inline
@@ -318,7 +364,7 @@ Services:
         http_method: Head
         http_status_code: 200
         return_type:
-          BlobContainerProperties:
+          BlobContainerProperties:  # Properties of a blob container.
             - BlobContainerItemWithoutName: inline
         options:
           GetBlobContainerPropertiesOptions:
@@ -342,7 +388,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          SetBlobContainerMetadataResult:
+          SetBlobContainerMetadataResult:  # Response type for #Azure::Storage::Blobs::BlobContainerClient::SetMetadata.
             - BasicResponse: inline
             - BlobContainerInfo: inline
         options:
@@ -459,7 +505,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          SetBlobContainerAccessPolicyResult:
+          SetBlobContainerAccessPolicyResult:  # Response type for #Azure::Storage::Blobs::BlobContainerClient::SetAccessPolicy.
             - BasicResponse: inline
             - BlobContainerInfo: inline
         options:
@@ -615,13 +661,13 @@ Services:
         http_method: Get
         http_status_code: [200, 206]
         return_type:
-          DownloadBlobResult:
+          DownloadBlobResult:  # Response type for #Azure::Storage::Blobs::BlobClient::Download.
             - BodiedResponse: inline
             - ContentRange: Azure::Core::Http::HttpRange
             - BlobSize: int64_t = 0
             - BlobType: BlobType
-            - TransactionalContentHash: ContentHash, nullable  # hash for the downloaded range
-            - Details: DownloadBlobDetails
+            - TransactionalContentHash: ContentHash, nullable
+            - Details: DownloadBlobDetails  # Details information of the downloaded blob.
         options:
           DownloadBlobOptions:
             - BasicRequestOptions: inline
@@ -682,9 +728,9 @@ Services:
         http_method: Delete
         http_status_code: 202
         return_type:
-          DeleteBlobResult:
+          DeleteBlobResult:  # Response type for #Azure::Storage::Blobs::BlobClient::Delete.
             - BasicResponse: inline
-            - Deleted: bool = true
+            - Deleted: bool = true  # Indicates if the blob was successfully deleted in this operation.
         options:
           DeleteBlobOptions:
             - BasicRequestOptions: inline
@@ -702,7 +748,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          SetBlobExpiryResult:
+          SetBlobExpiryResult:  # Response type for #Azure::Storage::Files::DataLake::DataLakeFileClient::ScheduleDeletion.
             - BasicResponse: inline
         options:
           SetBlobExpiryOptions:
@@ -720,7 +766,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          UndeleteBlobResult:
+          UndeleteBlobResult:  # Response type for #Azure::Storage::Blobs::BlobClient::Undelete.
             - BasicResponse: inline
         options:
           UndeleteBlobOptions:
@@ -782,7 +828,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          SetBlobHttpHeadersResult:
+          SetBlobHttpHeadersResult:  # Response type for #Azure::Storage::Blobs::BlobClient::SetHttpHeaders.
             - BasicResponse: inline
             - BlobInfo: inline
         options:
@@ -805,7 +851,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          SetBlobMetadataResult:
+          SetBlobMetadataResult:  # Response type for #Azure::Storage::Blobs::BlobClient::SetMetadata.
             - BasicResponse: inline
             - BlobInfo: inline
         options:
@@ -831,7 +877,7 @@ Services:
         http_method: Put
         http_status_code: [200, 202]
         return_type:
-          SetBlobAccessTierResult:
+          SetBlobAccessTierResult:  # Response type for #Azure::Storage::Blobs::BlobClient::SetAccessTier.
             - BasicResponse: inline
         options:
           SetBlobAccessTierOptions:
@@ -889,7 +935,7 @@ Services:
         http_method: Put
         http_status_code: 204
         return_type:
-          AbortBlobCopyFromUriResult:
+          AbortBlobCopyFromUriResult:  # Response type for #Azure::Storage::Blobs::BlobClient::AbortCopy.
             - BasicResponse: inline
         options:
           AbortBlobCopyFromUriOptions:
@@ -908,7 +954,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          CreateBlobSnapshotResult:
+          CreateBlobSnapshotResult: # Response type for #Azure::Storage::Blobs::BlobClient::CreateSnapshot.
             - BasicResponse: inline
             - Snapshot: std::string
             - ETag: Azure::ETag
@@ -961,7 +1007,7 @@ Services:
         http_method: Put
         http_status_code: 204
         return_type:
-          SetBlobTagsResult:
+          SetBlobTagsResult:  # Response type for #Azure::Storage::Blobs::BlobClient::SetTags.
             - BasicResponse: inline
         options:
           SetBlobTagsOptions:
@@ -1101,7 +1147,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          UploadBlockBlobResult:
+          UploadBlockBlobResult:  # Response type for #Azure::Storage::Blobs::BlockBlobClient::Upload.
             - BasicResponse: inline
             - BlobContentInfo: inline
             - TransactionalContentHash: ContentHash, nullable
@@ -1137,7 +1183,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          StageBlockResult:
+          StageBlockResult:  # Response type for #Azure::Storage::Blobs::BlockBlobClient::StageBlock.
             - BasicResponse: inline
             - BlockInfo: inline
         options:
@@ -1164,7 +1210,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          StageBlockFromUriResult:
+          StageBlockFromUriResult:  # Response type for #Azure::Storage::Blobs::BlockBlobClient::StageBlockFromUri.
             - BasicResponse: inline
             - BlockInfo: inline
         options:
@@ -1196,7 +1242,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          CommitBlockListResult:
+          CommitBlockListResult:  # Response type for #Azure::Storage::Blobs::BlockBlobClient::CommitBlockList.
             - BasicResponse: inline
             - BlobContentInfo: inline
             - TransactionalContentHash: ContentHash, nullable
@@ -1239,14 +1285,14 @@ Services:
             - LeaseId: std::string, nullable
             - IfTags: std::string, nullable
         return_type:
-          GetBlockListResult:
+          GetBlockListResult:  # Response type for #Azure::Storage::Blobs::BlockBlobClient::GetBlockList.
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
             - ContentType: std::string
             - BlobSize: int64_t = 0
-            - CommittedBlocks: std::vector<BlobBlock>
-            - UncommittedBlocks: std::vector<BlobBlock>
+            - CommittedBlocks: std::vector<BlobBlock>  # Collection of committed blocks.
+            - UncommittedBlocks: std::vector<BlobBlock>  # Collection of uncommitted blocks.
             - from_xml: [
               [start_tag, BlockList.CommittedBlocks.Block, CommittedBlocks],
               [start_tag, BlockList.UncommittedBlocks.Block, UncommittedBlocks],
@@ -1268,9 +1314,9 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          CreatePageBlobResult:
+          CreatePageBlobResult:  # Response type for #Azure::Storage::Blobs::PageBlobClient::Create.
             - BasicResponse: inline
-            - Created: bool = true
+            - Created: bool = true  # Indicates if the page blob was successfully created in this operation.
             - BlobContentInfo: inline
             - SequenceNumber: int64_t, nullable
         options:
@@ -1317,7 +1363,7 @@ Services:
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
         return_type:
-          UploadPagesResult:
+          UploadPagesResult:  # Response type for #Azure::Storage::Blobs::PageBlobClient::UploadPages.
             - BasicResponse: inline
             - PageInfo: inline
         request_action:
@@ -1357,7 +1403,7 @@ Services:
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
         return_type:
-          UploadPagesFromUriResult:
+          UploadPagesFromUriResult:  # Response type for #Azure::Storage::Blobs::PageBlobClient::UploadPagesFromUri.
             - BasicResponse: inline
             - PageInfo: inline
         request_action:
@@ -1395,7 +1441,7 @@ Services:
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
         return_type:
-          ClearPagesResult:
+          ClearPagesResult:  # Response type for #Azure::Storage::Blobs::PageBlobClient::ClearPages.
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
@@ -1419,7 +1465,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          ResizePageBlobResult:
+          ResizePageBlobResult:  # Azure::Storage::Blobs::PageBlobClient::Resize.
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
@@ -1513,9 +1559,9 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          CreateAppendBlobResult:
+          CreateAppendBlobResult:  # Response type for #Azure::Storage::Blobs::AppendBlobClient::Create.
             - BasicResponse: inline
-            - Created: bool = true
+            - Created: bool = true  # Indicates if the append blob was successfully created in this operation.
             - BlobContentInfo: inline
         options:
           CreateAppendBlobOptions:
@@ -1543,7 +1589,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          AppendBlockResult:
+          AppendBlockResult:  # Response type for #Azure::Storage::Blobs::AppendBlobClient::AppendBlock.
             - BasicResponse: inline
             - BlobAppendInfo: inline
         options:
@@ -1577,7 +1623,7 @@ Services:
         http_method: Put
         http_status_code: 201
         return_type:
-          AppendBlockFromUriResult:
+          AppendBlockFromUriResult:  # Response type for #Azure::Storage::Blobs::AppendBlobClient::AppendBlockFromUri.
             - BasicResponse: inline
             - BlobAppendInfo: inline
         options:
@@ -1614,7 +1660,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          SealAppendBlobResult:
+          SealAppendBlobResult:  # Response type for #Azure::Storage::Blobs::AppendBlobClient::Seal.
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
@@ -1680,7 +1726,7 @@ Models:
     - noexport: true
     - type: struct
     - BasicResponse: inline
-    - BodyStream: std::unique_ptr<Azure::Core::IO::BodyStream>
+    - BodyStream: std::unique_ptr<Azure::Core::IO::BodyStream>  # Content of the blob or blob range.
   PublicAccessType:
     - type: enum class
     - BlobContainer: "container"
@@ -1850,14 +1896,14 @@ Models:
       [tag, DefaultIndexDocumentPath, DefaultIndexDocumentPath],
       [tag, ErrorDocument404Path, ErrorDocument404Path],
     ]
-  BlobServiceProperties:
-    - Logging: AnalyticsLogging
-    - HourMetrics: Metrics
-    - MinuteMetrics: Metrics
-    - Cors: std::vector<CorsRule>
-    - DefaultServiceVersion: std::string, nullable
-    - DeleteRetentionPolicy: RetentionPolicy
-    - StaticWebsite: StaticWebsite
+  BlobServiceProperties:  # Properties of blob service.
+    - Logging: AnalyticsLogging  # Azure analytics logging settings.
+    - HourMetrics: Metrics  # Summary of request statistics grouped by API in hour aggregates for blobs.
+    - MinuteMetrics: Metrics  # Summary of request statistics grouped by API in minute aggregates for blobs.
+    - Cors: std::vector<CorsRule>  # CORS rules set.
+    - DefaultServiceVersion: std::string, nullable  # The default API version used to handle blob service requests if API version is not specified in the request header.
+    - DeleteRetentionPolicy: RetentionPolicy  # Retention policy that determines how long the associated data should persist.
+    - StaticWebsite: StaticWebsite  # The properties that enable an storage account to host a static website.
     - from_xml: [
       [start_tag, StorageServiceProperties.Logging, Logging],
       [start_tag, StorageServiceProperties.HourMetrics, HourMetrics],
@@ -1922,15 +1968,15 @@ Models:
     - LastAccessedOn: Azure::DateTime(RFC1123), nullable
     - HttpHeaders: BlobHttpHeaders
     - Metadata: Metadata
-    - SequenceNumber: int64_t, nullable  # only for page blob
-    - CommittedBlockCount: int64_t, nullable  # only for append blob
-    - IsSealed: bool, nullable # only for append blob
+    - SequenceNumber: int64_t, nullable
+    - CommittedBlockCount: int64_t, nullable
+    - IsSealed: bool, nullable
     - LeaseDuration: LeaseDurationType, nullable
     - LeaseState: LeaseState, nullable
     - LeaseStatus: LeaseStatus, nullable
     - BlobResponseEncryptionOptions: inline
-    - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
-    - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
+    - ObjectReplicationDestinationPolicyId: std::string, nullable
+    - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy>
     - TagCount: int32_t, nullable
     - CopyId: std::string, nullable
     - CopySource: std::string, nullable
@@ -2002,9 +2048,9 @@ Models:
     - LeaseState: LeaseState = LeaseState::Available
     - LeaseDuration: LeaseDurationType, nullable
     - BlobResponseEncryptionOptions: inline
-    - SequenceNumber: int64_t, nullable # only for page blobd
-    - IsSealed: bool, nullable # only for append blob
-    - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
+    - SequenceNumber: int64_t, nullable
+    - IsSealed: bool, nullable
+    - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy>
   BlobItem:
     - Name: std::string
     - BlobSize: int64_t = 0
@@ -2086,11 +2132,11 @@ Models:
   ObjectReplicationPolicy:
     - PolicyId: std::string
     - Rules: std::vector<ObjectReplicationRule>
-  BlobProperties:
+  BlobProperties:  # Properties of a blob.
     - ETag: Azure::ETag
     - LastModified: Azure::DateTime(RFC1123)
     - CreatedOn: Azure::DateTime(RFC1123)
-    - ExpiresOn: Azure::DateTime(RFC1123), nullable
+    - ExpiresOn: Azure::DateTime(RFC1123), nullable  # The time the blob will expire.
     - LastAccessedOn: Azure::DateTime(RFC1123), nullable
     - Metadata: Metadata
     - BlobType: BlobType
@@ -2099,9 +2145,9 @@ Models:
     - LeaseStatus: LeaseStatus, nullable
     - BlobSize: int64_t = 0
     - HttpHeaders: BlobHttpHeaders
-    - SequenceNumber: int64_t, nullable  # only for page blob
-    - CommittedBlockCount: int32_t, nullable  # only for append blob
-    - IsSealed: bool, nullable # only for append blob
+    - SequenceNumber: int64_t, nullable
+    - CommittedBlockCount: int32_t, nullable
+    - IsSealed: bool, nullable
     - BlobResponseEncryptionOptions: inline
     - AccessTier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
@@ -2116,8 +2162,8 @@ Models:
     - IncrementalCopyDestinationSnapshot: std::string, nullable
     - CopyProgress: std::string, nullable
     - CopyCompletedOn: Azure::DateTime(RFC1123), nullable
-    - ObjectReplicationDestinationPolicyId: std::string, nullable # only valid for replication destination blob
-    - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy> # only valid for replication source blob
+    - ObjectReplicationDestinationPolicyId: std::string, nullable
+    - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy>
     - TagCount: int32_t, nullable
     - VersionId: std::string, nullable
     - IsCurrentVersion: bool, nullable
@@ -2177,7 +2223,7 @@ Models:
       [tag, SignedIdentifier.AccessPolicy.Expiry, ExpiresOn],
       [tag, SignedIdentifier.AccessPolicy.Permission, Permissions],
     ]
-  BlobContainerAccessPolicy:
+  BlobContainerAccessPolicy:  # Access policy for a blob container.
     - AccessType: PublicAccessType = PublicAccessType::None
     - SignedIdentifiers: std::vector<SignedIdentifier>
     - from_xml: [
