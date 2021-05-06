@@ -15,6 +15,7 @@ class class_definition:
     def __init__(self, class_name, class_type):
         self.name = class_name
         self.type = class_type
+        self.comment = None
         self.noexport = False
         self.external = False
         self.member = []
@@ -144,7 +145,10 @@ def get_class_definition(class_name, config_class_def=None):
         return models_cache[class_name]
 
     if config_class_def is None and class_name in config["Models"]:
-        return get_class_definition(class_name, config["Models"][class_name])
+        class_def = get_class_definition(class_name, config["Models"][class_name])
+        if class_name in config["Models"].ca.items:
+            class_def.comment = config["Models"].ca.items[class_name][2].value.strip(" \t\r\n#")
+        return class_def
 
     # Find type
     type_index = [i for i, v in enumerate(config_class_def) if next(iter(v)) == "type"]
@@ -260,6 +264,8 @@ def add_export_model(class_name):
 for c_k, c_v in config["Constants"].items():
     code_template.constants_map[c_k] = c_v
 
+for c_k, c_v in config["CommentTemplate"].items():
+    code_template.comments_map[c_k] = c_v
 
 for config_resource in config["Services"]:
     resource_name = next(iter(config_resource))
@@ -280,6 +286,8 @@ for config_resource in config["Services"]:
         if type(config_function_def["return_type"]) is ruamel.yaml.comments.CommentedMap:
             return_type, config_return_type = next(iter(config_function_def["return_type"].items()))
             return_type_def = get_class_definition(return_type, config_return_type)
+            if return_type in config_function_def["return_type"].ca.items:
+                return_type_def.comment = config_function_def["return_type"].ca.items[return_type][2].value.strip(" \t\r\n#")
         elif type(config_function_def["return_type"]) is str:
             return_type = config_function_def["return_type"]
             return_type_def = get_class_definition(return_type)

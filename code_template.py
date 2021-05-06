@@ -106,6 +106,7 @@ toxml_classes = set()
 toxml_options_def_cache = {}
 
 constants_map = {}
+comments_map = {}
 
 
 def get_snake_case_name(var):
@@ -186,6 +187,8 @@ def gen_model_definition(service_name, class_name, class_def):
     else:
         content = ""
     if class_def.type == "struct":
+        if class_def.comment:
+            content += "\n/**\n* @brief " + class_def.comment + "\n*/\n"
         content += "{} {} {{".format(class_def.type, class_name)
     elif class_def.type == "enum class":
         content += inspect.cleandoc(
@@ -202,6 +205,10 @@ def gen_model_definition(service_name, class_name, class_def):
         content += "enum class {} {{".format(class_name)
     source_content = ""
     for i in range(len(class_def.member)):
+        if class_def.member_comment[i]:
+            content += "\n/**\n* " + class_def.member_comment[i] + "\n*/\n"
+        elif class_def.type == "struct" and class_def.member[i] in comments_map:
+            content += "\n/**\n* " + comments_map[class_def.member[i]] + "\n*/\n"
         if class_def.member_type[i]:
             # for struct
             if class_def.member_type[i] == class_def.member[i]:
@@ -236,8 +243,6 @@ def gen_model_definition(service_name, class_name, class_def):
                 literal = class_def.member[i]
             content += "AZ_STORAGE_BLOBS_DLLEXPORT const static {class_name} {member_name};".format(class_name=class_name, member_name=class_def.member[i])
             source_content += "const {class_name} {class_name}::{member_name}(\"{member_value}\");".format(class_name=class_name, member_name=class_def.member[i], member_value=literal)
-        if class_def.member_comment[i]:
-            content += "// " + class_def.member_comment[i] + "\n"
     if class_def.type == "enum class":
         content += "private: std::string m_value;}};  // extensible enum {}".format(class_name)
     else:
