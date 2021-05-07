@@ -50,7 +50,7 @@ CommentTemplate:
   VersionId: "A string value that uniquely identifies the blob. This value is null if Blob Versioning is not enabled."
   IsCurrentVersion: "Indicates if this is the current version of the blob. This value is null if Blob Versioning is not enabled."
   AppendOffset: "The offset at which the block was committed."
-  LeaseID: "Uniquely identifies a container's or blob's lease."
+  LeaseId: "Uniquely identifies a container's or blob's lease."
 
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
   - [add_header_code, "x-ms-version", *ApiVersion]
@@ -638,7 +638,7 @@ Services:
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
-            - LeaseTime: int32_t = 0
+            - LeaseTime: int32_t = 0  # Approximate time remaining in the lease period in seconds.
         options:
           BreakBlobContainerLeaseOptions:
             - BasicRequestOptions: inline
@@ -1126,7 +1126,7 @@ Services:
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
-            - LeaseTime: int32_t = 0
+            - LeaseTime: int32_t = 0  # Approximate time remaining in the lease period in seconds.
         options:
           BreakBlobLeaseOptions:
             - BasicRequestOptions: inline
@@ -1743,68 +1743,68 @@ Models:
     - BlockBlob  # Block blob.
     - PageBlob  # Page blob.
     - AppendBlob  # Append blob.
-  LeaseState:
+  LeaseState:  # Extensible enum used to identify the state of lease.
     - type: enum class
-    - Available: "available"
-    - Leased: "leased"
-    - Expired: "expired"
-    - Breaking: "breaking"
-    - Broken: "broken"
-  LeaseStatus:
+    - Available: "available"  # The lease is unlocked and can be acquired.
+    - Leased: "leased"  # The lease is locked.
+    - Expired: "expired"  # The lease duration has expired.
+    - Breaking: "breaking"  # The lease has been broken, but the lease will continue to be locked until the break period has expired.
+    - Broken: "broken"  # The lease has been broken, and the break period has expired.
+  LeaseStatus:  # Extensible enum used to identify the status of lease.
     - type: enum class
-    - Locked: "locked"
-    - Unlocked: "unlocked"
-  LeaseDurationType:
+    - Locked: "locked"  # The lease is locked.
+    - Unlocked: "unlocked"  # The lease is unlocked.
+  LeaseDurationType:  # Extensible enum used to identify the lease is of inifinite or fixed duration.
     - type: enum class
-    - Infinite: "infinite"
-    - Fixed: "fixed"
-  AccessTier:
+    - Infinite: "infinite"  # Infinite duration.
+    - Fixed: "fixed"  # Fixed duration.
+  AccessTier:  # Extensible enum used to identify access tier of a blob.
     - type: enum class
-    - P1
-    - P2
-    - P3
-    - P4
-    - P6
-    - P10
-    - P15
-    - P20
-    - P30
-    - P40
-    - P50
-    - P60
-    - P70
-    - P80
-    - Hot
-    - Cool
-    - Archive
-  RehydratePriority:
+    - P1  # P1 tier for page blob in a premium storage account.
+    - P2  # P2 tier for page blob in a premium storage account.
+    - P3  # P3 tier for page blob in a premium storage account.
+    - P4  # P4 tier for page blob in a premium storage account.
+    - P6  # P6 tier for page blob in a premium storage account.
+    - P10  # P10 tier for page blob in a premium storage account.
+    - P15  # P15 tier for page blob in a premium storage account.
+    - P20  # P20 tier for page blob in a premium storage account.
+    - P30  # P30 tier for page blob in a premium storage account.
+    - P40  # P40 tier for page blob in a premium storage account.
+    - P50  # P50 tier for page blob in a premium storage account.
+    - P60  # P60 tier for page blob in a premium storage account.
+    - P70  # P70 tier for page blob in a premium storage account.
+    - P80  # P80 tier for page blob in a premium storage account.
+    - Hot  # Optimized for storing data that is accessed frequently.
+    - Cool  # Optimized for storing data that is infrequently accessed and stored for at least 30 days.
+    - Archive  # Optimized for storing data that is rarely accessed and stored for at least 180 days with flexible latency requirements, on the order of hours.
+  RehydratePriority:  # Extensible enum used to identify rehydrate priority.
     - type: enum class
-    - High: "High"
-    - Standard: "Standard"
-  CopyStatus:
+    - High: "High"  # High priority.
+    - Standard: "Standard"  # Standard priority.
+  CopyStatus:  # Extensible enum used to identify copy status of a copy operation.
     - type: enum class
-    - Success: "success"
-    - Pending: "pending"
+    - Success: "success"  # Successful.
+    - Pending: "pending"  # Pending.
   SkuName:  # Extensible enum that used to identify the sku of a storage account.
     - type: enum class
-    - StandardLrs: "Standard_LRS"
-    - StandardGrs: "Standard_GRS"
-    - StandardRagrs: "Standard_RAGRS"
-    - StandardZrs: "Standard_ZRS"
-    - PremiumLrs: "Premium_LRS"
-    - PremiumZrs: "Premium_ZRS"
-    - StandardGzrs: "Standard_GZRS"
-    - StandardRagzrs: "Standard_RAGZRS"
+    - StandardLrs: "Standard_LRS"  # Standard Locally Redundant Storage
+    - StandardGrs: "Standard_GRS"  # Standard Geo Replicated Storage
+    - StandardRagrs: "Standard_RAGRS"  # Standard Read-access Geo Replicated Storage
+    - StandardZrs: "Standard_ZRS"  # Standard Zone Redundant Storage
+    - PremiumLrs: "Premium_LRS"  # Provisioned IO Locally Redundant Storage
+    - PremiumZrs: "Premium_ZRS"  # Provisioned IO Zone Redundant Storage
+    - StandardGzrs: "Standard_GZRS"  # Standard Geo-zone-redundant Storage
+    - StandardRagzrs: "Standard_RAGZRS"  # Standard Read-access Geo-zone-redundant Storage
   AccountKind:  # Extensible enum that used to identify the account kind.
     - type: enum class
-    - Storage: "Storage"
-    - BlobStorage: "BlobStorage"
-    - StorageV2: "StorageV2"
-    - FileStorage: "FileStorage"
-    - BlockBlobStorage: "BlockBlobStorage"
-  EncryptionAlgorithmType:
+    - Storage: "Storage"  # General-purpose v1 account.
+    - BlobStorage: "BlobStorage"  # Blob Storage account.
+    - StorageV2: "StorageV2"  # General-purpose v2 account.
+    - FileStorage: "FileStorage"  # File Storage account.
+    - BlockBlobStorage: "BlockBlobStorage"  # Block Blob Storage account.
+  EncryptionAlgorithmType:  # Extensible enum used to identify encryption algorithm.
     - type: enum class
-    - Aes256: "AES256"
+    - Aes256: "AES256"  # AES-256
   BlobBlock:  # Describes a sinlge block in block blob.
     - Name: std::string  # Base64 encoded block id.
     - Size: int64_t = 0  # Block size in bytes.
@@ -2092,41 +2092,41 @@ Models:
       [start_tag, Metadata, Details.Metadata],
       [start_tag, OrMetadata, Details.ObjectReplicationSourceProperties],
     ]
-  ListBlobsIncludeFlags:
+  ListBlobsIncludeFlags:  # Bitwise enum used to specify one or more datasets to include in a list blobs response.
     - type: bitwise enum
-    - None: ""
-    - Copy: "copy"
-    - Deleted: "deleted"
-    - Metadata: "metadata"
-    - Snapshots: "snapshots"
-    - Versions: "versions"
-    - UncomittedBlobs: "uncommittedblobs"
+    - None: ""  # No extra data should be included.
+    - Copy: "copy"  # Metadata related to any current or previous copy operations should be included.
+    - Deleted: "deleted"  # Soft-deleted blobs should be included.
+    - Metadata: "metadata"  # Metadata should be included.
+    - Snapshots: "snapshots"  # Snapshots should be included.
+    - Versions: "versions"  # Versions of blobs should be included.
+    - UncomittedBlobs: "uncommittedblobs"  # Uncommitted blobs should be included.
   BlobContainerInfo:
     - noexport: true
     - ETag: Azure::ETag
     - LastModified: Azure::DateTime(RFC1123)
-  ListBlobContainersIncludeFlags:
+  ListBlobContainersIncludeFlags:  # Bitwise enum used to specify one or more datasets to include in list container response.
     - type: bitwise enum
-    - None: ""
-    - Metadata: "metadata"
-    - Deleted: "deleted"
-  BlockListType:
+    - None: ""  # No extra data should be included.
+    - Metadata: "metadata"  # Metadata should be included.
+    - Deleted: "deleted"  # Soft-deleted containers should be included in the response.
+  BlockListType:  # Extensible enum used to specify blocks to list.
     - type: enum class
-    - Committed: "committed"
-    - Uncommitted: "uncommitted"
-    - All: "all"
-  DeleteSnapshotsOption:
+    - Committed: "committed"  # Only list committed blocks.
+    - Uncommitted: "uncommitted"  # Only list uncommitted blocks.
+    - All: "all"  # List both committed and uncommitted blocks.
+  DeleteSnapshotsOption:  # Extensible enum used to specify whether base blob should be deleted in a delete blob operation.
     - type: enum class
-    - IncludeSnapshots: "include"
-    - OnlySnapshots: "only"
-  ArchiveStatus:
+    - IncludeSnapshots: "include"  # Delete the base blob and all snapshots.
+    - OnlySnapshots: "only"  # Delete only the blob's snapshots and not the blob itself.
+  ArchiveStatus:  # Extensible enum used to identify the destination tier when a blob is being rehydrated and is not complete.
     - type: enum class
-    - RehydratePendingToHot: "rehydrate-pending-to-hot"
-    - RehydratePendingToCool: "rehydrate-pending-to-cool"
-  ObjectReplicationStatus:
+    - RehydratePendingToHot: "rehydrate-pending-to-hot"  # The blob is being rehydrated to hot tier.
+    - RehydratePendingToCool: "rehydrate-pending-to-cool"  # The blob is being rehydrated to cool tier.
+  ObjectReplicationStatus:  # Extensible enum used to identify object replication status.
     - type: enum class
-    - Complete: "complete"
-    - Failed: "failed"
+    - Complete: "complete"  # Object replication to the destination container completed.
+    - Failed: "failed"  # Object replication to the destination container failed.
   ObjectReplicationRule:  # Contains the object replication rule ID and replication status of a blob.
     - RuleId: std::string  # Rule ID.
     - ReplicationStatus: ObjectReplicationStatus  # Replication status.
@@ -2195,11 +2195,11 @@ Models:
     - AppendOffset: int64_t = 0
     - CommittedBlockCount: int64_t = 0
     - BlobResponseEncryptionOptions: inline
-  GeoReplicationStatus:
+  GeoReplicationStatus:  # Extensible enum used to identify the status of secondary storage endpoint.
     - type: enum class
-    - Live: "live"
-    - Bootstrap: "bootstrap"
-    - Unavailable: "unavailable"
+    - Live: "live"  # The secondary location is active and operational.
+    - Bootstrap: "bootstrap"  # Initial synchronization from the primary location to the secondary location is in progress.
+    - Unavailable: "unavailable"  # The secondary location is temporarily unavailable.
   GeoReplication:  # Geo-replication information for the secondary storage endpoint.
     - Status: GeoReplicationStatus  # Status of the secondary storage endpoint.
     - LastSyncedOn: Azure::DateTime(RFC1123), nullable  # All primary writes preceding this value are guaranteed to be available for read operations at the secondary. Primary writes after this point in time may or may not be available for reads. This value may be null if replication status is bootstrap or unavailable.
@@ -2242,9 +2242,9 @@ Models:
       [text, Name, BlobName],
       [text, ContainerName, BlobContainerName],
     ]
-  ScheduleBlobExpiryOriginType:
+  ScheduleBlobExpiryOriginType: # Extensible enum used to specify when a file's expiration time should be relative to.
     - type: enum class
-    - NeverExpire: "NeverExpire"
-    - RelativeToCreation: "RelativeToCreation"
-    - RelativeToNow: "RelativeToNow"
-    - Absolute: "Absolute"
+    - NeverExpire: "NeverExpire"  # Never expires.
+    - RelativeToCreation: "RelativeToCreation"  # Relative to file's creation time.
+    - RelativeToNow: "RelativeToNow"  # Relative to current time.
+    - Absolute: "Absolute"  # Absolute time.
