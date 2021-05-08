@@ -1290,7 +1290,6 @@ Services:
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
-            - ContentType: std::string
             - BlobSize: int64_t = 0
             - CommittedBlocks: std::vector<BlobBlock>  # Collection of committed blocks.
             - UncommittedBlocks: std::vector<BlobBlock>  # Collection of uncommitted blocks.
@@ -1307,7 +1306,6 @@ Services:
         response_action:
           - [get_xml_body_code]
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "Content-Type", ContentType]
           - [get_header_code, "x-ms-blob-content-length", BlobSize]
 
   - PageBlob:
