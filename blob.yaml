@@ -1498,7 +1498,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          GetPageRangesResult:
+          GetPageRangesResultInternal:
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
