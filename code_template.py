@@ -302,7 +302,7 @@ def gen_model_definition(service_name, class_name, class_def):
         content += inspect.cleandoc(
             """
             std::string ret;
-            for (std::size_t i = 0; i < sizeof(value_list) / sizeof({typename}); ++i) {{
+            for (size_t i = 0; i < sizeof(value_list) / sizeof({typename}); ++i) {{
                 if ((val & value_list[i]) == value_list[i]) {{
                     if (!ret.empty()) {{ ret += ","; }}
                     ret += string_list[i];
