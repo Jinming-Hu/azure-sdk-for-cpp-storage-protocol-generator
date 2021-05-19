@@ -39,7 +39,7 @@ CommentTemplate:
   AccessTierChangedOn: "The date and time the tier was changed on the object."
   CopyId: "String identifier for the last attempted Copy Blob operation where this blob was the destination. This value is null if this blob has never been the destination of a copy operation, or if this blob has been modified after a concluded copy operation."
   CopySource: "URL that specifies the source blob or file used in the last attempted copy operation where this blob was the destination blob. This value is null if this blob has never been the destination of a copy operation, or if this blob has been modified after a concluded copy operation."
-  CopyStatus: "State of the copy operation identified by the copy id. Possible values include success, pending, aborted, failed etc. This value is null if this blob has never been the destination of a copy operation, or if this blob has been modified after a concluded copy operation."
+  CopyStatus: "State of the copy operation identified by the copy ID. Possible values include success, pending, aborted, failed etc. This value is null if this blob has never been the destination of a copy operation, or if this blob has been modified after a concluded copy operation."
   CopyStatusDescription: "Describes the cause of the last fatal or non-fatal copy operation failure. This is not null only when copy status is failed or pending."
   IsIncrementalCopy: "True if the copy operation is incremental copy."
   IncrementalCopyDestinationSnapshot: "Snapshot time of the last successful incremental copy snapshot for this blob."
@@ -1804,7 +1804,7 @@ Models:
     - type: enum class
     - Aes256: "AES256"  # AES-256
   BlobBlock:  # Describes a sinlge block in block blob.
-    - Name: std::string  # Base64 encoded block id.
+    - Name: std::string  # Base64 encoded block ID.
     - Size: int64_t = 0  # Block size in bytes.
     - from_xml: [
       [text, Name, Name],
@@ -1968,7 +1968,7 @@ Models:
     - HttpHeaders: BlobHttpHeaders
     - Metadata: Metadata
     - SequenceNumber: int64_t, nullable
-    - CommittedBlockCount: int64_t, nullable
+    - CommittedBlockCount: int32_t, nullable
     - IsSealed: bool, nullable
     - LeaseDuration: LeaseDurationType, nullable
     - LeaseState: LeaseState, nullable
@@ -2191,7 +2191,7 @@ Models:
     - LastModified: Azure::DateTime(RFC1123)
     - TransactionalContentHash: ContentHash, nullable
     - AppendOffset: int64_t = 0
-    - CommittedBlockCount: int64_t = 0
+    - CommittedBlockCount: int32_t = 0
     - BlobResponseEncryptionOptions: inline
   GeoReplicationStatus:  # Extensible enum used to identify the status of secondary storage endpoint.
     - type: enum class
