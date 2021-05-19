@@ -170,7 +170,7 @@ def gen_rest_client(service_name):
     if service_name.endswith("s"):
         service_name = service_name[:-1]
     class_name = service_name + "RestClient"
-    rest_client_begin = "class {} {{ public:".format(class_name)
+    rest_client_begin = "class {} final {{ public:".format(class_name)
 
     rest_client_end = "}};  // class {}\n".format(class_name)
 
@@ -189,13 +189,13 @@ def gen_model_definition(service_name, class_name, class_def):
     if class_def.type == "struct":
         if class_def.comment:
             content += "\n/**\n* @brief " + class_def.comment + "\n*/\n"
-        content += "{} {} {{".format(class_def.type, class_name)
+        content += "{} {} final {{".format(class_def.type, class_name)
     elif class_def.type == "enum class":
         if class_def.comment:
             content += "\n/**\n* @brief " + class_def.comment + "\n*/\n"
         content += inspect.cleandoc(
             """
-            class {class_name} {{
+            class {class_name} final {{
             public:
                 {class_name}() = default;
                 explicit {class_name}(std::string value) : m_value(std::move(value)) {{}}
@@ -709,7 +709,7 @@ def gen_toxml_function(class_name):
 
 
 def gen_resource_begin(resource_name):
-    content = "class {} {{ public:".format(resource_name)
+    content = "class {} final {{ public:".format(resource_name)
 
     global main_body
     main_body += content
@@ -746,7 +746,7 @@ def gen_resource_helper_functions():
 
 
 def gen_function_option_definition(service_name, class_name, class_def):
-    content = "struct {} {{".format(class_name)
+    content = "struct {} final {{".format(class_name)
     for i in range(len(class_def.member)):
         if class_def.member_type[i] == class_def.member[i]:
             if class_def.member[i] == "Metadata" or class_def.member[i] == "ContentHash":
