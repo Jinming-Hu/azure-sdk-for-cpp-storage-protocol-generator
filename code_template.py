@@ -40,7 +40,7 @@ include_headers = """
 #include <azure/core/http/http.hpp>
 #include <azure/core/internal/http/pipeline.hpp>
 #include <azure/storage/common/crypt.hpp>
-#include <azure/storage/common/xml_wrapper.hpp>
+#include <azure/storage/common/internal/xml_wrapper.hpp>
 #include <azure/storage/common/storage_common.hpp>
 #include <azure/storage/common/storage_exception.hpp>
 
