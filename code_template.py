@@ -362,8 +362,8 @@ def gen_fromxml_function(class_name):
                             break;
                         }} else if (node.Type == _internal::XmlNodeType::StartTag) {{
                             ++depth;
-                            if (strcmp(node.Name.data(), "Key") == 0) {{ is_key = true; }}
-                            else if (strcmp(node.Name.data(), "Value") == 0) {{ is_value = true; }}
+                            if (node.Name == "Key") {{ is_key = true; }}
+                            else if (node.Name == "Value") {{ is_value = true; }}
                         }} else if (node.Type == _internal::XmlNodeType::EndTag) {{
                             if (depth-- == 0) {{ break; }}
                         }}
@@ -388,10 +388,10 @@ def gen_fromxml_function(class_name):
                         auto node = reader.Read();
                         if (node.Type == _internal::XmlNodeType::End) {{
                             break;
-                        }} else if (node.Type == _internal::XmlNodeType::StartTag && strcmp(node.Name.data(), "Start") == 0) {{
+                        }} else if (node.Type == _internal::XmlNodeType::StartTag && node.Name == "Start") {{
                             ++depth;
                             is_start = true;
-                        }} else if (node.Type == _internal::XmlNodeType::StartTag && strcmp(node.Name.data(), "End") == 0) {{
+                        }} else if (node.Type == _internal::XmlNodeType::StartTag && node.Name == "End") {{
                             ++depth;
                             is_end = true;
                         }} else if (node.Type == _internal::XmlNodeType::EndTag) {{
@@ -505,7 +505,7 @@ def gen_fromxml_function(class_name):
     for i, xml_tag in enumerate(all_xml_tag):
         if i != 0:
             content += "else "
-        content += "if (std::strcmp(node.Name.data(), \"{0}\") == 0) {{ path.emplace_back(XmlTagName::k_{1}); }}".format(xml_tag, to_cpp_name(xml_tag))
+        content += "if (node.Name ==  \"{0}\") {{ path.emplace_back(XmlTagName::k_{1}); }}".format(xml_tag, to_cpp_name(xml_tag))
         if i == len(all_xml_tag) - 1:
             content += "else { path.emplace_back(XmlTagName::k_Unknown); }"
     # still in start tag, call another FromXml function
@@ -558,7 +558,7 @@ def gen_fromxml_function(class_name):
         elif member_type == "int32_t":
             content += "ret.{} = std::stoi(node.Value);".format(member)
         elif member_type == "bool":
-            content += "ret.{} = std::strcmp(node.Value.data(),\"true\") == 0;".format(member)
+            content += "ret.{} = node.Value == \"true\";".format(member)
         elif member_type == "std::vector<uint8_t>":
             content += "ret.{} = Azure::Core::Convert::Base64Decode(node.Value);".format(member)
         elif member_type == "std::vector<std::string>":
@@ -570,7 +570,7 @@ def gen_fromxml_function(class_name):
         elif member_type == "Azure::DateTime(RFC1123)":
             content += "ret.{} = Azure::DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);".format(member)
         elif member_type == "std::chrono::seconds":
-            content += "ret.{} = std::chrono::seconds(strcmp(node.Value.data(), \"infinite\") == 0 ? -1 : std::stoi(node.Value));".format(member)
+            content += "ret.{} = std::chrono::seconds(node.Value == \"infinite\" ? -1 : std::stoi(node.Value));".format(member)
         elif member_type == "Azure::ETag":
             content += "ret.{} = Azure::ETag(node.Value);".format(member)
         else:
@@ -585,7 +585,7 @@ def gen_fromxml_function(class_name):
         content += "if (path.size() == {} &&".format(len(path.split(".")))
         for j, k in enumerate(path.split(".")):
             content += "path[{}] == XmlTagName::k_".format(j) + to_cpp_name(k) + "&&"
-        content += "std::strcmp(node.Name.data(),\"{}\") == 0)".format(attr_name)
+        content += "node.Name == \"{}\")".format(attr_name)
         content += "{{ ret.{} = node.Value; }}".format(member)
 
     content += "}} return ret;}\n\n"
@@ -633,19 +633,19 @@ def gen_toxml_function(class_name):
             else:
                 raise RuntimeError("unknown type " + inner_type2)
 
-            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::StartTag, {0}.data(), {1}.data() }});".format(inner_type1_to_string, inner_type2_to_string)
+            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::StartTag, {0}, {1} }});".format(inner_type1_to_string, inner_type2_to_string)
         elif member_type == "std::string":
-            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.data()}});".format(member_name)
+            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}}});".format(member_name)
         elif member_type == "bool":
             content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {} ? \"true\":\"false\"}});".format(member_name)
         elif member_type == "Azure::DateTime(ISO8601)":
-            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::AllDigits).data()}});".format(member_name)
+            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::AllDigits)}});".format(member_name)
         elif member_type == "Azure::DateTime(ISO8601t)":
-            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::Truncate).data()}});".format(member_name)
+            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::Truncate)}});".format(member_name)
         elif member_type == "Azure::DateTime(RFC1123)":
-            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc1123).data()}});".format(member_name)
+            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc1123)}});".format(member_name)
         elif member_type in ["int32_t", "int64_t"]:
-            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), std::to_string({}).data()}});".format(member_name)
+            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), std::to_string({})}});".format(member_name)
         else:
             content = "{}ToXml(writer, {});".format(member_type, member_name)
             toxml_classes.add(member_type)
