@@ -244,7 +244,8 @@ def gen_model_definition(service_name, class_name, class_def):
             if literal is None:
                 literal = class_def.member[i]
             content += "AZ_STORAGE_BLOBS_DLLEXPORT const static {class_name} {member_name};".format(class_name=class_name, member_name=class_def.member[i])
-            source_content += "const {class_name} {class_name}::{member_name}(\"{member_value}\");".format(class_name=class_name, member_name=class_def.member[i], member_value=literal)
+            source_content += "const {class_name} {class_name}::{member_name}(\"{member_value}\");".format(class_name=class_name,
+                                                                                                           member_name=class_def.member[i], member_value=literal)
     if class_def.type == "enum class":
         content += "private: std::string m_value;}};  // extensible enum {}".format(class_name)
     else:
@@ -639,9 +640,11 @@ def gen_toxml_function(class_name):
         elif member_type == "bool":
             content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {} ? \"true\":\"false\"}});".format(member_name)
         elif member_type == "Azure::DateTime(ISO8601)":
-            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::AllDigits)}});".format(member_name)
+            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::AllDigits)}});".format(
+                member_name)
         elif member_type == "Azure::DateTime(ISO8601t)":
-            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::Truncate)}});".format(member_name)
+            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc3339, Azure::DateTime::TimeFractionFormat::Truncate)}});".format(
+                member_name)
         elif member_type == "Azure::DateTime(RFC1123)":
             content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc1123)}});".format(member_name)
         elif member_type in ["int32_t", "int64_t"]:
@@ -800,7 +803,8 @@ def gen_resource_create_message_function_end():
 
 
 def gen_resource_create_response_function_begin(function_name, return_type):
-    content = "static Azure::Response<{return_type}> {function_name}CreateResponse(std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse, const Azure::Core::Context& context) {{ (void)context;".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Response<{return_type}> {function_name}CreateResponse(std::unique_ptr<Azure::Core::Http::RawResponse> pHttpResponse, const Azure::Core::Context& context) {{ (void)context;".format(
+        function_name=function_name, return_type=return_type)
 
     global main_body
     main_body += content
@@ -839,7 +843,8 @@ def gen_resource_create_response_function_end(return_type):
 
 
 def gen_resource_function_glue_function(function_name, option_type, return_type, request_body_type):
-    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Url& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Url& url,".format(
+        function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::IO::BodyStream& requestBody,"
     content += "const {option_type}& options, const Azure::Core::Context& context) {{".format(option_type=option_type)
@@ -860,7 +865,8 @@ def gen_resource_function_glue_function(function_name, option_type, return_type,
 
 
 def gen_resource_function_begin(function_name, option_type, return_type, request_body_type, response_body_type):
-    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Url& url,".format(function_name=function_name, return_type=return_type)
+    content = "static Azure::Response<{return_type}> {function_name}(Azure::Core::Http::_internal::HttpPipeline& pipeline, const Azure::Core::Url& url,".format(
+        function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::IO::BodyStream& requestBody,"
     content += "const {option_type}& options, const Azure::Core::Context& context) {{ (void)options;".format(option_type=option_type)
@@ -1183,7 +1189,7 @@ def gen_get_content_range_code(*args, **kwargs):
 
     if target_type == "Azure::Core::Http::HttpRange":
         content = inspect.cleandoc(
-        """
+            """
         auto content_range_iterator = httpResponse.GetHeaders().find({key});
         if (content_range_iterator != httpResponse.GetHeaders().end()) {{
             const std::string& content_range = content_range_iterator->second;
@@ -1200,7 +1206,7 @@ def gen_get_content_range_code(*args, **kwargs):
         """.format(key=key.lower(), key2=key2.lower(), target=target))
     elif target_type == "int64_t":
         content = inspect.cleandoc(
-        """
+            """
         if (content_range_iterator != httpResponse.GetHeaders().end()) {{
             const std::string& content_range = content_range_iterator->second;
             auto slash_pos = content_range.find("/");
@@ -1215,6 +1221,7 @@ def gen_get_content_range_code(*args, **kwargs):
 
     global main_body
     main_body += content
+
 
 def gen_get_metadata_code(*args, **kwargs):
     prefix = args[0]

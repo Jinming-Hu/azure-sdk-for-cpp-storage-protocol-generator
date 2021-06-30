@@ -31,16 +31,15 @@ class class_definition:
         self.fromxml_actions = None
         self.toxml_actions = None
 
-
     def __eq__(self, other):
         if not isinstance(other, class_definition):
             return NotImplemented
         return (self.name == other.name and self.type == other.type and self.noexport == other.noexport and
-               self.member == other.member and self.member_type == other.member_type and
-               self.member_default_value == other.member_default_value and self.member_nullable == other.member_nullable and
-               self.member_literal == other.member_literal and self.member_comment == other.member_comment and
-               self.dependency == other.dependency and self.fromxml_actions == other.fromxml_actions and
-               self.toxml_actions == other.toxml_actions)
+                self.member == other.member and self.member_type == other.member_type and
+                self.member_default_value == other.member_default_value and self.member_nullable == other.member_nullable and
+                self.member_literal == other.member_literal and self.member_comment == other.member_comment and
+                self.dependency == other.dependency and self.fromxml_actions == other.fromxml_actions and
+                self.toxml_actions == other.toxml_actions)
 
     def add_dependency(self, type_name):
         if type_name is None:
@@ -237,7 +236,8 @@ def get_class_definition(class_name, config_class_def=None):
             if member_type == "inline":
                 class_def.add_inline_class(get_class_definition(member_name))
             elif class_type == "struct":
-                class_def.add_member(member_name, member_type=member_type, member_comment=member_comment, member_default_value=member_default_value, member_nullable=member_nullable)
+                class_def.add_member(member_name, member_type=member_type, member_comment=member_comment,
+                                     member_default_value=member_default_value, member_nullable=member_nullable)
             elif class_type == "enum class" or class_type == "bitwise enum":
                 member_literal = member_type
                 class_def.add_member(member_name, member_literal=member_literal, member_comment=member_comment, member_default_value=member_default_value)
@@ -384,7 +384,8 @@ for config_resource in config["Services"]:
         for action in config_request_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
-            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "option_type": option_type, "request_body_type": request_body_type, "response_body_type": response_body_type, "http_method": http_method}
+            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name,
+                      "option_type": option_type, "request_body_type": request_body_type, "response_body_type": response_body_type, "http_method": http_method}
 
             should_ignore = False
             ignorable = "ignorable" in action[1:]
@@ -440,7 +441,8 @@ for config_resource in config["Services"]:
         for action in config_response_action:
             method_to_call = getattr(code_template, "gen_" + action[0])
             args = []
-            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name, "return_type": return_type, "request_body_type": request_body_type, "response_body_type": response_body_type, "http_method": http_method}
+            kwargs = {"optional": False, "service_name": service_name, "resource_name": resource_name, "function_name": function_name,
+                      "return_type": return_type, "request_body_type": request_body_type, "response_body_type": response_body_type, "http_method": http_method}
 
             for i in range(1, len(action)):
                 a = action[i]
@@ -484,7 +486,6 @@ for config_resource in config["Services"]:
             code_template.gen_resource_function_glue_function(function_name, option_type, return_type, request_body_type)
         else:
             code_template.gen_resource_function_end(return_type)
-
 
     code_template.gen_resource_helper_functions()
     code_template.gen_resource_end(resource_name)
