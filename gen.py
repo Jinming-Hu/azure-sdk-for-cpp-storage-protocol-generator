@@ -395,11 +395,6 @@ for config_resource in config["Services"]:
                     continue
                 elif a == "optional":
                     kwargs["optional"] = True
-                elif match_res := re.match("optional\\((.*)\\)", a):
-                    kwargs["optional"] = True
-                    kwargs["optional_value"] = match_res.group(1)
-                elif match_res := re.match("default\\((.*)\\)", a):
-                    kwargs["default_value"] = match_res.group(1)
                 elif type(a) is str:
                     request_options_used = True
                     arg = "options"
