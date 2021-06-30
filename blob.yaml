@@ -696,7 +696,7 @@ Services:
           - [get_header_code, "Content-Encoding", Details.HttpHeaders.ContentEncoding, optional]
           - [get_header_code, "Content-Language", Details.HttpHeaders.ContentLanguage, optional]
           - [get_header_code, "Cache-Control", Details.HttpHeaders.CacheControl, optional]
-          - [get_header_code, "Content-MD5", Details.HttpHeaders.ContentHash.Value, optional]
+          - [get_header_code, "Content-MD5", Details.HttpHeaders.ContentHash.Value, optional, on_status(200)]
           - [get_header_code, "x-ms-blob-content-md5", Details.HttpHeaders.ContentHash.Value, optional]
           - [get_header_code, "Content-Disposition", Details.HttpHeaders.ContentDisposition, optional]
           - [get_metadata_code, "x-ms-meta-", Details.Metadata, optional]
