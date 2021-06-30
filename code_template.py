@@ -1366,10 +1366,17 @@ def gen_get_header_code(*args, **kwargs):
     target_nullable = kwargs[target + ".nullable"]
     target_str_name = target.replace(".", "_").lower() + "_str"
     optional = kwargs["optional"]
+    on_status = kwargs["on_status"] if "on_status" in kwargs else []
+
+    content = ""
+    if on_status:
+        content += "if ("
+        content += "||".join(["http_status_code == {}".format(s) for s in on_status])
+        content += ") {"
 
     if optional or target_nullable:
         ite_name = get_snake_case_name(key) + "_iterator"
-        content = inspect.cleandoc(
+        content += inspect.cleandoc(
             """
             auto {1} = httpResponse.GetHeaders().find({0});
             if ({1} != httpResponse.GetHeaders().end())
@@ -1400,23 +1407,26 @@ def gen_get_header_code(*args, **kwargs):
         content += "}"
     else:
         if target_type == "int32_t":
-            content = "{1} = std::stoi(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
+            content += "{1} = std::stoi(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
         elif target_type == "int64_t":
-            content = "{1} = std::stoll(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
+            content += "{1} = std::stoll(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
         elif target_type == "std::string":
-            content = "{1} = httpResponse.GetHeaders().at({0});".format(key.lower(), target)
+            content += "{1} = httpResponse.GetHeaders().at({0});".format(key.lower(), target)
         elif target_type == "bool":
-            content = "{1} = httpResponse.GetHeaders().at({0}) == \"true\";".format(key.lower(), target)
+            content += "{1} = httpResponse.GetHeaders().at({0}) == \"true\";".format(key.lower(), target)
         elif target_type == "Azure::DateTime(ISO8601)":
-            content = "{1} = Azure::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::DateTime::DateFormat::Rfc3339);".format(key.lower(), target)
+            content += "{1} = Azure::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::DateTime::DateFormat::Rfc3339);".format(key.lower(), target)
         elif target_type == "Azure::DateTime(RFC1123)":
-            content = "{1} = Azure::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::DateTime::DateFormat::Rfc1123);".format(key.lower(), target)
+            content += "{1} = Azure::DateTime::Parse(httpResponse.GetHeaders().at({0}), Azure::DateTime::DateFormat::Rfc1123);".format(key.lower(), target)
         elif target_type == "Azure::ETag":
-            content = "{1} = Azure::ETag(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
+            content += "{1} = Azure::ETag(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
-            content = "{target} = {target_type}(httpResponse.GetHeaders().at({key}));".format(key=key.lower(), target=target, target_type=target_type.name)
+            content += "{target} = {target_type}(httpResponse.GetHeaders().at({key}));".format(key=key.lower(), target=target, target_type=target_type.name)
         else:
             raise RuntimeError("unknown type " + target_type.type if hasattr(target_type, "type") else target_type)
+
+    if on_status:
+        content += "}"
 
     global main_body
     main_body += content

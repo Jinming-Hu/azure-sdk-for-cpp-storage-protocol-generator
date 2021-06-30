@@ -446,6 +446,9 @@ for config_resource in config["Services"]:
                 a = action[i]
                 if action[i] == "optional":
                     kwargs["optional"] = True
+                elif match_res := re.match("on_status\\((.*)\\)", a):
+                    status_list = [int(i) for i in match_res.group(1).split("|")]
+                    kwargs["on_status"] = status_list
                 elif type(action[i]) is str:
                     arg = "response"
                     arg_types = action[i].split(".")
