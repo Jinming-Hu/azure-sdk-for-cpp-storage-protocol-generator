@@ -44,7 +44,7 @@ include_headers = """
 #include <azure/storage/common/storage_common.hpp>
 #include <azure/storage/common/storage_exception.hpp>
 
-#include "azure/storage/blobs/dll_import_export.hpp"
+#include "azure/storage/{service_name}/dll_import_export.hpp"
 
 """
 
@@ -243,7 +243,8 @@ def gen_model_definition(service_name, class_name, class_def):
             literal = class_def.member_literal[i]
             if literal is None:
                 literal = class_def.member[i]
-            content += "AZ_STORAGE_BLOBS_DLLEXPORT const static {class_name} {member_name};".format(class_name=class_name, member_name=class_def.member[i])
+            content += "AZ_STORAGE_{service_name}_DLLEXPORT const static {class_name} {member_name};".format(
+                service_name=service_name.upper(), class_name=class_name, member_name=class_def.member[i])
             source_content += "const {class_name} {class_name}::{member_name}(\"{member_value}\");".format(class_name=class_name,
                                                                                                            member_name=class_def.member[i], member_value=literal)
     if class_def.type == "enum class":

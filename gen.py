@@ -532,7 +532,7 @@ output_path.parents[0].mkdir(parents=True, exist_ok=True)
 with open(output_path, "w") as f:
     f.write(code_template.global_header.lstrip())
     f.write(code_template.pragma_once)
-    f.write(code_template.include_headers)
+    f.write(code_template.include_headers.format(service_name=service_name.lower()))
     f.write(code_template.namespace_begin)
     f.write(code_template.constant_string)
     f.write(code_template.model_definitions_begin)
