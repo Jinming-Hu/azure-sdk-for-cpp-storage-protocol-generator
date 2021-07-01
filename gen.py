@@ -2,6 +2,7 @@
 
 import subprocess
 import pathlib
+import sys
 import re
 import ruamel.yaml
 import toposort
@@ -93,7 +94,7 @@ class class_definition:
 
 
 try:
-    config = ruamel.yaml.round_trip_load(open("blob.yaml"), preserve_quotes=True)
+    config = ruamel.yaml.round_trip_load(open(sys.argv[1]), preserve_quotes=True)
 except ruamel.yaml.YAMLError as e:
     print(e)
 
