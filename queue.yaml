@@ -29,7 +29,15 @@ Constants:
   ApiVersion: &ApiVersion "2018-03-28"
 
 CommentTemplate:
-  ETag: "The ETag contains a value that you can use to perform operations conditionally."
+  SignedIdentifiers: "A collection of signed identifiers."
+  Metadata: "A set of name-value pairs associated with this blob as user-defined metadata."
+  ApproximateMessageCount: "The approximate number of messages in the queue. This number is not lower than the actual number of messages in the queue, but could be higher."
+  MessageId: "A GUID value that identifies the message in the queue."
+  InsertedOn: "The time the message was inserted into the queue."
+  ExpiresOn: "The time that the message will expire and be automatically deleted from the queue."
+  PopReciept: "This value is required to delete a message."
+  NextVisibleOn: "The time that the message will again become visible in the queue."
+  DequeueCount: "The number of times the message has been dequeued."
 
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
   - [add_header_code, "x-ms-version", *ApiVersion]
@@ -371,7 +379,7 @@ Models:
     - Metadata: "metadata"  # Metadata should be included.
   QueueItem:
     - type: struct
-    - Name: std::string
+    - Name: std::string  # Queue name.
     - Metadata: Metadata
     - from_xml: [
       [text, Name, Name],
@@ -492,7 +500,7 @@ Models:
       [tag, SignedIdentifier.AccessPolicy.Permission, Permissions],
     ]
   QueueMessage:
-    - Body: std::string
+    - Body: std::string  # The content of the message.
     - MessageId: std::string
     - InsertedOn: Azure::DateTime(RFC1123)
     - ExpiresOn: Azure::DateTime(RFC1123)
@@ -509,7 +517,7 @@ Models:
       [text, DequeueCount, DequeueCount],
     ]
   PeekedQueueMessage:
-    - Body: std::string
+    - Body: std::string  # The content of the message.
     - MessageId: std::string
     - InsertedOn: Azure::DateTime(RFC1123)
     - ExpiresOn: Azure::DateTime(RFC1123)
