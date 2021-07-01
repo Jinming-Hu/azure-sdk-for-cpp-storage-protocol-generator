@@ -1,0 +1,500 @@
+service_name: Queues
+output_hpp: azure/storage/queues/protocol/queue_rest_client.hpp
+output_cpp: queue_rest_client.cpp
+
+Constants:
+  ApiVersion: &ApiVersion "2018-03-28"
+
+CommentTemplate:
+  ETag: "The ETag contains a value that you can use to perform operations conditionally."
+
+request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
+  - [add_header_code, "x-ms-version", *ApiVersion]
+  - [add_query_code, "timeout", Timeout]
+
+Services:
+  - Service:
+    - ListQueues:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+          ListQueuesResultInternal:
+            - BasicResponse: inline
+            - ServiceEndpoint: std::string
+            - Prefix: std::string
+            - ContinuationToken: std::string, nullable
+            - Items: std::vector<QueueItem>
+            - from_xml: [
+              [attribute, EnumerationResults, ServiceEndpoint, ServiceEndpoint],
+              [text, EnumerationResults.Prefix, Prefix],
+              [text, EnumerationResults.NextMarker, ContinuationToken],
+              [start_tag, EnumerationResults.Queues.Queue, Items],
+            ]
+        options:
+          ListQueuesOptions:
+            - BasicRequestOptions: inline
+            - Prefix: std::string, nullable
+            - ContinuationToken: std::string, nullable
+            - MaxResults: int32_t, nullable
+            - Include: ListQueuesIncludeFlags = ListQueuesIncludeFlags::None
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "list"]
+          - [add_query_code, "prefix", Prefix]
+          - [add_query_code, "marker", ContinuationToken]
+          - [add_query_code, "maxresults", MaxResults]
+          - [add_query_code, "include", Include, optional]
+        response_action:
+          - [get_xml_body_code]
+
+    - GetProperties:
+        http_method: Get
+        http_status_code: 200
+        return_type: QueueServiceProperties
+        options:
+          GetServicePropertiesOptions:
+            - BasicRequestOptions: inline
+        request_action:
+          - [add_query_code, "resttype", "service"]
+          - [add_query_code, "comp", "properties"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action:
+          - [get_xml_body_code]
+
+    - SetProperties:
+        http_method: Put
+        http_status_code: 202
+        return_type:
+          SetServicePropertiesResult:  # Response type for #Azure::Storage::Queues::QueueServiceClient::SetProperties.
+            - BasicResponse: inline
+        options:
+          SetServicePropertiesOptions:
+            - BasicRequestOptions: inline
+            - Properties: QueueServiceProperties
+            - to_xml: [
+              [tag, StorageServiceProperties, Properties],
+            ]
+        request_action:
+          - [add_xml_body_code]
+          - [add_query_code, "restype", "service"]
+          - [add_query_code, "comp", "properties"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action: {}
+
+    - GetStatistics:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+          ServiceStatistics:  # Statistics for the storage service.
+            - GeoReplication: GeoReplication  # Geo-replication information for the secondary storage endpoint.
+            - from_xml: [
+              [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
+            ]
+        options:
+          GetServiceStatisticsOptions:
+            - BasicRequestOptions: inline
+        request_action:
+          - [add_query_code, "restype", "service"]
+          - [add_query_code, "comp", "stats"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action:
+          - [get_xml_body_code]
+
+  - Queue:
+    - Create:
+        http_method: Put
+        http_status_code: 201
+        return_type:
+          CreateQueueResult: # Response type for #Azure::Storage::Queues::QueueClient::Create.
+            - BasicResponse: inline
+            - Created: bool = true  # Indicates if the queue was successfully created in this operation.
+        options:
+          CreateQueueOptions:
+            - BasicRequestOptions: inline
+            - Metadata: Metadata
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_metadata_code, "x-ms-meta-", Metadata]
+        response_action: {}
+
+    - Delete:
+        http_method: Delete
+        http_status_code: 202
+        return_type:
+          DeleteQueueResult:  # Response type for #Azure::Storage::Queues::QueueClientClient::Delete.
+            - BasicResponse: inline
+            - Deleted: bool = true  # Indicates if the queue was successfully deleted in this operation.
+        options:
+          DeleteQueueOptions:
+            - BasicRequestOptions: inline
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action: {}
+
+    - SetMetadata:
+        http_method: Put
+        http_status_code: 200
+        return_type:
+          SetQueueMetadataResult:  # Response type for #Azure::Storage::Queues::QueueClient::SetMetadata.
+            - BasicResponse: inline
+        options:
+          SetQueueMetadataOptions:
+            - BasicRequestOptions: inline
+            - Metadata: Metadata
+        request_action:
+          - [add_query_code, "comp", "metadata"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_metadata_code, "x-ms-meta-", Metadata]
+        response_action: {}
+
+    - GetProperties:
+        http_method: Head
+        http_status_code: 200
+        return_type:
+          QueueProperties:  # Properties of a queue.
+            - Metadata: Metadata
+            - ApproximateMessageCount: int64_t
+        options:
+          GetQueuePropertiesOptions:
+            - BasicRequestOptions: inline
+        request_action:
+          - [add_query_code, "comp", "metadata"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action:
+          - [get_metadata_code, "x-ms-meta-", Metadata, optional]
+          - [get_header_code, "x-ms-approximate-messages-count", ApproximateMessageCount]
+
+    - GetAccessPolicy:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+          QueueAccessPolicy:  # Access policy for a queue.
+            - SignedIdentifiers: std::vector<SignedIdentifier>
+            - from_xml: [
+              [start_tag, SignedIdentifiers.SignedIdentifier, SignedIdentifiers],
+            ]
+        options:
+          GetQueueAccessPolicyOptions:
+            - BasicRequestOptions: inline
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "acl"]
+        response_action:
+          - [get_xml_body_code]
+
+    - SetAccessPolicy:
+        http_method: Put
+        http_status_code: 204
+        return_type:
+          SetQueueAccessPolicyResult:  # Response type for #Azure::Storage::Queues::QueueClient::SetAccessPolicy.
+            - BasicResponse: inline
+        options:
+          SetQueueAccessPolicyOptions:
+            - BasicRequestOptions: inline
+            - SignedIdentifiers: std::vector<SignedIdentifier>
+            - to_xml: [
+                [tag, SignedIdentifiers, SignedIdentifiers],
+              ]
+        request_action:
+          - [add_xml_body_code]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "acl"]
+        response_action: {}
+
+    - SendMessage:
+        http_method: Post
+        http_status_code: 201
+        return_type:
+          SendMessageResult:  # Response type for #Azure::Storage::Queues::QueueClient::SendMessage.
+            - BasicResponse: inline
+            - MessageId: std::string
+            - InsertedOn: Azure::DateTime(RFC1123)
+            - ExpiresOn: Azure::DateTime(RFC1123)
+            - PopReciept: std::string
+            - NextVisibleOn: Azure::DateTime(RFC1123)
+            - from_xml: [
+              [text, QueueMessagesList.QueueMessage.MessageId, MessageId],
+              [text, QueueMessagesList.QueueMessage.InsertionTime, InsertedOn],
+              [text, QueueMessagesList.QueueMessage.ExpirationTime, ExpiresOn],
+              [text, QueueMessagesList.QueueMessage.PopReceipt, PopReciept],
+              [text, QueueMessagesList.QueueMessage.TimeNextVisible, NextVisibleOn],
+            ]
+        options:
+          SendMessageOptions:
+            - BasicRequestOptions: inline
+            - Body: std::string
+            - VisibilityTimeout: int32_t, nullable
+            - TimeToLive: int32_t, nullable
+            - to_xml: [
+              [tag, QueueMessage.MessageText, Body]
+            ]
+        request_action:
+          - [add_xml_body_code]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "visibilitytimeout", VisibilityTimeout]
+          - [add_query_code, "messagettl", TimeToLive]
+        response_action:
+          - [get_xml_body_code]
+
+    - ReceiveMessages:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+          ReceiveMessagesResultInternal:
+            - BasicResponse: inline
+            - Messages: std::vector<QueueMessage>
+            - from_xml: [
+              [start_tag, QueueMessagesList.QueueMessage, Messages]
+            ]
+        options:
+          ReceiveMessagesOptions:
+            - BasicRequestOptions: inline
+            - MaxMessages: int64_t, nullable
+            - VisibilityTimeout: int32_t, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "numofmessages", MaxMessages]
+          - [add_query_code, "visibilitytimeout", VisibilityTimeout]
+        response_action:
+          - [get_xml_body_code]
+
+    - PeekMessages:
+        http_method: Get
+        http_status_code: 200
+        return_type:
+          PeekMessagesResultInternal:
+            - BasicResponse: inline
+            - Messages: std::vector<PeekedQueueMessage>
+            - from_xml: [
+              [start_tag, QueueMessagesList.QueueMessage, Messages],
+            ]
+        options:
+          PeekMessagesOptions:
+            - BasicRequestOptions: inline
+            - MaxMessages: int64_t, nullable
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "peekonly", "true"]
+          - [add_query_code, "numofmessages", MaxMessages]
+        response_action:
+          - [get_xml_body_code]
+
+    - DeleteMessage:
+        http_method: Delete
+        http_status_code: 204
+        return_type:
+          DeleteMessageResult:
+            - BasicResponse: inline
+        options:
+          DeleteMessageOptions:
+            - BasicRequestOptions: inline
+            - PopReceipt: std::string
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "popreceipt", PopReceipt]
+        response_action: {}
+
+    - ClearMessages:
+        http_method: Delete
+        http_status_code: 204
+        return_type:
+          ClearMessagesResult:
+            - BasicResponse: inline
+        options:
+          ClearMessagesOptions:
+            - BasicRequestOptions: inline
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+        response_action: {}
+
+    - UpdateMessage:
+        http_method: Put
+        http_status_code: 204
+        return_type:
+          UpdateMessageResult:
+            - BasicResponse: inline
+            - PopReceipt: std::string
+            - NextVisibleOn: Azure::DateTime(RFC1123)
+        options:
+          UpdateMessageOptions:
+            - Body: std::string
+            - BasicRequestOptions: inline
+            - PopReceipt: std::string
+            - VisibilityTimeout: int32_t
+            - to_xml: [
+              [tag, QueueMessage.MessageText, Body]
+            ]
+        request_action:
+          - [add_xml_body_code]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "popreceipt", PopReceipt]
+          - [add_query_code, "visibilitytimeout", VisibilityTimeout]
+        response_action:
+          - [get_header_code, "x-ms-popreceipt", PopReceipt]
+          - [get_header_code, "x-ms-time-next-visible", NextVisibleOn]
+
+
+Models:
+  BasicRequestOptions:
+    - noexport: true
+    - type: struct
+    - Timeout: int32_t, nullable
+  BasicResponse:
+    - noexport: true
+    - type: struct
+  ListQueuesIncludeFlags:
+    - type: bitwise enum
+    - None: ""  # No extra data should be included.
+    - Metadata: "metadata"  # Metadata should be included.
+  QueueItem:
+    - type: struct
+    - Name: std::string
+    - Metadata: Metadata
+    - from_xml: [
+      [text, Name, Name],
+      [start_tag, Metadata, Metadata],
+    ]
+  AnalyticsLogging:  # Azure analytics logging settings.
+    - Version: std::string  # The version of storage analytics to configure.
+    - Delete: bool = false  # Whether all delete requests should be logged.
+    - Read: bool = false  # Whether all read requests should be logged.
+    - Write: bool = false  # Whether all write requests should be logged.
+    - RetentionPolicy: RetentionPolicy  # Determines how long the data should be persist.
+    - from_xml: [
+      [text, Version, Version],
+      [text, Delete, Delete],
+      [text, Read, Read],
+      [text, Write, Write],
+      [start_tag, RetentionPolicy, RetentionPolicy],
+    ]
+    - to_xml: [
+      [tag, Version, Version],
+      [tag, Delete, Delete],
+      [tag, Read, Read],
+      [tag, Write, Write],
+      [tag, RetentionPolicy, RetentionPolicy],
+    ]
+  Metrics:  # Summary of request statistics grouped by API in hour or minute aggregates for queues.
+    - Version: std::string  # The version of storage analytics to configure.
+    - IsEnabled: bool = false  # Indicates whether metrics are enabled for queue service.
+    - RetentionPolicy: RetentionPolicy  # Determines how long the metrics data should persist.
+    - IncludeApis: bool, nullable  # Indicates whether metrics should generate summary statistics for called API operations.
+    - from_xml: [
+      [text, Version, Version],
+      [text, Enabled, IsEnabled],
+      [text, IncludeAPIs, IncludeApis],
+      [start_tag, RetentionPolicy, RetentionPolicy],
+    ]
+    - to_xml: [
+      [tag, Version, Version],
+      [tag, Enabled, IsEnabled],
+      [tag, IncludeAPIs, IncludeApis],
+      [tag, RetentionPolicy, RetentionPolicy],
+    ]
+  CorsRule:  # Settings for a CORS rule.
+    - AllowedOrigins: std::string  # A comma-separated list of origin domains that are allowed via CORS, or "*" if all domains are allowed.
+    - AllowedMethods: std::string  # A comma-separated list of HTTP methods that are allowed to be executed by the origin. For Azure Storage, permitted methods are DELETE, GET, HEAD, MERGE, POST, OPTIONS or PUT.
+    - AllowedHeaders: std::string  # A comma-separated list of headers allowed to be part of the cross-origin request.
+    - ExposedHeaders: std::string  # A comma-separated list of response headers to expose to CORS clients.
+    - MaxAgeInSeconds: int32_t = 0  # The number of seconds that the client/browser should cache a preflight response.
+    - from_xml: [
+      [text, AllowedOrigins, AllowedOrigins],
+      [text, AllowedMethods, AllowedMethods],
+      [text, MaxAgeInSeconds, MaxAgeInSeconds],
+      [text, ExposedHeaders, ExposedHeaders],
+      [text, AllowedHeaders, AllowedHeaders],
+    ]
+    - to_xml: [
+      [tag, CorsRule.AllowedOrigins, AllowedOrigins],
+      [tag, CorsRule.AllowedMethods, AllowedMethods],
+      [tag, CorsRule.AllowedHeaders, AllowedHeaders],
+      [tag, CorsRule.ExposedHeaders, ExposedHeaders],
+      [tag, CorsRule.MaxAgeInSeconds, MaxAgeInSeconds],
+    ]
+  RetentionPolicy:  # Determines how long the associated data should persist.
+    - IsEnabled: bool = false  # Indicates whether this retention policy is enabled.
+    - Days: int32_t, nullable  # Indicates the number of days that metrics or logging or soft-deleted data should be retained.
+    - from_xml: [
+      [text, Enabled, IsEnabled],
+      [text, Days, Days],
+    ]
+    - to_xml: [
+      [tag, Enabled, IsEnabled],
+      [tag, Days, Days],
+    ]
+  QueueServiceProperties:  # Properties of queue service.
+    - Logging: AnalyticsLogging  # Azure analytics logging settings.
+    - HourMetrics: Metrics  # Summary of request statistics grouped by API in hour aggregates for queues.
+    - MinuteMetrics: Metrics  # Summary of request statistics grouped by API in minute aggregates for queues.
+    - Cors: std::vector<CorsRule>  # CORS rules set.
+    - from_xml: [
+      [start_tag, StorageServiceProperties.Logging, Logging],
+      [start_tag, StorageServiceProperties.HourMetrics, HourMetrics],
+      [start_tag, StorageServiceProperties.MinuteMetrics, MinuteMetrics],
+      [start_tag, StorageServiceProperties.Cors.CorsRule, Cors],
+    ]
+    - to_xml: [
+      [tag, Logging, Logging],
+      [tag, HourMetrics, HourMetrics],
+      [tag, MinuteMetrics, MinuteMetrics],
+      [tag, Cors, Cors],
+    ]
+  GeoReplicationStatus:  # Extensible enum used to identify the status of secondary storage endpoint.
+    - type: enum class
+    - Live: "live"  # The secondary location is active and operational.
+    - Bootstrap: "bootstrap"  # Initial synchronization from the primary location to the secondary location is in progress.
+    - Unavailable: "unavailable"  # The secondary location is temporarily unavailable.
+  GeoReplication:  # Geo-replication information for the secondary storage endpoint.
+    - Status: GeoReplicationStatus  # Status of the secondary storage endpoint.
+    - LastSyncedOn: Azure::DateTime(RFC1123), nullable  # All primary writes preceding this value are guaranteed to be available for read operations at the secondary. Primary writes after this point in time may or may not be available for reads. This value may be null if replication status is bootstrap or unavailable.
+    - from_xml: [
+      [text, Status, Status],
+      [text, LastSyncTime, LastSyncedOn],
+    ]
+  SignedIdentifier:  # Describes how you reference an ACL in a queue.
+    - Id: std::string  # A unique ID for this signed identifier.
+    - StartsOn: Azure::DateTime(ISO8601)  # Date and time since when this policy is active.
+    - ExpiresOn: Azure::DateTime(ISO8601)  # Date and time the policy expires.
+    - Permissions: std::string  # The permissions for this ACL policy.
+    - from_xml: [
+      [text, Id, Id],
+      [text, AccessPolicy.Start, StartsOn],
+      [text, AccessPolicy.Expiry, ExpiresOn],
+      [text, AccessPolicy.Permission, Permissions],
+    ]
+    - to_xml: [
+      [tag, SignedIdentifier.Id, Id],
+      [tag, SignedIdentifier.AccessPolicy.Start, StartsOn],
+      [tag, SignedIdentifier.AccessPolicy.Expiry, ExpiresOn],
+      [tag, SignedIdentifier.AccessPolicy.Permission, Permissions],
+    ]
+  QueueMessage:
+    - Body: std::string
+    - MessageId: std::string
+    - InsertedOn: Azure::DateTime(RFC1123)
+    - ExpiresOn: Azure::DateTime(RFC1123)
+    - PopReceipt: std::string
+    - NextVisibleOn: Azure::DateTime(RFC1123)
+    - DequeueCount: int64_t = 0
+    - from_xml: [
+      [text, MessageText, Body],
+      [text, MessageId, MessageId],
+      [text, InsertionTime, InsertedOn],
+      [text, ExpirationTime, ExpiresOn],
+      [text, PopReceipt, PopReceipt],
+      [text, TimeNextVisible, NextVisibleOn],
+      [text, DequeueCount, DequeueCount],
+    ]
+  PeekedQueueMessage:
+    - Body: std::string
+    - MessageId: std::string
+    - InsertedOn: Azure::DateTime(RFC1123)
+    - ExpiresOn: Azure::DateTime(RFC1123)
+    - DequeueCount: int64_t = 0
+    - from_xml: [
+      [text, MessageText, Body],
+      [text, MessageId, MessageId],
+      [text, InsertionTime, InsertedOn],
+      [text, ExpirationTime, ExpiresOn],
+      [text, DequeueCount, DequeueCount],
+    ]
