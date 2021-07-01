@@ -30,12 +30,12 @@ Constants:
 
 CommentTemplate:
   SignedIdentifiers: "A collection of signed identifiers."
-  Metadata: "A set of name-value pairs associated with this blob as user-defined metadata."
+  Metadata: "A set of name-value pairs associated with a queue as user-defined metadata."
   ApproximateMessageCount: "The approximate number of messages in the queue. This number is not lower than the actual number of messages in the queue, but could be higher."
   MessageId: "A GUID value that identifies the message in the queue."
   InsertedOn: "The time the message was inserted into the queue."
   ExpiresOn: "The time that the message will expire and be automatically deleted from the queue."
-  PopReciept: "This value is required to delete a message."
+  PopReceipt: "This value is required to delete a message."
   NextVisibleOn: "The time that the message will again become visible in the queue."
   DequeueCount: "The number of times the message has been dequeued."
 
@@ -241,13 +241,13 @@ Services:
             - MessageId: std::string
             - InsertedOn: Azure::DateTime(RFC1123)
             - ExpiresOn: Azure::DateTime(RFC1123)
-            - PopReciept: std::string
+            - PopReceipt: std::string
             - NextVisibleOn: Azure::DateTime(RFC1123)
             - from_xml: [
               [text, QueueMessagesList.QueueMessage.MessageId, MessageId],
               [text, QueueMessagesList.QueueMessage.InsertionTime, InsertedOn],
               [text, QueueMessagesList.QueueMessage.ExpirationTime, ExpiresOn],
-              [text, QueueMessagesList.QueueMessage.PopReceipt, PopReciept],
+              [text, QueueMessagesList.QueueMessage.PopReceipt, PopReceipt],
               [text, QueueMessagesList.QueueMessage.TimeNextVisible, NextVisibleOn],
             ]
         options:
@@ -317,7 +317,7 @@ Services:
           DeleteMessageResult:
             - BasicResponse: inline
         options:
-          DeleteMessageOptions:
+          DeleteMessageOptions:  # Response type for #Azure::Storage::Queues::QueueClient::DeleteMessage.
             - BasicRequestOptions: inline
             - PopReceipt: std::string
         request_action:
@@ -329,7 +329,7 @@ Services:
         http_method: Delete
         http_status_code: 204
         return_type:
-          ClearMessagesResult:
+          ClearMessagesResult:  # Response type for #Azure::Storage::Queues::QueueClient::ClearMessages.
             - BasicResponse: inline
         options:
           ClearMessagesOptions:
@@ -342,7 +342,7 @@ Services:
         http_method: Put
         http_status_code: 204
         return_type:
-          UpdateMessageResult:
+          UpdateMessageResult:  # Response type for #Azure::Storage::Queues::QueueClient::UpdateMessage.
             - BasicResponse: inline
             - PopReceipt: std::string
             - NextVisibleOn: Azure::DateTime(RFC1123)
@@ -373,11 +373,11 @@ Models:
   BasicResponse:
     - noexport: true
     - type: struct
-  ListQueuesIncludeFlags:
+  ListQueuesIncludeFlags:  # Bitwise enum used to specify one or more datasets to include in a list queues response.
     - type: bitwise enum
     - None: ""  # No extra data should be included.
     - Metadata: "metadata"  # Metadata should be included.
-  QueueItem:
+  QueueItem:  # A queue item from the result of #Azure::Storage::Queues::QueueServiceClient::ListQueues.
     - type: struct
     - Name: std::string  # Queue name.
     - Metadata: Metadata
@@ -499,7 +499,7 @@ Models:
       [tag, SignedIdentifier.AccessPolicy.Expiry, ExpiresOn],
       [tag, SignedIdentifier.AccessPolicy.Permission, Permissions],
     ]
-  QueueMessage:
+  QueueMessage:  # A message object stored in the queue.
     - Body: std::string  # The content of the message.
     - MessageId: std::string
     - InsertedOn: Azure::DateTime(RFC1123)
@@ -516,7 +516,7 @@ Models:
       [text, TimeNextVisible, NextVisibleOn],
       [text, DequeueCount, DequeueCount],
     ]
-  PeekedQueueMessage:
+  PeekedQueueMessage:  # A message object peeked from a queue.
     - Body: std::string  # The content of the message.
     - MessageId: std::string
     - InsertedOn: Azure::DateTime(RFC1123)
