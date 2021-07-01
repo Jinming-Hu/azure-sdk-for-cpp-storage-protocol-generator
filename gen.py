@@ -93,6 +93,10 @@ class class_definition:
             self.toxml_actions = other.toxml_actions
 
 
+if len(sys.argv) != 2:
+    print("Usage:", sys.argv[0], "[yaml file]")
+    exit(1)
+
 try:
     config = ruamel.yaml.round_trip_load(open(sys.argv[1]), preserve_quotes=True)
 except ruamel.yaml.YAMLError as e:
@@ -532,7 +536,11 @@ output_path.parents[0].mkdir(parents=True, exist_ok=True)
 with open(output_path, "w") as f:
     f.write(code_template.global_header.lstrip())
     f.write(code_template.pragma_once)
-    f.write(code_template.include_headers.format(service_name=service_name.lower()))
+    for header_group in config["include_headers"]:
+        f.write("\n")
+        for h in header_group:
+            f.write("#include" + h + "\n")
+        f.write("\n")
     f.write(code_template.namespace_begin)
     f.write(code_template.constant_string)
     f.write(code_template.model_definitions_begin)

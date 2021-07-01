@@ -21,33 +21,6 @@ pragma_once = """
 #pragma once
 """
 
-include_headers = """
-#include <type_traits>
-#include <string>
-#include <cstring>
-#include <map>
-#include <set>
-#include <vector>
-#include <stdexcept>
-#include <limits>
-
-#include <azure/core/etag.hpp>
-#include <azure/core/datetime.hpp>
-#include <azure/core/internal/strings.hpp>
-#include <azure/core/nullable.hpp>
-#include <azure/core/context.hpp>
-#include <azure/core/response.hpp>
-#include <azure/core/http/http.hpp>
-#include <azure/core/internal/http/pipeline.hpp>
-#include <azure/storage/common/crypt.hpp>
-#include <azure/storage/common/internal/xml_wrapper.hpp>
-#include <azure/storage/common/storage_common.hpp>
-#include <azure/storage/common/storage_exception.hpp>
-
-#include "azure/storage/{service_name}/dll_import_export.hpp"
-
-"""
-
 namespace_begin = """
 namespace Azure
 {

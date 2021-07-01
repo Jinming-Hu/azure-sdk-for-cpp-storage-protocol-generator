@@ -2,6 +2,29 @@ service_name: Queues
 output_hpp: azure/storage/queues/protocol/queue_rest_client.hpp
 output_cpp: queue_rest_client.cpp
 
+include_headers: [
+    [
+      "<string>",
+      "<vector>",
+      "<type_traits>",
+    ],
+    [
+      "<azure/core/datetime.hpp>",
+      "<azure/core/nullable.hpp>",
+      "<azure/core/context.hpp>",
+      "<azure/core/response.hpp>",
+      "<azure/core/http/http.hpp>",
+      "<azure/core/internal/http/pipeline.hpp>",
+      "<azure/storage/common/crypt.hpp>",
+      "<azure/storage/common/internal/xml_wrapper.hpp>",
+      "<azure/storage/common/storage_common.hpp>",
+      "<azure/storage/common/storage_exception.hpp>",
+    ],
+    [
+      '"azure/storage/queues/dll_import_export.hpp"',
+    ],
+]
+
 Constants:
   ApiVersion: &ApiVersion "2018-03-28"
 

@@ -2,6 +2,32 @@ service_name: Blobs
 output_hpp: azure/storage/blobs/protocol/blob_rest_client.hpp
 output_cpp: blob_rest_client.cpp
 
+include_headers: [
+    [
+      "<string>",
+      "<vector>",
+      "<chrono>",
+      "<memory>",
+      "<type_traits>",
+    ],
+    [
+      "<azure/core/etag.hpp>",
+      "<azure/core/datetime.hpp>",
+      "<azure/core/nullable.hpp>",
+      "<azure/core/context.hpp>",
+      "<azure/core/response.hpp>",
+      "<azure/core/http/http.hpp>",
+      "<azure/core/internal/http/pipeline.hpp>",
+      "<azure/storage/common/crypt.hpp>",
+      "<azure/storage/common/internal/xml_wrapper.hpp>",
+      "<azure/storage/common/storage_common.hpp>",
+      "<azure/storage/common/storage_exception.hpp>",
+    ],
+    [
+      '"azure/storage/blobs/dll_import_export.hpp"',
+    ],
+]
+
 Constants:
   ApiVersion: &ApiVersion "2020-02-10"
 
