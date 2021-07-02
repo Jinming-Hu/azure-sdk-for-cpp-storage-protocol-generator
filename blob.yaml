@@ -524,6 +524,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "restype", "container"]
           - [add_query_code, "comp", "acl"]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
           - [get_header_code, "x-ms-blob-public-access", AccessType, optional]
           - [get_xml_body_code]
