@@ -778,6 +778,8 @@ Services:
         return_type:
           SetBlobExpiryResult:  # Response type for #Azure::Storage::Files::DataLake::DataLakeFileClient::ScheduleDeletion.
             - BasicResponse: inline
+            - ETag: Azure::ETag
+            - LastModified: Azure::DateTime(RFC1123)
         options:
           SetBlobExpiryOptions:
             - BasicRequestOptions: inline
@@ -788,7 +790,8 @@ Services:
           - [add_query_code, "comp", "expiry"]
           - [add_header_code, "x-ms-expiry-option", ExpiryOrigin]
           - [add_header_code, "x-ms-expiry-time", ExpiryTime]
-        response_action: {}
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
 
     - Undelete:
         http_method: Put
