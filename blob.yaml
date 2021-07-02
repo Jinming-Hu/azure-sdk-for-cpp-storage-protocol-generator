@@ -884,7 +884,8 @@ Services:
         return_type:
           SetBlobMetadataResult:  # Response type for #Azure::Storage::Blobs::BlobClient::SetMetadata.
             - BasicResponse: inline
-            - BlobInfo: inline
+            - ETag: Azure::ETag
+            - LastModified: Azure::DateTime(RFC1123)
         options:
           SetBlobMetadataOptions:
             - BasicRequestOptions: inline
@@ -1146,7 +1147,6 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
 
     - BreakLease:
         http_method: Put
