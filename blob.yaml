@@ -1436,6 +1436,7 @@ Services:
             - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
+            - BlobRequestSourceConditionalHeaders: inline
         return_type:
           UploadPagesFromUriResult:  # Response type for #Azure::Storage::Blobs::PageBlobClient::UploadPagesFromUri.
             - BasicResponse: inline
@@ -1454,6 +1455,7 @@ Services:
           - [add_header_code, "x-ms-if-sequence-number-eq", IfSequenceNumberEqualTo]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+          - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - *RESPONSE_CHECKSUM_HEADER_PACKAGE
