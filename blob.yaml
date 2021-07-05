@@ -944,7 +944,6 @@ Services:
             - Metadata: Metadata
             - SourceUri: std::string
             - LeaseId: std::string, nullable
-            - SourceLeaseId: std::string, nullable
             - AccessTier: AccessTier, nullable
             - RehydratePriority: RehydratePriority, nullable
             - BlobRequestConditionalHeaders: inline
@@ -956,7 +955,6 @@ Services:
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_header_code, "x-ms-lease-id", LeaseId]
-          - [add_header_code, "x-ms-source-lease-id", SourceLeaseId]
           - [add_header_code, "x-ms-access-tier", AccessTier]
           - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
           - [add_header_code, "x-ms-seal-blob", ShouldSealDestination]
