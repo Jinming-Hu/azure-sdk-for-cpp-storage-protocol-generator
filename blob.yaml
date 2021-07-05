@@ -1829,7 +1829,7 @@ Models:
   EncryptionAlgorithmType:  # Extensible enum used to identify encryption algorithm.
     - type: enum class
     - Aes256: "AES256"  # AES-256
-  BlobBlock:  # Describes a sinlge block in block blob.
+  BlobBlock:  # Describes a single block in block blob.
     - Name: std::string  # Base64 encoded block ID.
     - Size: int64_t = 0  # Block size in bytes.
     - from_xml: [
