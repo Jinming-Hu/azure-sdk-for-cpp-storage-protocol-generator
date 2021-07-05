@@ -888,6 +888,7 @@ Services:
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
+            - BlobResponseEncryptionOptions: inline
         options:
           SetBlobMetadataOptions:
             - BasicRequestOptions: inline
@@ -905,6 +906,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - SetAccessTier:
         separate_functions: true
