@@ -861,7 +861,9 @@ Services:
         return_type:
           SetBlobHttpHeadersResult:  # Response type for #Azure::Storage::Blobs::BlobClient::SetHttpHeaders.
             - BasicResponse: inline
-            - BlobInfo: inline
+            - ETag: Azure::ETag
+            - LastModified: Azure::DateTime(RFC1123)
+            - SequenceNumber: int64_t, nullable
         options:
           SetBlobHttpHeadersOptions:
             - BasicRequestOptions: inline
@@ -1135,7 +1137,8 @@ Services:
         return_type:
           ReleaseBlobLeaseResultInternal:
             - BasicResponse: inline
-            - BlobInfo: inline
+            - ETag: Azure::ETag
+            - LastModified: Azure::DateTime(RFC1123)
         options:
           ReleaseBlobLeaseOptions:
             - BasicRequestOptions: inline
@@ -2198,11 +2201,6 @@ Models:
     - TagCount: int32_t, nullable
     - VersionId: std::string, nullable
     - IsCurrentVersion: bool, nullable
-  BlobInfo:
-    - noexport: true
-    - ETag: Azure::ETag
-    - LastModified: Azure::DateTime(RFC1123)
-    - SequenceNumber: int64_t, nullable
   BlobCopyInfo:
     - noexport: true
     - ETag: Azure::ETag
