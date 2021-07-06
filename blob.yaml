@@ -888,6 +888,7 @@ Services:
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
+            - SequenceNumber: int64_t, nullable  # This value is always null, don't use it.
             - BlobResponseEncryptionOptions: inline
         options:
           SetBlobMetadataOptions:
@@ -906,6 +907,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
           - *RESPONSE_REQUEST_ENCRYPTION_HEADER_PACKAGE
 
     - SetAccessTier:
@@ -949,6 +951,7 @@ Services:
             - BlobRequestConditionalHeaders: inline
             - BlobRequestSourceConditionalHeaders: inline
             - SourceIfTags: std::string, nullable
+            - SourceLeaseId: std::string, nullable
             - ShouldSealDestination: bool, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
@@ -961,6 +964,7 @@ Services:
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
           - [add_header_code, "x-ms-source-if-tags", SourceIfTags]
+          - [add_header_code, "x-ms-source-lease-id", SourceLeaseId]
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-copy-id", CopyId]
