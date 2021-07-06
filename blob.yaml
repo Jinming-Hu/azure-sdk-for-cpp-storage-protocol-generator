@@ -944,6 +944,7 @@ Services:
           StartBlobCopyFromUriOptions:
             - BasicRequestOptions: inline
             - Metadata: Metadata
+            - Tags: std::map<std::string, std::string>
             - SourceUri: std::string
             - LeaseId: std::string, nullable
             - AccessTier: AccessTier, nullable
@@ -956,6 +957,7 @@ Services:
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_tags_code, "x-ms-tags", Tags]
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-access-tier", AccessTier]
@@ -1197,6 +1199,7 @@ Services:
             - TransactionalContentHash: ContentHash, nullable
             - HttpHeaders: BlobHttpHeaders
             - Metadata: Metadata
+            - Tags: std::map<std::string, std::string>
             - LeaseId: std::string, nullable
             - AccessTier: AccessTier, nullable
             - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
@@ -1209,6 +1212,7 @@ Services:
           - *REQUEST_CHECKSUM_HEADER_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_tags_code, "x-ms-tags", Tags]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-type", "BlockBlob"]
           - [add_header_code, "x-ms-access-tier", AccessTier]
@@ -1292,6 +1296,7 @@ Services:
             - BlockList: std::vector<std::pair<BlockType, std::string>>
             - HttpHeaders: BlobHttpHeaders
             - Metadata: Metadata
+            - Tags: std::map<std::string, std::string>
             - LeaseId: std::string, nullable
             - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
             - BlobRequestEncryptionScopeOptions: inline
@@ -1306,6 +1311,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_tags_code, "x-ms-tags", Tags]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - [add_header_code, "x-ms-access-tier", AccessTier]
@@ -1369,10 +1375,12 @@ Services:
             - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
             - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
+            - Tags: std::map<std::string, std::string>
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_tags_code, "x-ms-tags", Tags]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-type", "PageBlob"]
           - [add_header_code, "x-ms-blob-content-length", BlobSize]
@@ -1608,6 +1616,7 @@ Services:
             - BasicRequestOptions: inline
             - HttpHeaders: BlobHttpHeaders
             - Metadata: Metadata
+            - Tags: std::map<std::string, std::string>
             - LeaseId: std::string, nullable
             - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
             - BlobRequestEncryptionScopeOptions: inline
@@ -1616,6 +1625,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - *REQUEST_MIME_HEADER_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_tags_code, "x-ms-tags", Tags]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-blob-type", "AppendBlob"]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE

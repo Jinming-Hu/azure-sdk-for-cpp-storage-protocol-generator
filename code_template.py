@@ -1051,6 +1051,31 @@ def gen_add_metadata_code(*args, **kwargs):
     main_body += content
 
 
+def gen_add_tags_code(*args, **kwargs):
+    key = args[0]
+    value = args[1]
+    value_type = kwargs[value + ".type"]
+    assert value_type == "std::map<std::string, std::string>"
+
+    content = inspect.cleandoc(
+        """
+        if (!{value}.empty())
+        {{
+            std::string blobTagsValue;
+            for (const auto& tag : {value}) {{
+                if (!blobTagsValue.empty()) {{
+                    blobTagsValue += "&";
+                }}
+                blobTagsValue +=  _internal::UrlEncodeQueryParameter(tag.first) + "=" +  _internal::UrlEncodeQueryParameter(tag.second);
+            }}
+            request.SetHeader({key}, std::move(blobTagsValue));
+        }}
+        """.format(key=key, value=value))
+
+    global main_body
+    main_body += content
+
+
 def gen_add_content_hash_code(*args, **kwargs):
     value = args[0]
     value_nullable = kwargs[value + ".nullable"]
