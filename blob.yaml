@@ -2094,6 +2094,9 @@ Models:
     - ETag: Azure::ETag
     - AccessTier: AccessTier, nullable
     - IsAccessTierInferred: bool, nullable
+    - AccessTierChangedOn: Azure::DateTime(RFC1123), nullable
+    - ArchiveStatus: ArchiveStatus, nullable
+    - RehydratePriority: RehydratePriority, nullable
     - LeaseStatus: LeaseStatus = LeaseStatus::Unlocked
     - LeaseState: LeaseState = LeaseState::Available
     - LeaseDuration: LeaseDurationType, nullable
@@ -2101,6 +2104,17 @@ Models:
     - SequenceNumber: int64_t, nullable
     - IsSealed: bool, nullable
     - ObjectReplicationSourceProperties: std::vector<ObjectReplicationPolicy>
+    - CopyId: std::string, nullable
+    - CopySource: std::string, nullable
+    - CopyStatus: CopyStatus, nullable
+    - CopyStatusDescription: std::string, nullable
+    - IsIncrementalCopy: bool, nullable
+    - IncrementalCopyDestinationSnapshot: std::string, nullable
+    - CopyProgress: std::string, nullable
+    - CopyCompletedOn: Azure::DateTime(RFC1123), nullable
+    - TagCount: int32_t, nullable
+    - DeletedOn: Azure::DateTime(RFC1123), nullable  # Data and time at which this blob was deleted. Only valid when this blob was deleted.
+    - RemainingRetentionDays: int32_t, nullable  # Remaining days before this blob will be permanantely deleted. Only valid when this blob was deleted.
   BlobItem:  # A blob item from the result of #Azure::Storage::Blobs::BlobContainerClient::ListBlobs.
     - Name: std::string
     - BlobSize: int64_t = 0
@@ -2131,13 +2145,28 @@ Models:
       [text, Properties.BlobType, BlobType],
       [text, Properties.AccessTier, Details.AccessTier],
       [text, Properties.AccessTierInferred, Details.IsAccessTierInferred],
+      [text, Properties.AccessTierChangeTime, Details.AccessTierChangedOn],
+      [text, Properties.ArchiveStatus, Details.ArchiveStatus],
+      [text, Properties.RehydratePriority, Details.RehydratePriority],
       [text, Properties.LeaseStatus, Details.LeaseStatus],
       [text, Properties.LeaseState, Details.LeaseState],
       [text, Properties.LeaseDuration, Details.LeaseDuration],
       [text, Properties.ServerEncrypted, Details.IsServerEncrypted],
-      [text, Properties.EncryptionKeySHA256, Details.EncryptionKeySha256],
+      [text, Properties.CustomerProvidedKeySha256, Details.EncryptionKeySha256],
+      [text, Properties.EncryptionScope, Details.EncryptionScope],
       [text, Properties.Sealed, Details.IsSealed],
       [text, Properties.x-ms-blob-sequence-number, Details.SequenceNumber],
+      [text, Properties.CopyId, Details.CopyId],
+      [text, Properties.CopyStatus, Details.CopyStatus],
+      [text, Properties.CopySource, Details.CopySource],
+      [text, Properties.CopyProgress, Details.CopyProgress],
+      [text, Properties.CopyCompletionTime, Details.CopyCompletedOn],
+      [text, Properties.CopyStatusDescription, Details.CopyStatusDescription],
+      [text, Properties.IncrementalCopy, Details.IsIncrementalCopy],
+      [text, Properties.CopyDestinationSnapshot, Details.IncrementalCopyDestinationSnapshot],
+      [text, Properties.DeletedTime, Details.DeletedOn],
+      [text, Properties.RemainingRetentionDays, Details.RemainingRetentionDays],
+      [text, Properties.TagCount, Details.TagCount],
       [start_tag, Metadata, Details.Metadata],
       [start_tag, OrMetadata, Details.ObjectReplicationSourceProperties],
     ]
