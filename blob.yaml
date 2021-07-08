@@ -77,6 +77,7 @@ CommentTemplate:
   IsCurrentVersion: "Indicates if this is the current version of the blob. This value is null if Blob Versioning is not enabled."
   AppendOffset: "The offset at which the block was committed."
   LeaseId: "Uniquely identifies a container's or blob's lease."
+  Tags: "User-defined tags for this blob."
 
 request_version_timeout_package: &REQUEST_VERSION_TIMEOUT_PACKAGE
   - [add_header_code, "x-ms-version", *ApiVersion]
@@ -2113,6 +2114,7 @@ Models:
     - CopyProgress: std::string, nullable
     - CopyCompletedOn: Azure::DateTime(RFC1123), nullable
     - TagCount: int32_t, nullable
+    - Tags: std::map<std::string, std::string>
     - DeletedOn: Azure::DateTime(RFC1123), nullable  # Data and time at which this blob was deleted. Only valid when this blob was deleted.
     - RemainingRetentionDays: int32_t, nullable  # Remaining days before this blob will be permanantely deleted. Only valid when this blob was deleted.
   BlobItem:  # A blob item from the result of #Azure::Storage::Blobs::BlobContainerClient::ListBlobs.
@@ -2169,6 +2171,7 @@ Models:
       [text, Properties.TagCount, Details.TagCount],
       [start_tag, Metadata, Details.Metadata],
       [start_tag, OrMetadata, Details.ObjectReplicationSourceProperties],
+      [start_tag, Tags.TagSet, Details.Tags],
     ]
   ListBlobsIncludeFlags:  # Bitwise enum used to specify one or more datasets to include in a list blobs response.
     - type: bitwise enum
@@ -2179,6 +2182,7 @@ Models:
     - Snapshots: "snapshots"  # Snapshots should be included.
     - Versions: "versions"  # Versions of blobs should be included.
     - UncomittedBlobs: "uncommittedblobs"  # Uncommitted blobs should be included.
+    - Tags: "tags"  # Tags should be included.
   BlobContainerInfo:
     - noexport: true
     - ETag: Azure::ETag

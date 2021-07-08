@@ -322,7 +322,7 @@ def gen_fromxml_function(class_name):
     if type(class_name) is tuple:
         class_type = class_name[0]
         member_name = class_name[1]
-        if class_type == "std::map<std::string, std::string>" and member_name == "Tags":
+        if class_type == "std::map<std::string, std::string>" and (member_name == "Tags" or member_name.endswith(".Tags")):
             content = inspect.cleandoc(
                 """
                 static std::map<std::string, std::string> {}FromXml(_internal::XmlReader& reader) {{
@@ -349,7 +349,7 @@ def gen_fromxml_function(class_name):
                     }}
                     return ret;
                 }}
-                """.format(member_name))
+                """.format(member_name[member_name.find(".") + 1:]))
         elif class_type == "Azure::Core::Http::HttpRange":
             content = inspect.cleandoc(
                 """
@@ -508,7 +508,7 @@ def gen_fromxml_function(class_name):
                 content += "ret.{member_name}.emplace_back({inner_type}FromXml(reader));".format(member_name=member, inner_type=inner_type)
                 fromxml_classes.add(inner_type)
         elif member_type.startswith("std::"):
-            content += "ret.{member_name} = {member_name}FromXml(reader);".format(member_name=member)
+            content += "ret.{member_name} = {function_name}FromXml(reader);".format(member_name=member, function_name=member[member.find(".") + 1:])
             fromxml_classes.add((member_type, member))
         else:
             content += "ret.{member_name} = {member_type}FromXml(reader);".format(member_name=member, member_type=member_type)
