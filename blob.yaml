@@ -1514,7 +1514,7 @@ Services:
         http_method: Put
         http_status_code: 200
         return_type:
-          ResizePageBlobResult:  # Azure::Storage::Blobs::PageBlobClient::Resize.
+          ResizePageBlobResult:  # Response type for Azure::Storage::Blobs::PageBlobClient::Resize.
             - BasicResponse: inline
             - ETag: Azure::ETag
             - LastModified: Azure::DateTime(RFC1123)
@@ -1540,6 +1540,39 @@ Services:
           - [add_header_code, "x-ms-if-sequence-number-eq", IfSequenceNumberEqualTo]
           - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
+
+    - UpdateSequenceNumber:
+        http_method: Put
+        http_status_code: 200
+        return_type:
+          UpdateSequenceNumberResult:  # Response type for Azure::Storage::Blobs::PageBlobClient::UpdateSequenceNumber.
+            - BasicResponse: inline
+            - ETag: Azure::ETag
+            - LastModified: Azure::DateTime(RFC1123)
+            - SequenceNumber: int64_t = 0
+        options:
+          UpdatePageBlobSequenceNumberOptions:
+            - BasicRequestOptions: inline
+            - Action: SequenceNumberAction
+            - SequenceNumber: int64_t, nullable
+            - LeaseId: std::string, nullable
+            - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
+            - IfSequenceNumberLessThan: int64_t, nullable
+            - IfSequenceNumberEqualTo: int64_t, nullable
+            - BlobRequestConditionalHeaders: inline
+        request_action:
+          - [add_query_code, "comp", "properties"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
+          - [add_header_code, "x-ms-if-sequence-number-lt", IfSequenceNumberLessThan]
+          - [add_header_code, "x-ms-if-sequence-number-eq", IfSequenceNumberEqualTo]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+          - [add_header_code, "x-ms-sequence-number-action", Action]
+          - [add_header_code, "x-ms-blob-sequence-number", SequenceNumber]
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
           - [get_header_code, "x-ms-blob-sequence-number", SequenceNumber]
@@ -1855,6 +1888,11 @@ Models:
   EncryptionAlgorithmType:  # Extensible enum used to identify encryption algorithm.
     - type: enum class
     - Aes256: "AES256"  # AES-256
+  SequenceNumberAction:  # Indicates how the service should modify the blob's sequence number.
+    - type: enum class
+    - Max: "max"  # Sets the sequence number to be the higher of the value included with the request and the value currently stored for the blob.
+    - Update: "update"  # Sets the sequence number to the value included with the request.
+    - Increment: "increment"  # Increments the value of the sequence number by 1.
   BlobBlock:  # Describes a single block in block blob.
     - Name: std::string  # Base64 encoded block ID.
     - Size: int64_t = 0  # Block size in bytes.
