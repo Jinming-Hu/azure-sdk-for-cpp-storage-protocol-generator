@@ -1527,8 +1527,6 @@ Services:
             - IfSequenceNumberLessThanOrEqualTo: int64_t, nullable
             - IfSequenceNumberLessThan: int64_t, nullable
             - IfSequenceNumberEqualTo: int64_t, nullable
-            - BlobRequestCustomerProvidedKeyEncryptionOptions: inline
-            - BlobRequestEncryptionScopeOptions: inline
             - BlobRequestConditionalHeaders: inline
         request_action:
           - [add_query_code, "comp", "properties"]
@@ -1538,7 +1536,6 @@ Services:
           - [add_header_code, "x-ms-if-sequence-number-le", IfSequenceNumberLessThanOrEqualTo]
           - [add_header_code, "x-ms-if-sequence-number-lt", IfSequenceNumberLessThan]
           - [add_header_code, "x-ms-if-sequence-number-eq", IfSequenceNumberEqualTo]
-          - *REQUEST_ENCRYPTION_HEADER_PACKAGE
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
         response_action:
           - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
