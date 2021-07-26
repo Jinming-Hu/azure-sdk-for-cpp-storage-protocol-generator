@@ -1405,6 +1405,8 @@ def gen_get_header_code(*args, **kwargs):
             content += "{} = Azure::DateTime::Parse({}->second, Azure::DateTime::DateFormat::Rfc3339);".format(target, ite_name)
         elif target_type == "Azure::DateTime(RFC1123)":
             content += "{} = Azure::DateTime::Parse({}->second, Azure::DateTime::DateFormat::Rfc1123);".format(target, ite_name)
+        elif target_type == "Azure::ETag":
+            content += "{1} = Azure::ETag(httpResponse.GetHeaders().at({0}));".format(key.lower(), target)
         elif hasattr(target_type, "type") and target_type.type == "enum class":
             content += "{target} = {target_type}({ite}->second);".format(target=target, ite=ite_name, target_type=target_type.name)
         else:

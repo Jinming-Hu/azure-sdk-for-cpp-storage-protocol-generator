@@ -1334,9 +1334,9 @@ Services:
         return_type:
           GetBlockListResult:  # Response type for #Azure::Storage::Blobs::BlockBlobClient::GetBlockList.
             - BasicResponse: inline
-            - ETag: Azure::ETag
-            - LastModified: Azure::DateTime(RFC1123)
-            - BlobSize: int64_t = 0
+            - ETag: Azure::ETag  # The ETag contains a value that you can use to perform operations conditionally. Empty if the blob is not never committed.
+            - LastModified: Azure::DateTime(RFC1123)  # The date and time the container was last modified. Any operation that modifies the blob, including an update of the metadata or properties, changes the last-modified time of the blob. Invalid if the blob is never committed.
+            - BlobSize: int64_t = 0  # Size of the blob. Invalid if the blob is never committed.
             - CommittedBlocks: std::vector<BlobBlock>  # Collection of committed blocks.
             - UncommittedBlocks: std::vector<BlobBlock>  # Collection of uncommitted blocks.
             - from_xml: [
@@ -1351,8 +1351,9 @@ Services:
           - [add_header_code, "x-ms-if-tags", IfTags]
         response_action:
           - [get_xml_body_code]
-          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
-          - [get_header_code, "x-ms-blob-content-length", BlobSize]
+          - [get_header_code, "ETag", ETag, optional]
+          - [get_header_code, "Last-Modified", LastModified, optional]
+          - [get_header_code, "x-ms-blob-content-length", BlobSize, optional]
 
   - PageBlob:
     - Create:
