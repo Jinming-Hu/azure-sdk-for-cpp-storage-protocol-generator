@@ -338,6 +338,27 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action: {}
 
+    - UpdateMessageVisibility:
+        http_method: Put
+        http_status_code: 204
+        return_type:
+          UpdateMessageResult:  # Response type for #Azure::Storage::Queues::QueueClient::UpdateMessage.
+            - BasicResponse: inline
+            - PopReceipt: std::string
+            - NextVisibleOn: Azure::DateTime(RFC1123)
+        options:
+          UpdateMessageVisibilityOptions:
+            - BasicRequestOptions: inline
+            - PopReceipt: std::string
+            - VisibilityTimeout: int32_t
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "popreceipt", PopReceipt]
+          - [add_query_code, "visibilitytimeout", VisibilityTimeout]
+        response_action:
+          - [get_header_code, "x-ms-popreceipt", PopReceipt]
+          - [get_header_code, "x-ms-time-next-visible", NextVisibleOn]
+
     - UpdateMessage:
         http_method: Put
         http_status_code: 204
