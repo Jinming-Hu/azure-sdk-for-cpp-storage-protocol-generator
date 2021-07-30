@@ -184,7 +184,7 @@ Services:
         return_type:
           QueueProperties:  # Properties of a queue.
             - Metadata: Metadata
-            - ApproximateMessageCount: int64_t
+            - ApproximateMessageCount: int64_t = 0
         options:
           GetQueuePropertiesOptions:
             - BasicRequestOptions: inline
