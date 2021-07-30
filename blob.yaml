@@ -2137,7 +2137,6 @@ Models:
     - IncrementalCopyDestinationSnapshot: std::string, nullable
     - CopyProgress: std::string, nullable
     - CopyCompletedOn: Azure::DateTime(RFC1123), nullable
-    - TagCount: int32_t, nullable
     - Tags: std::map<std::string, std::string>
     - DeletedOn: Azure::DateTime(RFC1123), nullable  # Data and time at which this blob was deleted. Only valid when this blob was deleted.
     - RemainingRetentionDays: int32_t, nullable  # Remaining days before this blob will be permanantely deleted. Only valid when this blob was deleted.
@@ -2192,7 +2191,6 @@ Models:
       [text, Properties.CopyDestinationSnapshot, Details.IncrementalCopyDestinationSnapshot],
       [text, Properties.DeletedTime, Details.DeletedOn],
       [text, Properties.RemainingRetentionDays, Details.RemainingRetentionDays],
-      [text, Properties.TagCount, Details.TagCount],
       [start_tag, Metadata, Details.Metadata],
       [start_tag, OrMetadata, Details.ObjectReplicationSourceProperties],
       [start_tag, Tags.TagSet, Details.Tags],
