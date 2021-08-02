@@ -86,7 +86,7 @@ Services:
           GetServicePropertiesOptions:
             - BasicRequestOptions: inline
         request_action:
-          - [add_query_code, "resttype", "service"]
+          - [add_query_code, "restype", "service"]
           - [add_query_code, "comp", "properties"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
         response_action:
@@ -134,7 +134,7 @@ Services:
   - Queue:
     - Create:
         http_method: Put
-        http_status_code: 201
+        http_status_code: [201, 204]
         return_type:
           CreateQueueResult: # Response type for #Azure::Storage::Queues::QueueClient::Create.
             - BasicResponse: inline
@@ -150,7 +150,7 @@ Services:
 
     - Delete:
         http_method: Delete
-        http_status_code: 202
+        http_status_code: 204
         return_type:
           DeleteQueueResult:  # Response type for #Azure::Storage::Queues::QueueClientClient::Delete.
             - BasicResponse: inline
@@ -164,7 +164,7 @@ Services:
 
     - SetMetadata:
         http_method: Put
-        http_status_code: 200
+        http_status_code: 204
         return_type:
           SetQueueMetadataResult:  # Response type for #Azure::Storage::Queues::QueueClient::SetMetadata.
             - BasicResponse: inline
