@@ -81,6 +81,8 @@ toxml_options_def_cache = {}
 constants_map = {}
 comments_map = {}
 
+http_status_code_map = {200: "Ok", 201: "Created", 202: "Accepted", 204: "NoContent", 206: "PartialContent", 304: "NotModified"}
+
 
 def get_snake_case_name(var):
     res = str()
@@ -789,17 +791,17 @@ def gen_resource_create_response_function_check_status_code(return_type, http_st
         """
         Azure::Core::Http::RawResponse& httpResponse = *pHttpResponse;
         {return_type} response;
-        auto http_status_code = static_cast<std::underlying_type<Azure::Core::Http::HttpStatusCode>::type>(httpResponse.GetStatusCode());
-        if (!(
+        auto http_status_code = httpResponse.GetStatusCode();
+        if (
         """.format(return_type=return_type))
-    for i, code in enumerate(http_status_code):
-        if i != 0:
-            content += "||"
-        content += "http_status_code == {}".format(code)
+    if len(http_status_code) == 1:
+        content += "http_status_code != Azure::Core::Http::HttpStatusCode::{}".format(http_status_code_map[http_status_code[0]])
+    else:
+        content += "!(" + "||".join(["http_status_code == Azure::Core::Http::HttpStatusCode::{}".format(http_status_code_map[c]) for c in http_status_code]) + ")"
 
     content += inspect.cleandoc(
         """
-        ))
+        )
         {
             throw StorageException::CreateFromResponse(std::move(pHttpResponse));
         }
@@ -1377,7 +1379,7 @@ def gen_get_header_code(*args, **kwargs):
     content = ""
     if on_status:
         content += "if ("
-        content += "||".join(["http_status_code == {}".format(s) for s in on_status])
+        content += "||".join(["http_status_code == Azure::Core::Http::HttpStatusCode::{}".format(http_status_code_map[s]) for s in on_status])
         content += ") {"
 
     if optional or target_nullable:
