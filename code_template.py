@@ -763,7 +763,7 @@ def gen_resource_create_message_function_begin(function_name, option_type, reque
     content = "static Azure::Core::Http::Request {function_name}CreateMessage(const Azure::Core::Url& url,".format(function_name=function_name)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::IO::BodyStream& requestBody,"
-    content += "const {option_type}& options) {{ (void)options;".format(option_type=option_type)
+    content += "const {option_type}& options) {{".format(option_type=option_type)
 
     global main_body
     main_body += content
@@ -843,7 +843,7 @@ def gen_resource_function_begin(function_name, option_type, return_type, request
         function_name=function_name, return_type=return_type)
     if request_body_type == HttpBodyType.PassOn:
         content += "Azure::Core::IO::BodyStream& requestBody,"
-    content += "const {option_type}& options, const Azure::Core::Context& context) {{ (void)options;".format(option_type=option_type)
+    content += "const {option_type}& options, const Azure::Core::Context& context) {{".format(option_type=option_type)
 
     global main_body
     main_body += content
