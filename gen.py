@@ -451,37 +451,40 @@ for config_resource in config["Services"]:
 
             for i in range(1, len(action)):
                 a = action[i]
-                if action[i] == "optional":
-                    kwargs["optional"] = True
-                elif match_res := re.match("on_status\\((.*)\\)", a):
-                    status_list = [int(i) for i in match_res.group(1).split("|")]
-                    kwargs["on_status"] = status_list
-                elif type(action[i]) is str:
-                    arg = "response"
-                    arg_types = action[i].split(".")
-                    arg_def = return_type_def
-                    for j, t in enumerate(arg_types):
-                        if t not in arg_def.member:
-                            if j < len(arg_types) - 1:  # Not the last one
-                                continue
-                            else:
-                                raise RuntimeError("cannot find " + action[i] + " in " + return_type)
-                        arg += "." + t
-                        arg_type = arg_def.member_type[arg_def.member.index(t)]
-                        arg_nullable = arg_def.member_nullable[arg_def.member.index(t)]
-                        if arg_type in models_cache:
-                            arg_def = models_cache[arg_type]
-                    args.append(arg)
-                    arg_def = models_cache[arg_type] if arg_type in models_cache else arg_type
-                    kwargs[arg + ".type"] = arg_def
-                    kwargs[arg + ".nullable"] = arg_nullable
-                elif type(action[i]) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
+                if type(a) is str:
+                    if a == "optional":
+                        kwargs["optional"] = True
+                    elif match_res := re.match("on_status\\((.*)\\)", a):
+                        status_list = [int(i) for i in match_res.group(1).split("|")]
+                        kwargs["on_status"] = status_list
+                    else:
+                        arg = "response"
+                        arg_types = a.split(".")
+                        arg_def = return_type_def
+                        for j, t in enumerate(arg_types):
+                            if t not in arg_def.member:
+                                if j < len(arg_types) - 1:  # Not the last one
+                                    continue
+                                else:
+                                    raise RuntimeError("cannot find " + a + " in " + return_type)
+                            arg += "." + t
+                            arg_type = arg_def.member_type[arg_def.member.index(t)]
+                            arg_nullable = arg_def.member_nullable[arg_def.member.index(t)]
+                            if arg_type in models_cache:
+                                arg_def = models_cache[arg_type]
+                        args.append(arg)
+                        arg_def = models_cache[arg_type] if arg_type in models_cache else arg_type
+                        kwargs[arg + ".type"] = arg_def
+                        kwargs[arg + ".nullable"] = arg_nullable
+                elif type(a) in [bool, int]:
+                    args.append(a)
+                elif type(a) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
                     # maybe add const string definition
-                    arg = "\"{}\"".format(action[i])
+                    arg = "\"{}\"".format(a)
                     args.append(arg)
                     kwargs[arg + ".type"] = "std::string"
-                elif type(action[i]) is ruamel.yaml.scalarstring.SingleQuotedScalarString:
-                    arg = "\"{}\"".format(action[i])
+                elif type(a) is ruamel.yaml.scalarstring.SingleQuotedScalarString:
+                    arg = "\"{}\"".format(a)
                     args.append(arg)
                     kwargs[arg + ".type"] = "std::string"
             method_to_call(*args, **kwargs)

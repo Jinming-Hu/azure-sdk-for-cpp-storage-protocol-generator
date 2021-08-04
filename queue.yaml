@@ -146,7 +146,8 @@ Services:
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
-        response_action: {}
+        response_action:
+          - [get_constant_code, false, Created, on_status(204)]
 
     - Delete:
         http_method: Delete

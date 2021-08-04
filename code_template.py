@@ -1367,6 +1367,26 @@ def gen_get_xml_body_code(*args, **kwargs):
     main_body += content
 
 
+def gen_get_constant_code(*args, **kwargs):
+    const_value = args[0]
+    target = args[1]
+    target_type = kwargs[target + ".type"]
+    on_status = kwargs["on_status"] if "on_status" in kwargs else []
+
+    content = ""
+    if on_status:
+        content += "if (" + "||".join(["http_status_code == Azure::Core::Http::HttpStatusCode::{}".format(http_status_code_map[s]) for s in on_status]) + "){"
+
+    if target_type == "bool":
+        content += "{} = {};".format(target, "true" if const_value else "false")
+
+    if on_status:
+        content += "}"
+
+    global main_body
+    main_body += content
+
+
 def gen_get_header_code(*args, **kwargs):
     key = args[0]
     target = args[1]
@@ -1378,9 +1398,7 @@ def gen_get_header_code(*args, **kwargs):
 
     content = ""
     if on_status:
-        content += "if ("
-        content += "||".join(["http_status_code == Azure::Core::Http::HttpStatusCode::{}".format(http_status_code_map[s]) for s in on_status])
-        content += ") {"
+        content += "if (" + "||".join(["http_status_code == Azure::Core::Http::HttpStatusCode::{}".format(http_status_code_map[s]) for s in on_status]) + "){"
 
     if optional or target_nullable:
         ite_name = get_snake_case_name(key) + "_iterator"
