@@ -35,7 +35,7 @@ CommentTemplate:
   MessageId: "A GUID value that identifies the message in the queue."
   InsertedOn: "The time the message was inserted into the queue."
   ExpiresOn: "The time that the message will expire and be automatically deleted from the queue."
-  PopReceipt: "This value is required to delete a message."
+  PopReceipt: "An opaque string that is required to delete or update a message."
   NextVisibleOn: "The time that the message will again become visible in the queue."
   DequeueCount: "The number of times the message has been dequeued."
 
@@ -274,7 +274,7 @@ Services:
         return_type:
           ReceiveMessagesResult:
             - BasicResponse: inline
-            - Messages: std::vector<QueueMessage>
+            - Messages: std::vector<QueueMessage>  # A vector of received messages.
             - from_xml: [
               [start_tag, QueueMessagesList.QueueMessage, Messages]
             ]
@@ -296,7 +296,7 @@ Services:
         return_type:
           PeekMessagesResult:
             - BasicResponse: inline
-            - Messages: std::vector<QueueMessage>
+            - Messages: std::vector<QueueMessage>  # A vector of peeked messages.
             - from_xml: [
               [start_tag, QueueMessagesList.QueueMessage, Messages],
             ]
@@ -526,8 +526,8 @@ Models:
     - MessageId: std::string
     - InsertedOn: Azure::DateTime(RFC1123)
     - ExpiresOn: Azure::DateTime(RFC1123)
-    - PopReceipt: std::string
-    - NextVisibleOn: Azure::DateTime(RFC1123)
+    - PopReceipt: std::string  # An opaque string that is required to delete or update a message. Empty if it's a peeked message.
+    - NextVisibleOn: Azure::DateTime(RFC1123)  # The time that the message will again become visible in the queue. Invalid if it's a peeked message.
     - DequeueCount: int64_t = 0
     - from_xml: [
       [text, MessageText, Body],
