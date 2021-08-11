@@ -272,7 +272,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          ReceiveMessagesResultInternal:
+          ReceiveMessagesResult:
             - BasicResponse: inline
             - Messages: std::vector<QueueMessage>
             - from_xml: [
@@ -294,9 +294,9 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          PeekMessagesResultInternal:
+          PeekMessagesResult:
             - BasicResponse: inline
-            - Messages: std::vector<PeekedQueueMessage>
+            - Messages: std::vector<QueueMessage>
             - from_xml: [
               [start_tag, QueueMessagesList.QueueMessage, Messages],
             ]
@@ -536,18 +536,5 @@ Models:
       [text, ExpirationTime, ExpiresOn],
       [text, PopReceipt, PopReceipt],
       [text, TimeNextVisible, NextVisibleOn],
-      [text, DequeueCount, DequeueCount],
-    ]
-  PeekedQueueMessage:  # A message object peeked from a queue.
-    - Body: std::string  # The content of the message.
-    - MessageId: std::string
-    - InsertedOn: Azure::DateTime(RFC1123)
-    - ExpiresOn: Azure::DateTime(RFC1123)
-    - DequeueCount: int64_t = 0
-    - from_xml: [
-      [text, MessageText, Body],
-      [text, MessageId, MessageId],
-      [text, InsertionTime, InsertedOn],
-      [text, ExpirationTime, ExpiresOn],
       [text, DequeueCount, DequeueCount],
     ]
