@@ -233,11 +233,11 @@ Services:
           - [add_query_code, "comp", "acl"]
         response_action: {}
 
-    - SendMessage:
+    - EnqueueMessage:
         http_method: Post
         http_status_code: 201
         return_type:
-          SendMessageResult:  # Response type for #Azure::Storage::Queues::QueueClient::SendMessage.
+          EnqueueMessageResult:  # Response type for #Azure::Storage::Queues::QueueClient::EnqueueMessage.
             - BasicResponse: inline
             - MessageId: std::string
             - InsertedOn: Azure::DateTime(RFC1123)
@@ -252,7 +252,7 @@ Services:
               [text, QueueMessagesList.QueueMessage.TimeNextVisible, NextVisibleOn],
             ]
         options:
-          SendMessageOptions:
+          EnqueueMessageOptions:
             - BasicRequestOptions: inline
             - Body: std::string
             - VisibilityTimeout: int32_t, nullable
