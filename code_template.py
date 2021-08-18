@@ -911,6 +911,8 @@ def gen_add_query_code(*args, **kwargs):
 
     if value_type == "int32_t" or value_type == "int64_t":
         content += "request.GetUrl().AppendQueryParameter({}, std::to_string({}));".format(key, value)
+    elif value_type == "std::chrono::seconds":
+        content += "request.GetUrl().AppendQueryParameter({}, std::to_string({}.count()));".format(key, value)
     elif not need_encoding:
         content += "request.GetUrl().AppendQueryParameter({}, {});".format(key, value)
     else:

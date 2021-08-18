@@ -4,6 +4,7 @@ output_cpp: queue_rest_client.cpp
 
 include_headers: [
     [
+      "<chrono>",
       "<string>",
       "<vector>",
       "<type_traits>",
@@ -255,8 +256,8 @@ Services:
           EnqueueMessageOptions:
             - BasicRequestOptions: inline
             - Body: std::string
-            - VisibilityTimeout: int32_t, nullable
-            - TimeToLive: int32_t, nullable
+            - VisibilityTimeout: std::chrono::seconds, nullable
+            - TimeToLive: std::chrono::seconds, nullable
             - to_xml: [
               [tag, QueueMessage.MessageText, Body]
             ]
@@ -282,7 +283,7 @@ Services:
           ReceiveMessagesOptions:
             - BasicRequestOptions: inline
             - MaxMessages: int64_t, nullable
-            - VisibilityTimeout: int32_t, nullable
+            - VisibilityTimeout: std::chrono::seconds, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "numofmessages", MaxMessages]
@@ -351,7 +352,7 @@ Services:
           UpdateMessageVisibilityOptions:
             - BasicRequestOptions: inline
             - PopReceipt: std::string
-            - VisibilityTimeout: int32_t
+            - VisibilityTimeout: std::chrono::seconds
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "popreceipt", PopReceipt]
@@ -373,7 +374,7 @@ Services:
             - Body: std::string
             - BasicRequestOptions: inline
             - PopReceipt: std::string
-            - VisibilityTimeout: int32_t
+            - VisibilityTimeout: std::chrono::seconds
             - to_xml: [
               [tag, QueueMessage.MessageText, Body]
             ]
