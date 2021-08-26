@@ -255,11 +255,11 @@ Services:
         options:
           EnqueueMessageOptions:
             - BasicRequestOptions: inline
-            - Body: std::string
+            - MessageText: std::string
             - VisibilityTimeout: std::chrono::seconds, nullable
             - TimeToLive: std::chrono::seconds, nullable
             - to_xml: [
-              [tag, QueueMessage.MessageText, Body]
+              [tag, QueueMessage.MessageText, MessageText]
             ]
         request_action:
           - [add_xml_body_code]
@@ -297,7 +297,7 @@ Services:
         return_type:
           PeekMessagesResult:
             - BasicResponse: inline
-            - Messages: std::vector<QueueMessage>  # A vector of peeked messages.
+            - Messages: std::vector<PeekedQueueMessage>  # A vector of peeked messages.
             - from_xml: [
               [start_tag, QueueMessagesList.QueueMessage, Messages],
             ]
@@ -371,12 +371,12 @@ Services:
             - NextVisibleOn: Azure::DateTime(RFC1123)
         options:
           UpdateMessageOptions:
-            - Body: std::string
+            - MessageText: std::string
             - BasicRequestOptions: inline
             - PopReceipt: std::string
             - VisibilityTimeout: std::chrono::seconds
             - to_xml: [
-              [tag, QueueMessage.MessageText, Body]
+              [tag, QueueMessage.MessageText, MessageText]
             ]
         request_action:
           - [add_xml_body_code]
@@ -523,19 +523,32 @@ Models:
       [tag, SignedIdentifier.AccessPolicy.Permission, Permissions],
     ]
   QueueMessage:  # A message object stored in the queue.
-    - Body: std::string  # The content of the message.
+    - MessageText: std::string  # The content of the message.
     - MessageId: std::string
     - InsertedOn: Azure::DateTime(RFC1123)
     - ExpiresOn: Azure::DateTime(RFC1123)
-    - PopReceipt: std::string  # An opaque string that is required to delete or update a message. Empty if it's a peeked message.
-    - NextVisibleOn: Azure::DateTime(RFC1123)  # The time that the message will again become visible in the queue. Invalid if it's a peeked message.
+    - PopReceipt: std::string
+    - NextVisibleOn: Azure::DateTime(RFC1123)
     - DequeueCount: int64_t = 0
     - from_xml: [
-      [text, MessageText, Body],
+      [text, MessageText, MessageText],
       [text, MessageId, MessageId],
       [text, InsertionTime, InsertedOn],
       [text, ExpirationTime, ExpiresOn],
       [text, PopReceipt, PopReceipt],
       [text, TimeNextVisible, NextVisibleOn],
+      [text, DequeueCount, DequeueCount],
+    ]
+  PeekedQueueMessage:  # A peeked message object stored in the queue.
+    - MessageText: std::string  # The content of the message.
+    - MessageId: std::string
+    - InsertedOn: Azure::DateTime(RFC1123)
+    - ExpiresOn: Azure::DateTime(RFC1123)
+    - DequeueCount: int64_t = 0
+    - from_xml: [
+      [text, MessageText, MessageText],
+      [text, MessageId, MessageId],
+      [text, InsertionTime, InsertedOn],
+      [text, ExpirationTime, ExpiresOn],
       [text, DequeueCount, DequeueCount],
     ]
