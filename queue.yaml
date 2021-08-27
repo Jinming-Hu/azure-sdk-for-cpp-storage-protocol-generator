@@ -507,8 +507,8 @@ Models:
     ]
   SignedIdentifier:  # Describes how you reference an ACL in a queue.
     - Id: std::string  # A unique ID for this signed identifier.
-    - StartsOn: Azure::DateTime(ISO8601)  # Date and time since when this policy is active.
-    - ExpiresOn: Azure::DateTime(ISO8601)  # Date and time the policy expires.
+    - StartsOn: Azure::DateTime(ISO8601), nullable  # Date and time since when this policy is active.
+    - ExpiresOn: Azure::DateTime(ISO8601), nullable  # Date and time the policy expires.
     - Permissions: std::string  # The permissions for this ACL policy.
     - from_xml: [
       [text, Id, Id],
