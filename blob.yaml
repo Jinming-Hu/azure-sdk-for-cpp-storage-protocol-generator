@@ -28,6 +28,8 @@ include_headers: [
     ],
 ]
 
+cspell_ignore_words: ["xmsblobsequencenumber"]
+
 Constants:
   ApiVersion: &ApiVersion "2020-02-10"
 

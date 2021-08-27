@@ -544,6 +544,10 @@ with open(output_path, "w") as f:
         for h in header_group:
             f.write("#include" + h + "\n")
         f.write("\n")
+    if "cspell_ignore_words" in config and config["cspell_ignore_words"]:
+        f.write("/* cspell:ignore ")
+        f.write(" ".join(config["cspell_ignore_words"]))
+        f.write(" */\n\n")
     f.write(code_template.namespace_begin)
     f.write(code_template.model_definitions_begin)
     f.write(code_template.model_definitions)

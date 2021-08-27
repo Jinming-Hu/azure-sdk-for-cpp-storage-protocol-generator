@@ -26,6 +26,8 @@ include_headers: [
     ],
 ]
 
+cspell_ignore_words: ["numofmessages"]
+
 Constants:
   ApiVersion: &ApiVersion "2018-03-28"
 
