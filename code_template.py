@@ -81,7 +81,7 @@ toxml_options_def_cache = {}
 constants_map = {}
 comments_map = {}
 
-http_status_code_map = {200: "Ok", 201: "Created", 202: "Accepted", 204: "NoContent", 206: "PartialContent", 304: "NotModified"}
+http_status_code_map = {200: "Ok", 201: "Created", 202: "Accepted", 204: "NoContent", 206: "PartialContent", 304: "NotModified", 404: "NotFound"}
 
 
 def get_snake_case_name(var):

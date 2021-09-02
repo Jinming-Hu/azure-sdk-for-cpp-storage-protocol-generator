@@ -84,7 +84,13 @@ Services:
     - GetProperties:
         http_method: Get
         http_status_code: 200
-        return_type: QueueServiceProperties
+        return_type:
+          GetServicePropertiesResult:  # Response type for #Azure::Storage::Queues::QueueServiceClient::GetProperties.
+            - BasicResponse: inline
+            - Properties: QueueServiceProperties
+            - from_xml: [
+              [start_tag, StorageServiceProperties, Properties],
+            ]
         options:
           GetServicePropertiesOptions:
             - BasicRequestOptions: inline
@@ -119,7 +125,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          ServiceStatistics:  # Statistics for the storage service.
+          GetServiceStatisticsResult:  # Response tyoe for #Azure::Storage::Queues::QueueServiceClient::GetStatistics.
             - GeoReplication: GeoReplication  # Geo-replication information for the secondary storage endpoint.
             - from_xml: [
               [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
@@ -141,7 +147,7 @@ Services:
         return_type:
           CreateQueueResult: # Response type for #Azure::Storage::Queues::QueueClient::Create.
             - BasicResponse: inline
-            - Created: bool = true  # Indicates if the queue was successfully created in this operation.
+            - Created: bool = false  # Indicates if the queue was successfully created in this operation.
         options:
           CreateQueueOptions:
             - BasicRequestOptions: inline
@@ -150,21 +156,22 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
         response_action:
-          - [get_constant_code, false, Created, on_status(204)]
+          - [get_constant_code, true, Created, on_status(201)]
 
     - Delete:
         http_method: Delete
-        http_status_code: 204
+        http_status_code: [204, 404]
         return_type:
           DeleteQueueResult:  # Response type for #Azure::Storage::Queues::QueueClientClient::Delete.
             - BasicResponse: inline
-            - Deleted: bool = true  # Indicates if the queue was successfully deleted in this operation.
+            - Deleted: bool = false  # Indicates if the queue was successfully deleted in this operation.
         options:
           DeleteQueueOptions:
             - BasicRequestOptions: inline
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
-        response_action: {}
+        response_action:
+          - [get_constant_code, true, Deleted, on_status(204)]
 
     - SetMetadata:
         http_method: Put
@@ -186,7 +193,7 @@ Services:
         http_method: Head
         http_status_code: 200
         return_type:
-          QueueProperties:  # Properties of a queue.
+          GetQueuePropertiesResult:  # Response type for #Azure::Storage::Queues::QueueClient::GetProperties.
             - Metadata: Metadata
             - ApproximateMessageCount: int64_t = 0
         options:
@@ -203,7 +210,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          QueueAccessPolicy:  # Access policy for a queue.
+          GetQueueAccessPolicyResult:  # Response type for #Azure::Storage::Queues::QueueClient::GetAccessPolicy.
             - SignedIdentifiers: std::vector<SignedIdentifier>
             - from_xml: [
               [start_tag, SignedIdentifiers.SignedIdentifier, SignedIdentifiers],
@@ -484,10 +491,10 @@ Models:
     - MinuteMetrics: Metrics  # Summary of request statistics grouped by API in minute aggregates for queues.
     - Cors: std::vector<CorsRule>  # CORS rules set.
     - from_xml: [
-      [start_tag, StorageServiceProperties.Logging, Logging],
-      [start_tag, StorageServiceProperties.HourMetrics, HourMetrics],
-      [start_tag, StorageServiceProperties.MinuteMetrics, MinuteMetrics],
-      [start_tag, StorageServiceProperties.Cors.CorsRule, Cors],
+      [start_tag, Logging, Logging],
+      [start_tag, HourMetrics, HourMetrics],
+      [start_tag, MinuteMetrics, MinuteMetrics],
+      [start_tag, Cors.CorsRule, Cors],
     ]
     - to_xml: [
       [tag, Logging, Logging],
