@@ -1,5 +1,6 @@
 import os
 import inspect
+import ruamel.yaml
 from enum import Enum
 
 
@@ -625,6 +626,8 @@ def gen_toxml_function(class_name):
             content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), {}.ToString(Azure::DateTime::DateFormat::Rfc1123)}});".format(member_name)
         elif member_type in ["int32_t", "int64_t"]:
             content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), std::to_string({})}});".format(member_name)
+        elif member_type == "char":
+            content = "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::Text, std::string(), std::string(1, {})}});".format(member_name)
         else:
             content = "{}ToXml(writer, {});".format(member_type, member_name)
             toxml_classes.add(member_type)
@@ -644,8 +647,12 @@ def gen_toxml_function(class_name):
             xml_action_type = a[0]
             target_xml_path = a[1].split(".")
             member = a[2]
-            member_type = class_def.member_type[class_def.member.index(member)]
-            member_nullable = class_def.member_nullable[class_def.member.index(member)]
+            if type(member) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
+                member_type = "std::string"
+                member_nullable = False
+            else:
+                member_type = class_def.member_type[class_def.member.index(member)]
+                member_nullable = class_def.member_nullable[class_def.member.index(member)]
 
             if xml_action_type == "tag":
                 common_prefix = os.path.commonprefix([xml_path, target_xml_path])
@@ -665,7 +672,10 @@ def gen_toxml_function(class_name):
                     content += "writer.Write(_internal::XmlNode{{_internal::XmlNodeType::StartTag, \"{}\"}});".format(p)
                     xml_path.append(p)
                     last_path_added = True
-                content += toxml_content("options." + member, member_type)
+                if type(member) is ruamel.yaml.scalarstring.DoubleQuotedScalarString:
+                    content += toxml_content("\"" + member + "\"", member_type)
+                else:
+                    content += toxml_content("options." + member, member_type)
                 if last_path_added:
                     content += "writer.Write(_internal::XmlNode{_internal::XmlNodeType::EndTag});"
                     xml_path.pop()
