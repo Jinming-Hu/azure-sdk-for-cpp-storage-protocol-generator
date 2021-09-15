@@ -1357,6 +1357,42 @@ Services:
           - [get_header_code, "Last-Modified", LastModified, optional]
           - [get_header_code, "x-ms-blob-content-length", BlobSize, optional]
 
+    - Query:
+        http_method: Post
+        http_status_code: 200
+        options:
+          QueryBlobOptions:
+            - BasicRequestOptions: inline
+            - LeaseId: std::string, nullable
+            - QueryExpression: std::string
+            - InputDelimitedTextConfiguration: BlobQueryCsvTextOptions, nullable
+            - InputJsonTextConfiguration: BlobQueryJsonTextOptions, nullable
+            - OutputDelimitedTextConfiguration: BlobQueryCsvTextOptions, nullable
+            - OutputJsonTextConfiguration: BlobQueryJsonTextOptions, nullable
+            - OutputParquetTextConfiguration: BlobQueryParquetTextOptions, nullable
+            - to_xml: [
+              [tag, QueryRequest.QueryType, "SQL"],
+              [tag, QueryRequest.Expression, QueryExpression],
+              [tag, QueryRequest.InputSerialization, InputDelimitedTextConfiguration],
+              [tag, QueryRequest.InputSerialization, InputJsonTextConfiguration],
+              [tag, QueryRequest.OutputSerialization, OutputDelimitedTextConfiguration],
+              [tag, QueryRequest.OutputSerialization, OutputJsonTextConfiguration],
+              [tag, QueryRequest.OutputSerialization, OutputParquetTextConfiguration],
+            ]
+        return_type:
+          QueryBlobResultInternal:  # Response type for #Azure::Storage::Blobs::BlockBlobClient::Query.
+            - BodiedResponse: inline
+            - BlobType: BlobType
+        request_action:
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_query_code, "comp", "query"]
+          - [add_header_code, "Content-Type", "application/xml; charset=UTF-8"]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_xml_body_code]
+        response_action:
+          - [get_body_code, BodyStream]
+          - [get_header_code, "x-ms-blob-type", BlobType]
+
   - PageBlob:
     - Create:
         http_method: Put
@@ -2349,3 +2385,31 @@ Models:
     - RelativeToCreation: "RelativeToCreation"  # Relative to file's creation time.
     - RelativeToNow: "RelativeToNow"  # Relative to current time.
     - Absolute: "Absolute"  # Absolute time.
+  BlobQueryCsvTextOptions:
+    - type: struct
+    - RecordSeparator: std::string, nullable
+    - ColumnSeparator: std::string, nullable
+    - QuotationCharacter: char, nullable
+    - EscapeCharacter: char, nullable
+    - HasHeaders: bool, nullable
+    - to_xml: [
+      [tag, Format.Type, "csv"],
+      [tag, Format.DelimitedTextConfiguration.ColumnSeparator, ColumnSeparator],
+      [tag, Format.DelimitedTextConfiguration.FieldQuote, QuotationCharacter],
+      [tag, Format.DelimitedTextConfiguration.RecordSeparator, RecordSeparator],
+      [tag, Format.DelimitedTextConfiguration.EscapeChar, EscapeCharacter],
+      [tag, Format.DelimitedTextConfiguration.HasHeaders, HasHeaders],
+    ]
+  BlobQueryJsonTextOptions:
+    - type: struct
+    - RecordSeparator: std::string, nullable
+    - to_xml: [
+      [tag, Format.Type, "json"],
+      [tag, Format.JsonTextConfiguration.RecordSeparator, RecordSeparator],
+    ]
+  BlobQueryParquetTextOptions:
+    - type: struct
+    - to_xml: [
+      [tag, Format.Type, "parquet"],
+      [tag, Format.ParquetTextConfiguration, ""],
+    ]
