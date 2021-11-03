@@ -84,13 +84,7 @@ Services:
     - GetProperties:
         http_method: Get
         http_status_code: 200
-        return_type:
-          GetServicePropertiesResult:  # Response type for #Azure::Storage::Queues::QueueServiceClient::GetProperties.
-            - BasicResponse: inline
-            - Properties: QueueServiceProperties
-            - from_xml: [
-              [start_tag, StorageServiceProperties, Properties],
-            ]
+        return_type: QueueServiceProperties
         options:
           GetServicePropertiesOptions:
             - BasicRequestOptions: inline
@@ -125,7 +119,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          GetServiceStatisticsResult:  # Response tyoe for #Azure::Storage::Queues::QueueServiceClient::GetStatistics.
+          ServiceStatistics:  # Response tyoe for #Azure::Storage::Queues::QueueServiceClient::GetStatistics.
             - GeoReplication: GeoReplication  # Geo-replication information for the secondary storage endpoint.
             - from_xml: [
               [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
@@ -193,7 +187,7 @@ Services:
         http_method: Head
         http_status_code: 200
         return_type:
-          GetQueuePropertiesResult:  # Response type for #Azure::Storage::Queues::QueueClient::GetProperties.
+          QueueProperties:  # Response type for #Azure::Storage::Queues::QueueClient::GetProperties.
             - Metadata: Metadata
             - ApproximateMessageCount: int64_t = 0
         options:
@@ -210,7 +204,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          GetQueueAccessPolicyResult:  # Response type for #Azure::Storage::Queues::QueueClient::GetAccessPolicy.
+          QueueAccessPolicy:  # Response type for #Azure::Storage::Queues::QueueClient::GetAccessPolicy.
             - SignedIdentifiers: std::vector<SignedIdentifier>
             - from_xml: [
               [start_tag, SignedIdentifiers.SignedIdentifier, SignedIdentifiers],
@@ -282,7 +276,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          ReceiveMessagesResult:
+          ReceivedMessages:
             - BasicResponse: inline
             - Messages: std::vector<QueueMessage>  # A vector of received messages.
             - from_xml: [
@@ -304,7 +298,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          PeekMessagesResult:
+          PeekedMessages:
             - BasicResponse: inline
             - Messages: std::vector<PeekedQueueMessage>  # A vector of peeked messages.
             - from_xml: [
@@ -497,10 +491,10 @@ Models:
       [start_tag, Cors.CorsRule, Cors],
     ]
     - to_xml: [
-      [tag, Logging, Logging],
-      [tag, HourMetrics, HourMetrics],
-      [tag, MinuteMetrics, MinuteMetrics],
-      [tag, Cors, Cors],
+      [tag, StorageServiceProperties.Logging, Logging],
+      [tag, StorageServiceProperties.HourMetrics, HourMetrics],
+      [tag, StorageServiceProperties.MinuteMetrics, MinuteMetrics],
+      [tag, StorageServiceProperties.Cors, Cors],
     ]
   GeoReplicationStatus:  # Extensible enum used to identify the status of secondary storage endpoint.
     - type: enum class
