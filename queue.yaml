@@ -119,7 +119,7 @@ Services:
         http_method: Get
         http_status_code: 200
         return_type:
-          ServiceStatistics:  # Response tyoe for #Azure::Storage::Queues::QueueServiceClient::GetStatistics.
+          ServiceStatistics:  # Response type for #Azure::Storage::Queues::QueueServiceClient::GetStatistics.
             - GeoReplication: GeoReplication  # Geo-replication information for the secondary storage endpoint.
             - from_xml: [
               [start_tag, StorageServiceStats.GeoReplication, GeoReplication]
@@ -485,10 +485,10 @@ Models:
     - MinuteMetrics: Metrics  # Summary of request statistics grouped by API in minute aggregates for queues.
     - Cors: std::vector<CorsRule>  # CORS rules set.
     - from_xml: [
-      [start_tag, Logging, Logging],
-      [start_tag, HourMetrics, HourMetrics],
-      [start_tag, MinuteMetrics, MinuteMetrics],
-      [start_tag, Cors.CorsRule, Cors],
+      [start_tag, StorageServiceProperties.Logging, Logging],
+      [start_tag, StorageServiceProperties.HourMetrics, HourMetrics],
+      [start_tag, StorageServiceProperties.MinuteMetrics, MinuteMetrics],
+      [start_tag, StorageServiceProperties.Cors.CorsRule, Cors],
     ]
     - to_xml: [
       [tag, StorageServiceProperties.Logging, Logging],
