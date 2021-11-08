@@ -491,10 +491,10 @@ Models:
       [start_tag, StorageServiceProperties.Cors.CorsRule, Cors],
     ]
     - to_xml: [
-      [tag, StorageServiceProperties.Logging, Logging],
-      [tag, StorageServiceProperties.HourMetrics, HourMetrics],
-      [tag, StorageServiceProperties.MinuteMetrics, MinuteMetrics],
-      [tag, StorageServiceProperties.Cors, Cors],
+      [tag, Logging, Logging],
+      [tag, HourMetrics, HourMetrics],
+      [tag, MinuteMetrics, MinuteMetrics],
+      [tag, Cors, Cors],
     ]
   GeoReplicationStatus:  # Extensible enum used to identify the status of secondary storage endpoint.
     - type: enum class
