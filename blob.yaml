@@ -261,8 +261,8 @@ Services:
         http_status_code: 200
         return_type:
           AccountInfo:  # Storage account information.
-            - SkuName: SkuName  # The SKU name of the storage account. See https://docs.microsoft.com/en-us/rest/api/storagerp/srp_sku_types for more information.
-            - AccountKind: AccountKind  # The account kind of the storage account. See https://docs.microsoft.com/en-us/rest/api/storagerp/srp_sku_types for more information.
+            - SkuName: SkuName  # The SKU name of the storage account. See https://docs.microsoft.com/rest/api/storagerp/srp_sku_types for more information.
+            - AccountKind: AccountKind  # The account kind of the storage account. See https://docs.microsoft.com/rest/api/storagerp/srp_sku_types for more information.
             - IsHierarchicalNamespaceEnabled: bool = false  # Indicates if the account has a hierarchical namespace enabled.
         options:
           GetAccountInfoOptions:
