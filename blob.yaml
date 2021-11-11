@@ -936,6 +936,41 @@ Services:
           - [add_header_code, "x-ms-if-tags", IfTags]
         response_action: {}
 
+    - CopyFromUri:
+        http_method: Put
+        http_status_code: 202
+        return_type:
+          CopyBlobFromUriResult:  # Response type for #Azure::Storage::Blobs::BlobClient::CopyFromUri.
+            - BasicResponse: inline
+            - BlobCopyInfo: inline
+        options:
+          CopyBlobFromUriOptions:
+            - BasicRequestOptions: inline
+            - Metadata: Metadata
+            - Tags: std::map<std::string, std::string>
+            - SourceUri: std::string
+            - LeaseId: std::string, nullable
+            - AccessTier: AccessTier, nullable
+            - BlobRequestConditionalHeaders: inline
+            - BlobRequestSourceConditionalHeaders: inline
+            - TransactionalContentHash: ContentHash, nullable
+        request_action:
+          - [add_header_code, "x-ms-requires-sync", "true"]
+          - *REQUEST_VERSION_TIMEOUT_PACKAGE
+          - [add_metadata_code, "x-ms-meta-", Metadata]
+          - [add_tags_code, "x-ms-tags", Tags]
+          - [add_header_code, "x-ms-copy-source", SourceUri]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
+          - [add_header_code, "x-ms-access-tier", AccessTier]
+          - *REQUEST_CONDITIONAL_HEADER_PACKAGE
+          - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
+          - *REQUEST_SOURCE_CHECKSUM_HEADER_PACKAGE
+        response_action:
+          - *RESPONSE_ETAG_LAST_MODIFIED_HEADER_PACKAGE
+          - [get_header_code, "x-ms-copy-id", CopyId]
+          - [get_header_code, "x-ms-copy-status", CopyStatus]
+          - [get_header_code, "x-ms-version-id", VersionId]
+
     - StartCopyFromUri:
         http_method: Put
         http_status_code: 202
