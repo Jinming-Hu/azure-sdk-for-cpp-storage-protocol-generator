@@ -1326,8 +1326,8 @@ def gen_add_xml_body_code(*args, **kwargs):
         {{
             _internal::XmlWriter writer;
             {}ToXml(writer, options);
-            xml_body = writer.GetDocument();
             writer.Write(_internal::XmlNode{{_internal::XmlNodeType::End}});
+            xml_body = writer.GetDocument();
         }}
         """.format(option_type))
 
