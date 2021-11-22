@@ -1000,6 +1000,7 @@ Services:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
           - [add_tags_code, "x-ms-tags", Tags]
+          - [add_header_code, "x-ms-blob-type", "BlockBlob"]
           - [add_header_code, "x-ms-copy-source", SourceUri]
           - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_header_code, "x-ms-access-tier", AccessTier]
