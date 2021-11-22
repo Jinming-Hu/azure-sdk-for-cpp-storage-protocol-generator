@@ -949,12 +949,15 @@ Services:
             - Metadata: Metadata
             - Tags: std::map<std::string, std::string>
             - SourceUri: std::string
+            - ShouldCopySourceBlobProperties: bool, nullable
             - LeaseId: std::string, nullable
             - AccessTier: AccessTier, nullable
             - BlobRequestConditionalHeaders: inline
             - BlobRequestSourceConditionalHeaders: inline
             - TransactionalContentHash: ContentHash, nullable
         request_action:
+          - [add_header_code, "x-ms-blob-type", "BlockBlob"]
+          - [add_header_code, "x-ms-copy-source-blob-properties", ShouldCopySourceBlobProperties]
           - [add_header_code, "x-ms-requires-sync", "true"]
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
@@ -992,6 +995,7 @@ Services:
             - SourceIfTags: std::string, nullable
             - SourceLeaseId: std::string, nullable
             - ShouldSealDestination: bool, nullable
+            - ShouldCopySourceBlobProperties: bool, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_metadata_code, "x-ms-meta-", Metadata]
@@ -1001,6 +1005,7 @@ Services:
           - [add_header_code, "x-ms-access-tier", AccessTier]
           - [add_header_code, "x-ms-rehydrate-priority", RehydratePriority]
           - [add_header_code, "x-ms-seal-blob", ShouldSealDestination]
+          - [add_header_code, "x-ms-copy-source-blob-properties", ShouldCopySourceBlobProperties]
           - *REQUEST_CONDITIONAL_HEADER_PACKAGE
           - *REQUEST_SOURCE_CONDITIONAL_HEADER_PACKAGE
           - [add_header_code, "x-ms-source-if-tags", SourceIfTags]
