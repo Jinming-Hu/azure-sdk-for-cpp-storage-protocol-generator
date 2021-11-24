@@ -31,7 +31,7 @@ include_headers: [
 cspell_ignore_words: ["xmsblobsequencenumber"]
 
 Constants:
-  ApiVersion: &ApiVersion "2020-02-10"
+  ApiVersion: &ApiVersion "2020-04-08"
 
 CommentTemplate:
   ETag: "The ETag contains a value that you can use to perform operations conditionally."
@@ -2374,9 +2374,11 @@ Models:
   TaggedBlobItem:  # Blob information from the result of #Azure::Storage::Blobs::BlobServiceClient::FindBlobsByTags.
     - BlobName: std::string  # Blob name.
     - BlobContainerName: std::string  # Blob container name.
+    - Tags: std::map<std::string, std::string>  # Matched tags
     - from_xml: [
       [text, Name, BlobName],
       [text, ContainerName, BlobContainerName],
+      [text, Tags, Tags],
     ]
   ScheduleBlobExpiryOriginType: # Extensible enum used to specify when a file's expiration time should be relative to.
     - type: enum class
