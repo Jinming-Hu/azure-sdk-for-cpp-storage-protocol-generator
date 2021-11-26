@@ -31,7 +31,7 @@ include_headers: [
 cspell_ignore_words: ["xmsblobsequencenumber"]
 
 Constants:
-  ApiVersion: &ApiVersion "2020-02-10"
+  ApiVersion: &ApiVersion "2020-04-08"
 
 CommentTemplate:
   ETag: "The ETag contains a value that you can use to perform operations conditionally."
@@ -1076,10 +1076,12 @@ Services:
           GetBlobTagsOptions:
             - BasicRequestOptions: inline
             - IfTags: std::string, nullable
+            - LeaseId: std::string, nullable
         request_action:
           - *REQUEST_VERSION_TIMEOUT_PACKAGE
           - [add_query_code, "comp", "tags"]
           - [add_header_code, "x-ms-if-tags", IfTags]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
         response_action:
           - [get_xml_body_code]
 
@@ -1094,6 +1096,7 @@ Services:
             - BasicRequestOptions: inline
             - Tags: std::map<std::string, std::string>
             - IfTags: std::string, nullable
+            - LeaseId: std::string, nullable
             - to_xml: [
               [tag, Tags.TagSet, Tags],
             ]
@@ -1102,6 +1105,7 @@ Services:
           - [add_query_code, "comp", "tags"]
           - [add_header_code, "Content-Type", "application/xml; charset=UTF-8"]
           - [add_header_code, "x-ms-if-tags", IfTags]
+          - [add_header_code, "x-ms-lease-id", LeaseId]
           - [add_xml_body_code]
         response_action: {}
 
@@ -2374,9 +2378,11 @@ Models:
   TaggedBlobItem:  # Blob information from the result of #Azure::Storage::Blobs::BlobServiceClient::FindBlobsByTags.
     - BlobName: std::string  # Blob name.
     - BlobContainerName: std::string  # Blob container name.
+    - Tags: std::map<std::string, std::string>  # Matched tags
     - from_xml: [
       [text, Name, BlobName],
       [text, ContainerName, BlobContainerName],
+      [start_tag, Tags.TagSet, Tags],
     ]
   ScheduleBlobExpiryOriginType: # Extensible enum used to specify when a file's expiration time should be relative to.
     - type: enum class
